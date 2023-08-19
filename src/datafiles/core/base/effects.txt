@@ -1,0 +1,41 @@
+Signature: BluntEffect($POWER)
+Stimuli: BluntStims($POWER)
+
+Signature: PiercingEffect($POWER)
+Stimuli: PiercingStims($POWER)
+
+Signature: BulletEffect($POWER)
+Stimuli: BulletStims($POWER)
+
+Signature: FireEffect($POWER)
+Stimuli: FireStims($POWER)
+
+Signature: EmeticPoisonEffect
+Stimuli: EmeticStims
+
+Signature: LethalPoisonEffect
+Stimuli: LethalStims
+
+Signature: OilEffect
+Stimuli: OilSpillStims
+
+Signature: OilSpillEffect
+Stimuli: OilSpillStims
+Distribution: liquid
+Distance: 5
+
+Signature: ChokingEffect
+Stimuli: ChokingStims
+
+Signature: TranquilizerEffect($POWER)
+Stimuli: TranquilizerStims($POWER)
+
+Signature: TaserEffect($POWER)
+Stimuli: ElectricStims($POWER)
+
+Signature: ExplosionEffect($POWER, $DISTANCE, $PRESSURE)
+Distribution: explode
+Stimuli: ExplosionStims($POWER)
+Distance: $DISTANCE
+Pressure: $PRESSURE
+DestroyOnApplication: true

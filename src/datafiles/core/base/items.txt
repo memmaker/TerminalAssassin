@@ -1,0 +1,717 @@
+name: AMT 1911 'Hardballer'
+icon: ٤
+type: pistol
+is_big: false
+uses: 7
+melee_attack: melee_attack
+ranged_attack: shot
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.30
+noise_radius: 15
+audio_cue: pistol_shot
+is_silenced: false
+silenced_cue: silenced_pistol
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BulletTrigger(35)
+
+name: a coin
+icon: ·
+type: common
+is_big: false
+uses: -1
+melee_attack:
+ranged_attack: throw
+self_use:
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue:
+is_silenced: false
+silenced_cue:
+key_string:
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+
+name: AMT 1911 'Hardballer' (silenced)
+icon: ٤
+type: pistol
+is_big: false
+uses: 7
+melee_attack: melee_attack
+ranged_attack: shot
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.30
+noise_radius: 0
+audio_cue: pistol_shot
+is_silenced: true
+silenced_cue: silenced_pistol
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BulletTrigger(35)
+
+name: Heckler & Koch MP5
+icon: ٣
+type: submachine_gun
+is_big: false
+uses: 300
+melee_attack: melee_attack
+ranged_attack: shot
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.10
+noise_radius: 17
+audio_cue: smg_shot
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BulletTrigger(35)
+
+name: Kalashnikov AK47
+icon: ٯ
+type: assault_rifle
+is_big: true
+uses: 40
+melee_attack: melee_attack
+ranged_attack: shot
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.20
+noise_radius: 23
+audio_cue: ak47_shot
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BulletTrigger(35)
+
+name: Franchi PA3/215
+icon: ٥
+type: shotgun
+is_big: true
+uses: 500
+melee_attack: melee_attack
+ranged_attack: spread_shot
+self_use: 
+projectile_range: 15
+spread_in_degrees: 44
+projectile_count: 5
+delay_between_shots_in_secs: 1.50
+noise_radius: 23
+audio_cue: shotgun_shot
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BulletTrigger(35)
+
+name: Blaser Jagdwaffen R93 Sniper
+icon: ٢
+type: sniper_rifle
+is_big: true
+uses: 3
+melee_attack: melee_attack
+ranged_attack: shot
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 2.00
+noise_radius: 40
+audio_cue: sniper_shot
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 40
+scope_fov: 20.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BulletTrigger(80)
+
+name: Sieger 300 Ghost
+icon: ٢
+type: sniper_rifle
+is_big: true
+uses: 3
+melee_attack: melee_attack
+ranged_attack: shot
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 2.00
+noise_radius: 2
+audio_cue: silenced_rifle
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 50
+scope_fov: 25.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BulletTrigger(100)
+
+name: Even Calmer 2
+icon: ١
+type: taser
+is_big: false
+uses: 2
+melee_attack: 
+ranged_attack: shot
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 2.00
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: TranquilizerTrigger(50)
+
+name: a taser
+icon: ١
+type: taser
+is_big: false
+uses: 3
+melee_attack: melee_use
+ranged_attack: 
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.20
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: TaserTrigger(50)
+
+name: a lockpick
+icon: ¸
+type: mechanical_lockpick
+is_big: false
+uses: -1
+melee_attack: 
+ranged_attack: 
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+
+name: an electronic lockpick
+icon: ´
+type: electronical_lockpick
+is_big: false
+uses: 3
+melee_attack: 
+ranged_attack: 
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+
+name: a knife
+icon: ¹
+type: knife
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: PiercingTrigger(50)
+
+name: scissors
+icon: ʵ
+type: melee_sharp
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: PiercingTrigger(35)
+
+name: a screwdriver
+icon: ˈ
+type: screwdriver
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: PiercingTrigger(35)
+
+name: Fiber Wire
+icon: µ
+type: piano_wire
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: 
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: PianoWireTrigger
+
+name: a baseball bat
+icon: º
+type: melee_blunt
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BluntTrigger(80)
+
+name: a crowbar
+icon: ˉ
+type: crowbar
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BluntTrigger(80)
+
+name: a wrench
+icon: ˊ
+type: wrench
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BluntTrigger(80)
+
+name: a soda can
+icon: ʲ
+type: melee_blunt
+is_big: false
+uses: -1
+melee_attack: 
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BluntTrigger(20)
+
+name: a cigarette
+icon: ˵
+type: common
+is_big: false
+uses: -1
+melee_attack: 
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: FireStarterTrigger(15)
+
+name: a fragmentation grenade
+icon: ː
+type: explosive
+is_big: false
+uses: 1
+melee_attack: 
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: ImpactExplosionTrigger(10, 3, 3)
+
+name: remote bomb
+icon: ˺
+type: explosive
+is_big: false
+uses: 1
+melee_attack: 
+ranged_attack: throw_remote
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: RemoteExplosionTrigger(10, 3, 3)
+
+name: remote taser
+icon: ˮ
+type: taser
+is_big: false
+uses: 1
+melee_attack: 
+ranged_attack: throw_remote
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: RemoteTaserTrigger(10)
+
+name: lethal poison
+icon: ¶
+type: lethal_poison
+is_big: false
+uses: 1
+melee_attack: tool
+ranged_attack: 
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: LethalPoisonTrigger
+
+name: emetic poison
+icon: ¶
+type: emetic_poison
+is_big: false
+uses: 1
+melee_attack: tool
+ranged_attack: 
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: EmeticPoisonTrigger
+
+name: a piece of cloth
+icon: ˴
+type: cleaner
+is_big: false
+uses: -1
+melee_attack: tool
+ranged_attack: 
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+
+name: a can of gasoline
+icon: ˓
+type: common
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: GasolineTrigger
+reaction_effects: CanOfGasolineReaction
+
+name: a gas canister
+icon: ٧
+type: common
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: BluntTrigger(35)
+reaction_effects: GasCanisterReaction
+
+name: a goldpiece
+icon: ·
+type: loot
+is_big: false
+uses: -1
+melee_attack: 
+ranged_attack: throw
+self_use: 
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue: 
+is_silenced: false
+silenced_cue: 
+key_string: 
+loot_value: 100
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+

@@ -1,0 +1,18 @@
+Name: BL Leader Pos
+Location: (12,15)
+
+Name: BL Guard 1 Pos
+Location: (11,14)
+
+Name: BL Guard 2 Pos
+Location: (11,16)
+
+Name: RD Leader Pos
+Location: (14,15)
+
+Name: RD Guard 1 Pos
+Location: (15,14)
+
+Name: RD Guard 2 Pos
+Location: (15,16)
+

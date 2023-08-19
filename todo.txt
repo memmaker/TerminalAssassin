@@ -1,0 +1,282 @@
+# High Priority
+ - Talking to NPCs (Taking the place of an NPC..)
+ - Environmental Stuff
+   - Rigging objects (Grill, Sauna, Gas Kitchen, Prop Firearms)
+   - Electrification
+   - Burnables & Fire
+   - Glass floor
+
+# Fix before next release
+ - Allow disabling of hints for training mission
+ - You can just open Windows from the outside: Give windows an orientation, and need a tool to open them
+ - Make manholes covered by default and you need a tool to open them
+ - Make the falling item be a construction wrecking ball
+ - Non-lethal weapons (like stun gun, taser) leave a blood splatter: DrawsBloodOnHit flag for items..
+ - Options are not persisted
+ - Ask for retry on failure
+
+# DX Stuff
+ - Updating the HUD when the player takes damage is unwieldy
+ - Better integration of text messages
+
+# Non-Mechanical Bugs
+ - Animations drawn over each other, especially busy & tackle
+ - Taser sounds like a knife hit
+ - the Top HUD Label can get too long and will overdraw the context indicator
+ - Snap Neck doesn't have a sound effect
+ - Melee Takedowns don't have a sound effect
+
+# Backlog Stuff
+# Allies & Zones
+# Handling of trespassing
+# Guarding entries
+# Guards saying: "Keep your distance"
+# Searching AI state
+# NPCs should react to opened doors / windows / missing items / missing characters..
+# Light switches
+# "Prodding" a wall/door/window should make a sound, but not on the ground
+# Aiming with a gun at civilians should make them move out of the line of fire
+# Change the Actor Icons?
+# Set pieces & Mission Stories
+# Nicer explosion animation
+# Add golf clubs and golf balls, allow shooting them with the club and hit people in the head
+# Tooltips for the HUD
+# "Blend in" with the environment
+
+# Prologue - Set piece: Entrance of the agency
+ 1. Basic movement
+
+# Training Mission
+ 2. Sneaking
+ 3. Melee Takedown
+ 4. Changing clothes
+ 5. Hiding bodies
+ 7. Enter a restricted area
+ 8. Locate the target
+ 9. Follow the target
+ 10. Suspicious behaviour
+ 11. Peeking & Taking items
+ 12. Throwing items
+ 13. Take out target
+ 14. Exit the mission
+
+
+# Dialogue
+ - Random flavour texts of passing NPCs
+ - Mission critical dialogue
+ - Participation in dialogue
+
+
+Resources:
+ - SVG Icons: https://www.svgrepo.com/
+ - Sound Effects: https://freesound.org/
+ - Female Fixer: British English / Amy on https://ttsmp3.com/
+ - Agent: Gary or Mike on https://genny.lovo.ai/
+
+
+# Physics Test bed
+# Color drawing
+
+# Base Scope
+ - Map Editor
+ - Actors, Items, Objects, Tiles
+ - Lights, Zones, Clothes, Schedules/Scripts, Colors
+ - Mission Briefings, Mission Planning, Mission Stories
+ - Melee, Throwing, Shooting
+ - Poisoning, Explosives, Locks & Keys & Lockpicks
+ - Electricity, Fire, Water, Oil, Gas
+ - Career Stats & Challenges
+ - Triggers & Effects
+
+# stable career file format?
+
+# Inventory Item categories
+ - Container
+ - Tool
+ - Distraction
+ - Melee
+ - Poison
+ - Explosive
+
+Tools are:
+ - Lockpick
+ - Lockbreaker
+ - Electronic Lockpick
+ - Wrench
+ - Screwdriver
+
+Distractions have
+ - Trigger: on-impact, remote
+ - Opt: Breaks on effect
+ - Opt: Attractive to pick up
+ - Force
+
+Melee weapons have
+ - Lethal vs. non-lethal
+ - Effects on hit: annoy, knock down, send to sleep, kill, etc.
+ - Opt: Breaks on effect
+
+Poison has
+ - Effects on hit: Lethal vs. Emetic vs. Sleeping
+ - Style of application: injection, inhalation, ingestion, etc.
+
+Explosives have:
+ - Force
+ - Trigger: remote, proximity, timer, on-impact, etc.
+ - Hit effects: send to sleep, release gas, kill, blind, emp
+ - Appearance: "looks like a bomb" vs. "a rubber duck"
+ - Opt: Attractive to pick up
+
+Generic Attributes:
+ - Appearance: Harmless vs. Dangerous
+ - IsContainer?
+ - Force
+ - Unique Item ID (used for specific scenarios in mission, eg. allowing to place an explosive golfball)
+ - Opt: Attractive to pick up
+ - Opt: Breaks on trigger, breaks on application
+ - Time for application & Cooldown
+ - Uses: one-time vs. reusable
+ - Application (how to apply): melee, thrown, dropped, shot, inventory use, environmental application (basically a key for triggering a specific scenario)
+ - Trigger (when to trigger): on-application/on-hit, remote, proximity, timer, environmental trigger (food, ventilation, etc.)
+ - Distribution (who gets affected): direct, gas, explosion, environmental (food, ventilation, etc.)
+ - Effects (what effects to apply): annoy, knock down, send to sleep, kill, emetic, blind, emp, electrify, create sound
+
+Environmental hazards
+ - Poison Food / Drink
+ - Poison Ventilation
+ - Turn off lighting
+ - Turn off cold / warm water valves
+ - Stab barrel with gasoline to create leak
+ - Remotely triggered distractions, explosions, etc.
+ - Timed events
+ - Manipulate electronics to setup electrocution
+ - Snipe at explosive barrels
+ - Shoot down lights / big speakers
+ - Lock doors
+
+How to use environmental hazards:
+
+# SABOTAGE & TRAPS
+ - Direct melee interaction (push button, change settings, place item, sabotage)
+   - Opt: Guarded by specific item possession
+ - Unique item interaction: Needs a specific item to interact with the environment
+ - Can trigger and/or be triggered by NPC schedule
+ - Also all triggers, distributions and effects can be used for traps
+ - Remote triggers & phone calls
+
+# DIRECT IMPACT
+ - Ranged interaction: Shooting at explosive barrels, dropping big objects by shooting the wires, etc.
+ - Triggered by projectile impact
+ - Will directly apply effect: Drop (kill), release gas, explode
+
+# PUSHING
+ - Pushing a victim into it (chasms, fire, deadly pits, sharp objects, wood crushers, etc.)
+
+# NPCs
+ - Manipulation of NPC schedules
+ - NPCs could also sabotage the environment, kill people, push them, etc.
+
+
+# Smoking NPCs
+NPCs have a "Smoker" flag.
+
+Smokers will pick up cigarettes and smoke them.
+
+Smoking Zones. Any NPC with cigarettes that has a task in a smoking
+Zone will smoke. If an ashtray is in the same zone, it will be used.
+Otherwise the cigarette will be dropped on the ground.
+
+NPCs will pick up a pack of cigarettes that are right next to a task location.
+
+If a smoking NPCs acquires cigarettes and has no task in a smoking zone, he will sooner or later go there.
+If no smoking zone is available, he will smoke randomly on his schedule.
+
+# Pathfinding
+ - Make the pathfinding aware of NPCs that hold keys
+ - NPCs with keys should unlock and lock doors behind them
+ - NPCs should avoid hazards like fire, chasm, etc.
+
+# Design
+ - Cells
+   - Tile
+   - Object
+   - Item
+   - Actor
+
+ - Tiles
+   - no behaviour
+   - no context actions
+   - tile flags (bloody, wet, on fire, poisonous, etc)
+ - Items
+   - inventory items
+   - mix and match: triggers & effects
+   - pick up, drop, throw, use
+ - Actors
+   - player
+   - ai (civilian, guard, enforcer, target)
+ - Objects
+   - environment objects (doors, cabinets, sinks, etc)
+   - have context action depending on state and player inventory action
+   - most will only be used by the player
+   - although: ai must walk through doors and should open cabinets and chests
+
+ - A map consists of cells
+ - Each cell can hold a tile, an inventory item and an actor
+ - The player is also an actor
+ - Actors differ based on their base and behaviour
+ - Inventory Items are built from pre-defined components that can be combined at will
+ - Objects are specialized things that have individual behaviour (eg. doors, chests, etc)
+   - Objects cannot be picked up
+   - Objects cannot be moved
+   - Objects provide context actions
+
+# Approach to data files
+ - Some things are hardcoded but parametrized:
+   - Effects
+   - Applications
+   - Distributions
+   - Triggers
+ - Objects have pre-defined behaviour but can be defined to appear differently
+ - Data Files are needed for:
+   - Custom List of items
+   - Custom List of objects
+   - Custom List of tiles
+   - The map, referencing and saving all of the above
+   - A mission briefing file
+   - Mission metadata (name, author, version, etc)
+ - Keys & Clothing are just strings defined in the editor and saved to the map file
+
+# REALLY NEEDED
+
+ - Synchronize the actions/schedules of multiple actors for meetings, etc.
+ - Bodyguards
+ - Real movement mechanics (walking, sneaking, running)
+ - Locked Doors, Keys & Lockpicking
+ - Changing clothes & Enforcers seeing through them
+ - Civilian panic behavior
+ - AI remembering when the player's disguise is compromised
+ - Zones with "no trespassing" behavior for different clothes
+ - Guards cleaning up weapons & bodies
+
+## Scenario 1 - Hitman Mission 1 - Triad Meeting
+
+ - 2 Gang Leader + Bodyguards
+ - Shoot with pistol
+ - Shoot with sniper
+ - Knock out with throw, break neck
+ - Kill with lethal throw
+ - Choke out from behind
+ - Poison with lethal injection
+ - Incite a gang war
+ - Hide a bomb
+
+## Scenario 2 - Hitman Mission 2 - House on the beach
+
+ - Multiple Bodyguards
+
+## Stage 3
+
+ - Explosives & Fire propagation
+ - Flooding & Water propagation
+
+Utility UI: https://www.gamedeveloper.com/programming/are-behavior-trees-a-thing-of-the-past-

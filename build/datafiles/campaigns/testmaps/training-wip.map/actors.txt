@@ -1,0 +1,169 @@
+Name: actor #1
+ActorType: guard
+Position: (47,54)
+LookDirection: 153.43
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: a coin
+Inventory: AMT 1911 'Hardballer'
+
+Name: actor #10
+ActorType: civilian
+Position: (57,16)
+LookDirection: 0.00
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #11
+ActorType: civilian
+Position: (58,9)
+LookDirection: 270.00
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #12
+ActorType: civilian
+Position: (51,24)
+LookDirection: 143.13
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: actor #13
+ActorType: civilian
+Position: (7,52)
+LookDirection: 123.69
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #14
+ActorType: civilian
+Position: (31,34)
+LookDirection: 333.43
+Clothing: Mechanic
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #15
+ActorType: civilian
+Position: (26,20)
+LookDirection: 146.31
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #16
+ActorType: civilian
+Position: (64,42)
+LookDirection: 90.00
+Clothing: Mechanic
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #17
+ActorType: civilian
+Position: (56,47)
+LookDirection: 0.00
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #18
+ActorType: civilian
+Position: (4,28)
+LookDirection: 323.13
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #2
+ActorType: guard
+Position: (47,58)
+LookDirection: 206.57
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: a coin
+Inventory: AMT 1911 'Hardballer'
+
+Name: actor #3
+ActorType: civilian
+Position: (33,98)
+LookDirection: 0.00
+Clothing: Vincent Ludwig
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #4
+ActorType: guard
+Position: (66,105)
+LookDirection: 135.00
+Clothing: Boat Crew
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: actor #5
+ActorType: civilian
+Position: (63,87)
+LookDirection: 149.04
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #6
+ActorType: civilian
+Position: (54,87)
+LookDirection: 0.00
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #7
+ActorType: civilian
+Position: (62,97)
+LookDirection: 230.19
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #8
+ActorType: civilian
+Position: (69,75)
+LookDirection: 0.00
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #9
+ActorType: guard
+Position: (69,49)
+LookDirection: 248.20
+Clothing: Boat Security
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+

@@ -1,0 +1,15 @@
+Completion_Percent: 20
+Start: The clinic
+
+Completion_Percent: 40
+Clothing: Tactical Turtleneck
+
+Completion_Percent: 60
+Start: The park
+
+Completion_Percent: 80
+Item: a lockpick
+
+Completion_Percent: 100
+Start: The warehouse
+

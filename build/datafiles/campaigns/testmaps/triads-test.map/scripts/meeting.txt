@@ -1,0 +1,114 @@
+# Definitions
+
+$RD_LEADER = ActorWithName(Red Dragon Leader)
+$RD_GUARD_ONE = ActorWithName(Red Dragon Guard 1)
+$RD_GUARD_TWO = ActorWithName(Red Dragon Guard 2)
+
+$BL_LEADER = ActorWithName(Blue Lotus Leader)
+$BL_GUARD_ONE = ActorWithName(Blue Lotus Guard 1)
+$BL_GUARD_TWO = ActorWithName(Blue Lotus Guard 2)
+
+$RD_LEADER_POS = NamedLocation(RD Leader Pos)
+$RD_GUARD_ONE_POS = NamedLocation(RD Guard 1 Pos)
+$RD_GUARD_TWO_POS = NamedLocation(RD Guard 2 Pos)
+
+$BL_LEADER_POS = NamedLocation(BL Leader Pos)
+$BL_GUARD_ONE_POS = NamedLocation(BL Guard 1 Pos)
+$BL_GUARD_TWO_POS = NamedLocation(BL Guard 2 Pos)
+
+# OR-TIMEOUTCONDITIONS
+
+IsDowned($RD_LEADER)
+IsDowned($RD_GUARD_ONE)
+IsDowned($RD_GUARD_TWO)
+
+IsDowned($BL_LEADER)
+IsDowned($BL_GUARD_ONE)
+IsDowned($BL_GUARD_TWO)
+
+IsCurrentFrameOlderThan(360)
+
+# TIMEOUTACTIONS
+
+StopScripted($RD_LEADER)
+StopScripted($RD_GUARD_ONE)
+StopScripted($RD_GUARD_TWO)
+
+StopScripted($BL_LEADER)
+StopScripted($BL_GUARD_ONE)
+StopScripted($BL_GUARD_TWO)
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+IsMissionTimeInSeconds(10)
+
+## ACTIONS
+
+SwitchToScript($RD_LEADER)
+SwitchToScript($RD_GUARD_ONE)
+SwitchToScript($RD_GUARD_TWO)
+
+SwitchToScript($BL_LEADER)
+SwitchToScript($BL_GUARD_ONE)
+SwitchToScript($BL_GUARD_TWO)
+
+SetPreferredLocation($RD_LEADER, $RD_LEADER_POS)
+SetPreferredLocation($RD_GUARD_ONE, $RD_GUARD_ONE_POS)
+SetPreferredLocation($RD_GUARD_TWO, $RD_GUARD_TWO_POS)
+
+SetPreferredLocation($BL_LEADER, $BL_LEADER_POS)
+SetPreferredLocation($BL_GUARD_ONE, $BL_GUARD_ONE_POS)
+SetPreferredLocation($BL_GUARD_TWO, $BL_GUARD_TWO_POS)
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+IsAtLocation($RD_LEADER, $RD_LEADER_POS)
+IsAtLocation($RD_GUARD_ONE, $RD_GUARD_ONE_POS)
+IsAtLocation($RD_GUARD_TWO, $RD_GUARD_TWO_POS)
+
+IsAtLocation($BL_LEADER, $BL_LEADER_POS)
+IsAtLocation($BL_GUARD_ONE, $BL_GUARD_ONE_POS)
+IsAtLocation($BL_GUARD_TWO, $BL_GUARD_TWO_POS)
+
+## ACTIONS
+
+LookAtActor($RD_LEADER, $BL_LEADER)
+LookAtActor($BL_LEADER, $RD_LEADER)
+
+PinDialogueLocation($RD_LEADER)
+PinDialogueLocation($RD_GUARD_ONE)
+PinDialogueLocation($RD_GUARD_TWO)
+
+PinDialogueLocation($BL_LEADER)
+PinDialogueLocation($BL_GUARD_ONE)
+PinDialogueLocation($BL_GUARD_TWO)
+
+StartDialogue(weapons_deal)
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+HasDialogueEnded(weapons_deal)
+
+## ACTIONS
+
+StopScripted($RD_LEADER)
+StopScripted($RD_GUARD_ONE)
+StopScripted($RD_GUARD_TWO)
+
+StopStaying($RD_LEADER)
+StopStaying($RD_GUARD_ONE)
+StopStaying($RD_GUARD_TWO)
+
+StopScripted($BL_LEADER)
+StopScripted($BL_GUARD_ONE)
+StopScripted($BL_GUARD_TWO)
+
+StopStaying($BL_LEADER)
+StopStaying($BL_GUARD_ONE)
+StopStaying($BL_GUARD_TWO)

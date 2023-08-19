@@ -1,0 +1,26 @@
+# 3000 - On the spot
+
+## AND-CONDITIONS
+TargetKilledInZone(Park)
+
+# 2000 - Gang war
+
+## OR-CONDITIONS
+TargetKilledByActorWithName(Blue Lotus Guard 1)
+TargetKilledByActorWithName(Blue Lotus Guard 2)
+TargetKilledByActorWithName(Blue Lotus Leader)
+
+# 1000 - Medic!
+
+## AND-CONDITIONS
+DisguiseWorn(Medic)
+
+# 1500 - Impatient
+
+## AND-CONDITIONS
+TargetKilledBeforeTime(30)
+
+# 2500 - Blue Collar Hero
+
+## AND-CONDITIONS
+KillDetails(Blue Lotus Leader, wrench, Mechanic)

@@ -1,0 +1,54 @@
+Name: BL Guard 1 Pos
+Location: (23,47)
+
+Name: BL Guard 2 Pos
+Location: (23,49)
+
+Name: BL Leader Pos
+Location: (24,48)
+
+Name: Dance Floor DJ
+Location: (30,4)
+
+Name: Dance Floor Raquel
+Location: (25,7)
+
+Name: Dance Floor Victim
+Location: (23,7)
+
+Name: Kicker Pos 1
+Location: (22,8)
+
+Name: Kicker Pos 2
+Location: (23,6)
+
+Name: RD Guard 1 Pos
+Location: (27,47)
+
+Name: RD Guard 2 Pos
+Location: (27,49)
+
+Name: RD Leader Pos
+Location: (26,48)
+
+Name: Raquel Bouncer Pos
+Location: (21,17)
+
+Name: Start Clinic
+Location: (72,70)
+
+Name: Start Park
+Location: (19,41)
+
+Name: Start Raquel Meeting
+Location: (70,94)
+
+Name: Start Victim Meeting
+Location: (70,96)
+
+Name: Start Warehouse
+Location: (41,72)
+
+Name: Victim Bouncer Pos
+Location: (23,17)
+

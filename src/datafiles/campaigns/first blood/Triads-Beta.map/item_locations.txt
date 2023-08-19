@@ -1,0 +1,27 @@
+(30,1) a piece of cloth
+(36,1) a coin
+(4,6) a soda can
+(30,7) a piece of cloth
+(33,11) scissors
+(30,13) a piece of cloth
+(36,13) a coin
+(50,18) a soda can
+(1,30) lethal poison
+(26,31) Blaser Jagdwaffen R93 Sniper
+(4,32) a piece of cloth
+(4,37) a screwdriver
+(58,38) a knife
+(30,39) a wrench
+(62,42) emetic poison
+(0,48) a soda can
+(2,50) a crowbar
+(22,51) a soda can
+(35,51) a baseball bat
+(20,53) a baseball bat
+(24,53) a soda can
+(52,53) a cigarette
+(33,56) a piece of cloth
+(15,57) a soda can
+(2,59) a coin
+(43,59) a soda can
+(27,60) a soda can

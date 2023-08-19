@@ -1,0 +1,19 @@
+$HOTELIER = ActorWithName(Hotelier)
+
+## DIALOGUE-PLAYER(47's Signature Suit): player_hotel_reservation
+
+$HOTELIER: Welcome to the Himmapan Hotel, sir.
+
+$PLAYER: I've got a reservation for a room.
+
+$HOTELIER: Name?
+
+$PLAYER: Tobias Rieper.
+
+$HOTELIER: Ah yes, Mr. Rieper.
+
+$HOTELIER: You're booked in for room 102.
+
+$PLAYER: Thanks.
+
+$HOTELIER: Here's your keycard.

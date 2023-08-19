@@ -1,0 +1,37 @@
+# Setting the scene
+
+We will be working on my game project.
+It's a terminal based assassination stealth game for terminals and uses simple 2D graphics on a tile based grid.
+The game is heavily inspired by the Hitman and the Thief series with some nods towards the general spy & crime genre.
+
+# The characters
+
+The player will be playing as a hitman who is hired by a freelance agency to assassinate targets.
+The player always is allowed to choose his own name, so we can't ever refer to him directly.
+
+Contractor 23 - The player character
+
+Each hitman is assigned a handler, basically a fixer who will provide the assassin with new targets, relevant intel and general support.
+
+Amy Sterling - The handler - Codename Nightingale
+
+# Factions
+
+The International Contract Agency (ICA) is a freelance agency that hires hitmen to assassinate targets.
+
+The Triads are a criminal organization that is based in Hong Kong and is known for their ruthless and brutal methods.
+Red Dragon is the Triads' most prominent and powerful faction.
+Blue Lotus is one of the Triads' most feared factions.
+
+# Actions
+
+I need some in-universe flavour texts for this game now.
+
+I need a conversation in a brief style. Suitable for displaying not more than one line per utterance.
+Precede each line with the name of the character who is speaking.
+
+I want you to write a conversation between two characters who are negotiating a major arms deal.
+
+The character you are providing with text is the handler, Amy Sterling.
+
+Provide me some short but quippy sentences that a british spy might utter to a hitman who failed his assignment.

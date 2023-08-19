@@ -1,0 +1,377 @@
+Name: Blue Lotus Guard 1
+ActorType: guard
+Position: (14,33)
+LookDirection: 0.00
+Clothing: Blue lotus
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+Inventory: a soda can
+
+Name: Blue Lotus Guard 2
+ActorType: guard
+Position: (14,37)
+LookDirection: 0.00
+Clothing: Blue lotus
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+Inventory: a cigarette
+
+Name: Blue Lotus Leader
+ActorType: enforcer
+Position: (15,35)
+LookDirection: 0.00
+Clothing: Blue lotus
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+Inventory: a cigarette
+Inventory: a knife
+
+Name: Bouncer 1
+ActorType: guard
+Position: (19,18)
+LookDirection: 56.31
+Clothing: Bodyguard
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: KeyCard(Security Night Club)
+Inventory: Heckler & Koch MP5
+
+Name: Bouncer 2
+ActorType: guard
+Position: (19,16)
+LookDirection: 36.87
+Clothing: Bodyguard
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: KeyCard(Security Night Club)
+Inventory: Heckler & Koch MP5
+
+Name: Club Bouncer 1
+ActorType: guard
+Position: (36,3)
+LookDirection: 90.00
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: KeyCard(Security Night Club)
+Inventory: Heckler & Koch MP5
+
+Name: Club Bouncer 2
+ActorType: guard
+Position: (36,14)
+LookDirection: 270.00
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: KeyCard(Security Night Club)
+Inventory: Heckler & Koch MP5
+
+Name: Club D.J.
+ActorType: guard
+Position: (30,2)
+LookDirection: 104.04
+Clothing: Purple jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: Franchi PA3/215
+Inventory: KeyCard(Security Night Club)
+
+Name: Club Owner
+ActorType: guard
+Position: (40,8)
+LookDirection: 116.57
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: KeyCard(Security Night Club)
+Inventory: AMT 1911 'Hardballer'
+
+Name: Club Patron
+ActorType: civilian
+Position: (23,10)
+LookDirection: 71.57
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron
+ActorType: civilian
+Position: (21,12)
+LookDirection: 281.31
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron
+ActorType: civilian
+Position: (21,5)
+LookDirection: 180.00
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron 1
+ActorType: civilian
+Position: (27,9)
+LookDirection: 288.43
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron 2
+ActorType: civilian
+Position: (30,11)
+LookDirection: 206.57
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron 3
+ActorType: civilian
+Position: (26,3)
+LookDirection: 111.80
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron 4
+ActorType: civilian
+Position: (21,3)
+LookDirection: 63.43
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron 5
+ActorType: civilian
+Position: (26,13)
+LookDirection: 251.57
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron 6
+ActorType: civilian
+Position: (29,13)
+LookDirection: 270.00
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron 7
+ActorType: civilian
+Position: (32,9)
+LookDirection: 270.00
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Club Patron 8
+ActorType: civilian
+Position: (26,7)
+LookDirection: 90.00
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Dennis
+ActorType: civilian
+Position: (67,96)
+LookDirection: 248.20
+Clothing: Stylish Jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Detective
+ActorType: civilian
+Position: (17,89)
+LookDirection: 90.00
+Clothing: Bodyguard
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Doc. Brown
+ActorType: civilian
+Position: (63,74)
+LookDirection: 108.43
+Clothing: Medic
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Homeless man
+ActorType: civilian
+Position: (21,76)
+LookDirection: 206.57
+Clothing: Red jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Hotel Guest 1
+ActorType: civilian
+Position: (53,48)
+LookDirection: 210.96
+Clothing: Red jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: Key(Room 100)
+
+Name: Hotel Guest 2
+ActorType: civilian
+Position: (48,42)
+LookDirection: 45.00
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: Key(Room 101)
+
+Name: Hotel Guest 3
+ActorType: civilian
+Position: (44,43)
+LookDirection: 180.00
+Clothing: Green jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Hotelier
+ActorType: civilian
+Position: (45,52)
+LookDirection: 180.00
+Clothing: Hotel staff
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: Key(Room 102)
+
+Name: Ms. Brown
+ActorType: civilian
+Position: (72,67)
+LookDirection: 270.00
+Clothing: Tech crew
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Raquel
+ActorType: civilian
+Position: (75,79)
+LookDirection: 248.20
+Clothing: Goth Party Outfit
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Red Dragon Guard 1
+ActorType: guard
+Position: (42,88)
+LookDirection: 251.57
+Clothing: Red dragon
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: Red Dragon Guard 2
+ActorType: guard
+Position: (48,89)
+LookDirection: 306.87
+Clothing: Red dragon
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: Red Dragon Guard 3
+ActorType: guard
+Position: (44,92)
+LookDirection: 71.57
+Clothing: Red dragon
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: Red Dragon Leader
+ActorType: target
+Position: (61,89)
+LookDirection: 288.43
+Clothing: Red dragon leader
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: Tourist 1
+ActorType: civilian
+Position: (37,46)
+LookDirection: 90.00
+Clothing: Green jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Tourist 2
+ActorType: civilian
+Position: (73,54)
+LookDirection: 146.31
+Clothing: Purple jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Unsuspecting Tourist
+ActorType: civilian
+Position: (45,78)
+LookDirection: 0.00
+Clothing: Yellow jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Warehouse Manager
+ActorType: civilian
+Position: (14,69)
+LookDirection: 296.57
+Clothing: Mechanic
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Warehouse Worker
+ActorType: civilian
+Position: (37,69)
+LookDirection: 206.57
+Clothing: Mechanic
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+

@@ -1,0 +1,32 @@
+
+
+func script(exe gocoro.Execution) {
+
+    // Use the Execution object to pause and wait for three seconds.
+    exe.Wait(time.Second * 3)
+
+    fmt.Println("Three seconds have elapsed!")
+
+}
+
+func main() {
+
+    // Create a new Coroutine.
+    co := gocoro.NewCoroutine()
+
+    // Run the script, which is just an ordinary function pointer that takes
+    // an execution object, which is used to control coroutine execution.
+    co.Run(script)
+
+    for co.Running() {
+
+        // While the coroutine runs, we call Coroutine.Update(). This allows
+        // the coroutine to execute, but also gives control back to the main
+        // thread when it's yielding so we can do other stuff.
+        co.Update()
+
+    }
+
+    // We're done with the coroutine!
+
+}

@@ -1,0 +1,180 @@
+Pos: (10,9)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (13,16)
+Radius: 12
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (16,9)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (16,91)
+Radius: 13
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (18,46)
+Radius: 16
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (21,9)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (22,31)
+Radius: 13
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (23,16)
+Radius: 20
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (26,9)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (31,31)
+Radius: 11
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (31,42)
+Radius: 12
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (33,9)
+Radius: 20
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (34,104)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (34,61)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (34,76)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (34,90)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (4,20)
+Radius: 16
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (4,9)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (48,56)
+Radius: 16
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (52,86)
+Radius: 9
+Color: (0.67, 0.67, 1.07)
+Max_Intensity: 1.00
+
+Pos: (52,99)
+Radius: 9
+Color: (0.40, 0.67, 0.40)
+Max_Intensity: 1.00
+
+Pos: (54,57)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (57,18)
+Radius: 10
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (57,29)
+Radius: 9
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (58,41)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (58,48)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (58,5)
+Radius: 9
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (58,90)
+Radius: 9
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (58,95)
+Radius: 9
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (6,32)
+Radius: 16
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (6,42)
+Radius: 14
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (6,52)
+Radius: 14
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (62,29)
+Radius: 9
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (64,57)
+Radius: 7
+Color: (0.32, 0.32, 0.37)
+Max_Intensity: 1.00
+
+Pos: (64,86)
+Radius: 9
+Color: (1.20, 1.08, 0.02)
+Max_Intensity: 1.00
+
+Pos: (64,99)
+Radius: 9
+Color: (0.93, 0.53, 0.53)
+Max_Intensity: 1.00
+

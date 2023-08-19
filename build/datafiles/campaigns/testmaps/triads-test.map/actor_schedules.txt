@@ -1,0 +1,90 @@
+ForActorAt: (14,33)
+Task: Location(16,44) Duration(10.00) -> Dummy
+
+ForActorAt: (14,37)
+Task: Location(14,48) Duration(10.00) -> Dummy
+
+ForActorAt: (14,69)
+Task: Location(22,72) Duration(10.00) -> Dummy
+Task: Location(13,68) Duration(10.00) -> Dummy
+
+ForActorAt: (15,35)
+Task: Location(15,48) Duration(10.00) -> Dummy
+
+ForActorAt: (17,89)
+Task: Location(17,82) Duration(10.00) -> Dummy
+Task: Location(18,89) Duration(10.00) -> Dummy
+
+ForActorAt: (21,76)
+Task: Location(15,73) Duration(10.00) -> Dummy
+Task: Location(15,77) Duration(10.00) -> Dummy
+Task: Location(35,83) Duration(10.00) -> Dummy
+Task: Location(54,64) Duration(10.00) -> Dummy
+Task: Location(62,54) Duration(10.00) -> Dummy
+Task: Location(34,54) Duration(10.00) -> Dummy
+
+ForActorAt: (37,46)
+Task: Location(37,59) Duration(10.00) -> Dummy
+Task: Location(16,59) Duration(10.00) -> Dummy
+Task: Location(29,49) Duration(10.00) -> Dummy
+Task: Location(67,54) Duration(10.00) -> Dummy
+Task: Location(53,76) Duration(10.00) -> Dummy
+Task: Location(69,93) Duration(10.00) -> Dummy
+Task: Location(24,95) Duration(10.00) -> Dummy
+Task: Location(16,75) Duration(10.00) -> Dummy
+
+ForActorAt: (37,69)
+Task: Location(19,69) Duration(10.00) -> Dummy
+Task: Location(42,69) Duration(10.00) -> Dummy
+
+ForActorAt: (42,88)
+Task: Location(45,87) Duration(10.00) -> Dummy
+Task: Location(41,84) Duration(10.00) -> Dummy
+
+ForActorAt: (44,43)
+Task: Location(42,41) Duration(10.00) -> Dummy
+Task: Location(43,44) Duration(10.00) -> Dummy
+
+ForActorAt: (44,92)
+Task: Location(28,86) Duration(10.00) -> Dummy
+Task: Location(45,87) Duration(10.00) -> Dummy
+
+ForActorAt: (48,42)
+Task: Location(48,40) Duration(10.00) -> Dummy
+Task: Location(55,40) Duration(10.00) -> Dummy
+Task: Location(48,44) Duration(10.00) -> Dummy
+
+ForActorAt: (48,89)
+Task: Location(51,84) Duration(10.00) -> Dummy
+Task: Location(46,88) Duration(10.00) -> Dummy
+Task: Location(52,93) Duration(10.00) -> Dummy
+
+ForActorAt: (53,48)
+Task: Location(47,47) Duration(10.00) -> Dummy
+Task: Location(55,47) Duration(10.00) -> Dummy
+
+ForActorAt: (61,89)
+Task: Location(66,89) Duration(10.00) -> Dummy
+Task: Location(63,86) Duration(10.00) -> Dummy
+Task: Location(55,89) Duration(10.00) -> Dummy
+Task: Location(33,89) Duration(10.00) -> Dummy
+Task: Location(46,84) Duration(10.00) -> Dummy
+
+ForActorAt: (63,74)
+Task: Location(73,74) Duration(10.00) -> Dummy
+Task: Location(59,74) Duration(10.00) -> Dummy
+
+ForActorAt: (72,67)
+Task: Location(58,65) Duration(10.00) -> Dummy
+Task: Location(59,63) Duration(10.00) -> Dummy
+Task: Location(56,64) Duration(10.00) -> Dummy
+Task: Location(72,69) Duration(10.00) -> Dummy
+
+ForActorAt: (73,54)
+Task: Location(50,56) Duration(10.00) -> Dummy
+Task: Location(46,63) Duration(10.00) -> Dummy
+Task: Location(46,75) Duration(10.00) -> Dummy
+Task: Location(16,75) Duration(10.00) -> Dummy
+Task: Location(24,95) Duration(10.00) -> Dummy
+Task: Location(46,76) Duration(10.00) -> Dummy
+

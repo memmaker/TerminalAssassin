@@ -1,0 +1,11 @@
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+HasPlayerEnteredZone(Bridge)
+HasNotPlayerChangedClothes()
+
+## ACTIONS
+
+ShowInfiltrationAlert()

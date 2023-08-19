@@ -1,0 +1,10 @@
+Name: actor #1
+ActorType: guard
+Position: (31,14)
+LookDirection: 0.00
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: Heckler & Koch MP5
+

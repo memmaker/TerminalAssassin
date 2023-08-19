@@ -1,0 +1,201 @@
+Name: Red Dragon Guard 3
+ActorType: guard
+Position: (32,59)
+LookDirection: 71.57
+Clothing: Red dragon
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: actor #16
+ActorType: civilian
+Position: (32,4)
+LookDirection: 270.00
+Clothing: Red jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Blue Lotus Leader
+ActorType: enforcer
+Position: (3,2)
+LookDirection: 0.00
+Clothing: Blue lotus
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+Inventory: a cigarette
+Inventory: a knife
+
+Name: actor #21
+ActorType: civilian
+Position: (9,43)
+LookDirection: 206.57
+Clothing: Red jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #18
+ActorType: civilian
+Position: (25,13)
+LookDirection: 90.00
+Clothing: Green jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #12
+ActorType: civilian
+Position: (60,34)
+LookDirection: 270.00
+Clothing: Tech crew
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Hotelier
+ActorType: civilian
+Position: (33,19)
+LookDirection: 180.00
+Clothing: Hotel staff
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: KeyCard(Room 102)
+
+Name: Blue Lotus Guard 2
+ActorType: guard
+Position: (2,4)
+LookDirection: 0.00
+Clothing: Blue lotus
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+Inventory: a cigarette
+
+Name: Red Dragon Leader
+ActorType: target
+Position: (49,56)
+LookDirection: 288.43
+Clothing: Red dragon leader
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: actor #10
+ActorType: civilian
+Position: (2,36)
+LookDirection: 296.57
+Clothing: Mechanic
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: Blue Lotus Guard 1
+ActorType: guard
+Position: (2,0)
+LookDirection: 0.00
+Clothing: Blue lotus
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+Inventory: a soda can
+
+Name: Red Dragon Guard 1
+ActorType: guard
+Position: (30,55)
+LookDirection: 251.57
+Clothing: Red dragon
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: Red Dragon Guard 2
+ActorType: guard
+Position: (36,56)
+LookDirection: 306.87
+Clothing: Red dragon
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+Inventory: AMT 1911 'Hardballer'
+
+Name: Doc. Brown
+ActorType: civilian
+Position: (51,41)
+LookDirection: 108.43
+Clothing: Medic
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #14
+ActorType: civilian
+Position: (41,15)
+LookDirection: 210.96
+Clothing: Red jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #15
+ActorType: civilian
+Position: (36,9)
+LookDirection: 45.00
+Clothing: Tuxedo
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #17
+ActorType: civilian
+Position: (32,10)
+LookDirection: 180.00
+Clothing: Green jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #20
+ActorType: civilian
+Position: (33,45)
+LookDirection: 0.00
+Clothing: Yellow jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #19
+ActorType: civilian
+Position: (61,21)
+LookDirection: 146.31
+Clothing: Purple jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #8
+ActorType: civilian
+Position: (5,56)
+LookDirection: 90.00
+Clothing: Bodyguard
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+
+Name: actor #9
+ActorType: civilian
+Position: (25,36)
+LookDirection: 206.57
+Clothing: Mechanic
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 10
+

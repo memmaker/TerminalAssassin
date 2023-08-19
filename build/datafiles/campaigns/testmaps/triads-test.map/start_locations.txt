@@ -1,0 +1,11 @@
+Name: The clinic
+Named_Location: Start Clinic
+Clothes: Medical Scrubs
+
+Name: The park
+Named_Location: Start Park
+Clothes: Gardening Clothes
+
+Name: The warehouse
+Named_Location: Start Warehouse
+Clothes: Warehouse Uniform

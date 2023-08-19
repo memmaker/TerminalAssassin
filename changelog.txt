@@ -1,0 +1,82 @@
+# Beta 7 - "Walkie Talkie" Release
+ - Moved the core data to text files (tiles, items, clothing, effects, stims, triggers)
+ - Better map format, now stable
+ - Time tracked for each challenge individually now
+ - Added: Custom Scripting for maps
+ - Added: Scripted Dialogues for NPC/NPC and Player/NPC for maps
+ - Added: Custom Challenges for maps
+ - Added: Unlockable starting positions
+ - Added: Tooltips
+ - Added: Text messages as items
+ - Added: Alert dialogues
+ - Added: keydefs.txt for changing keyboard bindings
+ - Added: Scrolling to object menus in the editor (too many items :P)
+ - Zones: Can now be public, private, hi-sec or drop-off and also have their own ambient music
+ - Improved: Pager UX - mouse wheel scrolling and more
+ - Added to editor: On-the-fly resizing and shifting of existing maps
+ - Rewrite: Custom Briefing Slideshows for maps
+ - Bugfixes: Career & Challenges, NPC behaviour, Overlay drawing, much more
+
+# Beta 6 - "Expandables" Release
+ - Complete rewrite of the fonts
+ - Complete rewrite of the AI
+ - Map size is not limited to the screen size anymore
+ - Changed map save format to modular plain text files
+ - Bugfix: Now preventing overdraw flicker for vision cones
+ - Added: Basic positional SFX
+ - Added: HDR color rendering and lighting effects
+ - Added: Half-Width font rendering for text
+ - Added: Color picker for the editor
+ - Added: Prefabs for the editor
+ - Added: Menubar for the editor
+ - Added: Scrolling and camera movement
+ - Added: Ring menu for inventory items
+ - Added: Basic music and sound effect support
+ - Added: Mouse tooltips
+ - Several Optimizations and bugfixes
+
+# Beta 4 - "Damage Dealer" Release
+ - Added: Remote Trigger mechanic
+ - Added: Change clothes mechanic
+ - Added: Mission planning screen for choosing your starting gear
+ - Added: ICA terminal
+ - Added: Unlock items & clothes mechanics
+ - Added: Prodding mechanic
+ - Added: Basic zone mechanics (incl. basic editor integration)
+ - Career data tracking: Titles, etc.
+ - Enabled placement of clothing in the editor
+ - Reworked the stimulus & item systems
+ - Major: Re-designed the context action HUD
+ - New Stimulus: Electricity
+ - New Items: remote charge & trigger, tranq. gun, smg, assault rifle, shotgun
+ - New Tiles: Wall sockets & power strips, tree, fountain, shower, street light, trash can
+ - Added: Command line arguments for tilesize and fullscreen
+ - Various bugfixes
+
+# Beta 2 - "Hit Hard" Release
+ - Engine Swap - now using ebitengine
+ - Fullscreen support
+ - Gamepad support
+ - No more font installation needed for the best experience
+ - New Items: crowbar, wrench, scissors, screwdriver, can of gasoline, cloth, cigarette, electronic lockpick
+ - New Objects: electronically locked door
+ - New Tile Graphics for these tiles: toilet, sink, exit
+ - Added: Corner peeking mechanic
+ - Added: Explosion mechanic
+ - Added: Key, Lock & Lockpick mechanics (mechanic & electronic)
+ - Added: Body dragging mechanic
+ - Added: Hiding mechanic
+ - Added: Liquid Leaking mechanic (used for oil and water)
+ - Added: Basic fire propagation mechanic
+ - Much more aggressive actor AI
+ - Smaller Bugfixes for the FoV system and the actor AI
+ - Breaking Change: New Map format
+
+# Beta 1 - "Sneaky Preview" Release
+ - Assassination
+ - Thrown & Ranged Weapons
+ - Poison
+ - Editor
+ - Career
+ - Win & Lose Conditions
+ - Sneaking, Walking, Running

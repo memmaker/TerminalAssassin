@@ -1,0 +1,95 @@
+icon: ,
+description: grass
+styleFG: (0.25,0.42,0.19)
+styleBG: (0.38,0.63,0.28)
+walkable: true
+transparent: true
+special: none
+
+icon: ¡
+description: pavement
+styleFG: (0.30,0.30,0.30)
+styleBG: (0.42,0.42,0.42)
+walkable: true
+transparent: true
+special: none
+
+icon: ¡
+description: dirt
+styleFG: (0.28,0.18,0.13)
+styleBG: (0.35,0.23,0.16)
+walkable: true
+transparent: true
+special: none
+
+icon: ˼
+description: a tree
+styleFG: (0.11,0.43,0.22)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: false
+special: treeLike
+
+icon: ˹
+description: a trash can
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: true
+special: none
+
+icon: ˽
+description: a fountain
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: true
+special: none
+
+icon: ˾
+description: a street light
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: true
+special: none
+
+icon: υ
+description: turntable
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: true
+special: none
+
+icon: φ
+description: a speaker
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: false
+special: none
+
+icon: χ
+description: hanging meat
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: false
+special: none
+
+icon: ψ
+description: hanging meat
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: false
+special: none
+
+icon: O
+description: a manhole
+styleFG: (0.30,0.30,0.30)
+styleBG: (0.42,0.42,0.42)
+walkable: true
+transparent: true
+special: lethal

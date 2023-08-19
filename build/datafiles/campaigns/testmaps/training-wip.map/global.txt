@@ -1,0 +1,10 @@
+Mission_Title: 
+Width: 90
+Height: 121
+Player_Spawn: (18,99)
+Ambient_Light: (0.32, 0.32, 0.37)
+Max_Light_Intensity: 3.00
+Max_Vision_Range: 10
+Time_of_Day: 2023-05-30T17:36:00+02:00
+Ambience_Sound_Cue: 
+
