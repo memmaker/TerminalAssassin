@@ -1,0 +1,7 @@
+icon: ˜
+description: deep water
+styleFG: (0.30,0.30,0.80)
+styleBG: (0.42,0.42,1.42)
+walkable: true
+transparent: true
+special: lethal

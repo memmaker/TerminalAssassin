@@ -1,0 +1,30 @@
+Name: Loading Area
+Type: Private
+Ambience_Cue: 
+Allowed_Clothing: Mechanic
+Allowed_Clothing: a jacket
+
+Name: The Boat
+Type: Private
+Ambience_Cue: 
+Allowed_Clothing: Boat Crew
+Allowed_Clothing: Boat Security
+Allowed_Clothing: Mechanic
+Allowed_Clothing: a jacket
+
+Name: Bridge
+Type: Public
+Ambience_Cue: 
+
+Name: Leaving Start
+Type: Public
+Ambience_Cue: 
+
+Name: In Front of Locked Door
+Type: Public
+Ambience_Cue: 
+
+Name: Peeking Corner
+Type: Private
+Ambience_Cue: 
+

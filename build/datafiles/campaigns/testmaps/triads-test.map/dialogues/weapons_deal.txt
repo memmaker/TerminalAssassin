@@ -1,0 +1,54 @@
+$RD_LEADER = ActorWithName(Red Dragon Leader)
+$BL_LEADER = ActorWithName(Blue Lotus Leader)
+
+## DIALOGUE: weapons_deal
+
+$RD_LEADER: Let's get this over with. I have places to be.
+
+$BL_LEADER: So, what's the deal?
+
+$RD_LEADER: I can offer you a shipment of AK-47s for a fair price.
+
+$BL_LEADER: AKs are too common. What else do you have?
+
+$RD_LEADER: How about some grenade launchers? They'll blow your mind.
+
+$BL_LEADER: I don't need a show. Just give me something reliable.
+
+$RD_LEADER: Reliability is my middle name. How about some Glocks then?
+
+$BL_LEADER: Glocks are more like it. How many can you get me?
+
+$RD_LEADER: I can give you 50 for the right price.
+
+$BL_LEADER: Make it 60, and we have a deal.
+
+$RD_LEADER: 60 it is. But listen, these aren't your average Glocks.
+$RD_LEADER: They've been modified to fire without a trace.
+$RD_LEADER: Perfect for a professional like you.
+
+$BL_LEADER: Interesting. Tell me more.
+
+$RD_LEADER: We've added a silencer to each gun and modified the trigger mechanism.
+$RD_LEADER: They'll be as quiet as a whisper when you pull the trigger.
+$RD_LEADER: And they've got custom grips for a comfortable grip.
+
+$BL_LEADER: Sounds impressive. And the price?
+
+$RD_LEADER: Don't worry, you'll get your money's worth.
+$RD_LEADER: These are top-of-the-line firearms.
+$RD_LEADER: The total price will be $150,000.
+
+$BL_LEADER: That's a steep price. Can you come down a bit?
+
+$RD_LEADER: I could, but then I'd have to reduce the quality of the merchandise.
+$RD_LEADER: You don't want that, do you?
+
+$BL_LEADER: No, I don't. Alright, $150,000 it is. When can you deliver?
+
+$RD_LEADER: I'll have them delivered to your warehouse by the end of the week.
+$RD_LEADER: And if you're happy with the merchandise, I've got plenty more where that came from.
+
+$BL_LEADER: Good to know. This could be the start of a long and profitable partnership.
+
+$RD_LEADER: I couldn't agree more. Until next time.

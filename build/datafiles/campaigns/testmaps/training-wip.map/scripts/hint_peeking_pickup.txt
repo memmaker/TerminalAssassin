@@ -1,0 +1,10 @@
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+HasPlayerEnteredZone(Peeking Corner)
+
+## ACTIONS
+
+ShowPeekingPickupAlert()

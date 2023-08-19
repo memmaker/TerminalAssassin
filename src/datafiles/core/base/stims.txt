@@ -1,0 +1,31 @@
+Signature: ElectricStims($POWER)
+high_voltage: $POWER
+
+Signature: BulletStims($POWER)
+fire: 10
+piercing_damage: $POWER
+
+Signature: BluntStims($POWER)
+blunt_damage: $POWER
+
+Signature: PiercingStims($POWER)
+piercing_damage: $POWER
+
+Signature: LethalPoisonStims
+lethal_poison: 100
+
+Signature: ChokeStims
+choking_damage: 100
+
+Signature: OilSpillStims
+make_burnable: 50
+
+Signature: ExplosionStims($POWER)
+fire: 10
+explosion_damage: $POWER
+
+Signature: FireStims($POWER)
+fire: $POWER
+
+Signature: EmeticPoisonStims
+emetic_poison: 100

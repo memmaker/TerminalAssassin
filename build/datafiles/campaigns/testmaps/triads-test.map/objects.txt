@@ -1,0 +1,489 @@
+ObjectAt: (13,64)
+Name: a sink (liquid faucet)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (13,67)
+Name: radio (distractor)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (13,71)
+Name: light door (locked)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (14,62)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (14,66)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (16,67)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (17,79)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (17,93)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (18,17)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.02, 1.04, 1.20)
+
+ObjectAt: (18,71)
+Name: oil drum (liquid container)
+FgColor: (0.25, 0.20, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (18,72)
+Name: oil drum (liquid container)
+FgColor: (0.25, 0.20, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (18,8)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.02, 1.04, 1.20)
+
+ObjectAt: (19,63)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (19,65)
+Name: light door (open)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (19,71)
+Name: oil drum (liquid container)
+FgColor: (0.25, 0.20, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (19,72)
+Name: oil drum (liquid container)
+FgColor: (0.25, 0.20, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (20,79)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (20,86)
+Name: light door (open)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (21,92)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (22,63)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (22,73)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (25,63)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (26,15)
+Name: electronic door (locked)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.02, 1.04, 1.20)
+Key: Security Night Club
+
+ObjectAt: (26,71)
+Name: oil drum (liquid container)
+FgColor: (0.25, 0.20, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (26,72)
+Name: oil drum (liquid container)
+FgColor: (0.25, 0.20, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (27,71)
+Name: oil drum (liquid container)
+FgColor: (0.25, 0.20, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (27,72)
+Name: oil drum (liquid container)
+FgColor: (0.25, 0.20, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (28,63)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (28,85)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (28,89)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (29,86)
+Name: a sink (liquid faucet)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (31,63)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (31,85)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (33,89)
+Name: light door (open)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (34,63)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (34,73)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (36,71)
+Name: water barrel (liquid container)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (36,72)
+Name: water barrel (liquid container)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (36,92)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (37,63)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (37,71)
+Name: water barrel (liquid container)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (37,72)
+Name: water barrel (liquid container)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (37,89)
+Name: light door (open)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (41,35)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (41,41)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (41,47)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (41,52)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (41,83)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (42,37)
+Name: a sink (liquid faucet)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (42,43)
+Name: a sink (liquid faucet)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (42,48)
+Name: a sink (liquid faucet)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (42,65)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (43,71)
+Name: water barrel (liquid container)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (43,72)
+Name: water barrel (liquid container)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (44,54)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (44,71)
+Name: water barrel (liquid container)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (44,72)
+Name: water barrel (liquid container)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (45,69)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (45,94)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (46,37)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (46,43)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (46,48)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (46,83)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (46,95)
+Name: power box (distractor)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (47,34)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (47,40)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (47,46)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (48,52)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (5,15)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.02, 1.04, 1.20)
+
+ObjectAt: (51,83)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (53,93)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (54,89)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (55,69)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (55,73)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (56,64)
+Name: a sink (liquid faucet)
+FgColor: (0.19, 0.37, 0.80)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (57,36)
+Name: light door (locked)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+Key: Room 102
+
+ObjectAt: (57,42)
+Name: light door (locked)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+Key: Room 101
+
+ObjectAt: (57,48)
+Name: light door (locked)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+Key: Room 100
+
+ObjectAt: (57,54)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (58,62)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (60,67)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (61,39)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (61,45)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (61,51)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (62,72)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (62,76)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (63,62)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (63,85)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (66,67)
+Name: light door (open)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (67,72)
+Name: light door (open)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (67,89)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (68,62)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (69,67)
+Name: light door (open)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (72,76)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (73,62)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (74,63)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (74,73)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+

@@ -1,0 +1,19 @@
+MoveUp: W
+MoveLeft: A
+MoveDown: S
+MoveRight: D
+PeekUp: T
+PeekLeft: F
+PeekDown: G
+PeekRight: H
+ActionUp: I
+ActionLeft: J
+ActionDown: K
+ActionRight: L
+ActionHere: E
+UseItem: Space
+Inventory: Q
+DropItem: X
+PutItemAway: R
+SneakMode: CapsLock
+

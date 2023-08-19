@@ -1,0 +1,162 @@
+/*
+# Operation Blade
+  - Place Dennis & Raquel, give them simple separate loops
+  - Start their meeting on a timer
+  - Have them walk to the dance floor and talk
+  - Dance floor needs dancing NPCs
+  - D.J. needs a shotgun, movement and lights
+  - When they arrive they dance for a short period of time
+  - Then the "bloodbath" triggers
+  - The "dancers" start kicking and punching Dennis to death
+  - They suck the blood out of him
+  - They bodybag the corpse and bring it to a butcher's table
+  - Have raquel return to her loop, and choose another target(?) :)
+*/
+
+# Definitions
+
+$RAQUEL = ActorWithName(Raquel)
+$VICTIM = ActorWithName(Dennis)
+
+$START_RAQUEL = NamedLocation(Start Raquel Meeting)
+$START_VICTIM = NamedLocation(Start Victim Meeting)
+
+$DFLOOR_RAQUEL = NamedLocation(Dance Floor Raquel)
+$DFLOOR_VICTIM = NamedLocation(Dance Floor Victim)
+
+$DANCER1 = ActorWithName(Club Patron 1)
+$DANCER2 = ActorWithName(Club Patron 2)
+$DANCER3 = ActorWithName(Club Patron 3)
+$DANCER4 = ActorWithName(Club Patron 4)
+$DANCER5 = ActorWithName(Club Patron 5)
+$DANCER6 = ActorWithName(Club Patron 6)
+$DANCER7 = ActorWithName(Club Patron 7)
+$DANCER8 = ActorWithName(Club Patron 8)
+
+$DJ = ActorWithName(Club D.J.)
+
+# OR-TIMEOUTCONDITIONS
+
+IsDowned($RAQUEL)
+IsDowned($VICTIM)
+
+# TIMEOUTACTIONS
+
+StopScripted($RAQUEL)
+StopScripted($VICTIM)
+
+DeleteTravelGroup($RAQUEL, $VICTIM)
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+IsMissionTimeInSeconds(0)
+
+## ACTIONS
+
+SwitchToScript($DANCER1)
+SetPreferredLocationHere($DANCER1)
+Dance($DANCER1, 0.420)
+
+SwitchToScript($DANCER2)
+SetPreferredLocationHere($DANCER2)
+Dance($DANCER2, 0.420)
+
+SwitchToScript($DANCER3)
+SetPreferredLocationHere($DANCER3)
+Dance($DANCER3, 0.420)
+
+SwitchToScript($DANCER4)
+SetPreferredLocationHere($DANCER4)
+Dance($DANCER4, 0.420)
+
+SwitchToScript($DANCER5)
+SetPreferredLocationHere($DANCER5)
+Dance($DANCER5, 0.420)
+
+SwitchToScript($DANCER6)
+SetPreferredLocationHere($DANCER6)
+Dance($DANCER6, 0.420)
+
+SwitchToScript($DANCER7)
+SetPreferredLocationHere($DANCER7)
+Dance($DANCER7, 0.420)
+
+SwitchToScript($DANCER8)
+SetPreferredLocationHere($DANCER8)
+Dance($DANCER8, 0.420)
+
+SwitchToScript($DJ)
+SetPreferredLocationHere($DJ)
+TurnTable($DJ, 0.420)
+
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+IsMissionTimeInSeconds(5)
+
+## ACTIONS
+
+SwitchToScript($RAQUEL)
+SwitchToScript($VICTIM)
+
+SetPreferredLocation($RAQUEL, $START_RAQUEL)
+SetPreferredLocation($VICTIM, $START_VICTIM)
+
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+IsAtLocation($RAQUEL, $START_RAQUEL)
+IsAtLocation($VICTIM, $START_VICTIM)
+
+## ACTIONS
+
+CreateTravelGroup($RAQUEL, $VICTIM)
+
+LookAtActor($RAQUEL, $VICTIM)
+LookAtActor($VICTIM, $RAQUEL)
+
+StartDialogue(raquel_smalltalk)
+
+SetPreferredLocation($RAQUEL, $DFLOOR_RAQUEL)
+SetPreferredLocation($VICTIM, $DFLOOR_VICTIM)
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+IsAtLocation($RAQUEL, $DFLOOR_RAQUEL)
+IsAtLocation($VICTIM, $DFLOOR_VICTIM)
+
+## ACTIONS
+
+DeleteTravelGroup($RAQUEL, $VICTIM)
+Dance($RAQUEL, 0.420)
+Dance($VICTIM, 0.420)
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+IsCurrentFrameOlderThan(10)
+
+## ACTIONS
+
+Say($DJ, BLOODBATH)
+
+FillZoneRandomlyWithStimuli(Night club, blood, 20)
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+IsCurrentFrameOlderThan(20)
+
+## ACTIONS
+
+Say($DJ, BLOODBATH)

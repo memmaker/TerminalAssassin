@@ -1,0 +1,42 @@
+#  Audio: "title", Image: "cover"
+
+The Triad Meeting
+
+# Audio: "slide01", Image: "cover"
+
+The two biggest triad gang leaders in the city are meeting
+up for a negotiation at a local park. Intelligence suggests
+that they'll be discussing a major arms deal.
+
+# Audio: "slide02", Image: "cover"
+
+Your target is the leader of the Dragons,
+who has a reputation for being particularly ruthless.
+
+# Audio: "slide03", Image: "warehouse"
+
+We've set you up with a high-powered sniper rifle and a
+vantage point in a warehouse opposite the park.
+
+# Audio: "slide04", Image: "warehouse"
+
+You'll find it here.
+
+# Audio: "slide05", Image: "target"
+
+Take out your target with a single, clean shot.
+
+# Audio: "slide06", Image: "target"
+
+But be careful - these gangsters are heavily guarded
+and won't go down without a fight.
+
+# Audio: "slide07", Image: "target"
+
+Use your stealth and precision to eliminate your target
+and extract safely.
+
+# Audio: "slide08", Image: "target"
+
+Remember, your mission is to take out the Dragons leader only
+- do not engage the second leader unless absolutely necessary.

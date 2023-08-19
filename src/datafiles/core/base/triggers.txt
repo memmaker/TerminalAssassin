@@ -1,0 +1,52 @@
+Signature: BulletTrigger($POWER)
+on_ranged_shot_hit: BulletEffect($POWER)
+on_melee_attack: BluntEffect($POWER)
+on_flightpath: BulletEffect($POWER)
+
+Signature: BluntTrigger($POWER)
+on_item_impact: BluntEffect($POWER)
+on_melee_attack: BluntEffect($POWER)
+on_flightpath: BluntEffect($POWER)
+
+Signature: PiercingTrigger($POWER)
+on_item_impact: PiercingEffect($POWER)
+on_melee_attack: PiercingEffect($POWER)
+on_flightpath: PiercingEffect($POWER)
+
+Signature: FireStarterTrigger($POWER)
+on_item_impact: FireEffect($POWER)
+on_item_dropped: FireEffect($POWER)
+
+Signature: ImpactExplosionTrigger($POWER, $DISTANCE, $PRESSURE)
+on_item_impact: ExplosionEffect($POWER, $DISTANCE, $PRESSURE)
+
+Signature: RemoteExplosionTrigger($POWER, $DISTANCE, $PRESSURE)
+on_remote_control: ExplosionEffect($POWER, $DISTANCE, $PRESSURE)
+
+Signature: EmeticPoisonTrigger
+on_tool_usage: EmeticPoisonEffect
+
+Signature: LethalPoisonTrigger
+on_tool_usage: LethalPoisonEffect
+
+Signature: GasolineTrigger
+on_sneaking_with_item: OilEffect
+on_item_dropped: OilSpillEffect
+on_item_impact: BluntEffect(35)
+after_item_impact: OilSpillEffect
+
+Signature: PianoWireTrigger
+on_melee_attack: ChokingEffect
+
+Signature: TranquilizerTrigger($POWER)
+on_ranged_shot_hit: TranquilizerEffect($POWER)
+
+Signature: TaserTrigger($POWER)
+on_melee_attack: TaserEffect($POWER)
+
+Signature: RemoteTaserTrigger($POWER)
+on_remote_control: TaserEffect($POWER)
+
+Signature: FireStarterTrigger($POWER)
+on_item_impact: FireEffect($POWER)
+on_item_dropped: FireEffect($POWER)

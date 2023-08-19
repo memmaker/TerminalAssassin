@@ -1,0 +1,63 @@
+icon: ʰ
+description: a toilet
+styleFG: (0.99,0.99,1.00)
+styleBG: (0.07,0.13,0.86)
+walkable: true
+transparent: true
+special: toilet
+
+icon: ʮ
+description: a bed
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: true
+transparent: true
+special: none
+
+icon: ˕
+description: a table
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: true
+special: none
+
+icon: ˗
+description: a chair
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: true
+transparent: true
+special: none
+
+icon: ʱ
+description: food
+styleFG: (0.99,0.99,1.00)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: true
+special: food
+
+icon: ʳ
+description: drink
+styleFG: (0.99,0.99,1.00)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: true
+special: food
+
+icon: Ш
+description: power socket
+styleFG: (0.99,0.99,1.00)
+styleBG: (0.07,0.13,0.86)
+walkable: false
+transparent: false
+special: powerOutlet
+
+icon: ˻
+description: a shower
+styleFG: (0.77,0.77,0.84)
+styleBG: (0.07,0.13,0.86)
+walkable: true
+transparent: true
+special: none

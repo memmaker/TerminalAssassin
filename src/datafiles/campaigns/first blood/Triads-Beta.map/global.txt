@@ -1,0 +1,9 @@
+Mission_Title: 
+Width: 64
+Height: 64
+Player_Spawn: (57,7)
+Ambient_Light: (1.80, 1.80, 1.77)
+Max_Light_Intensity: 3.00
+Max_Vision_Range: 10
+Time_of_Day: 0001-01-01T12:00:00Z
+

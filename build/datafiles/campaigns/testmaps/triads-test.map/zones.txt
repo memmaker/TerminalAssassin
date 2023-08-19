@@ -1,0 +1,59 @@
+Name: Warehouse
+Type: Private
+Ambience_Cue: 
+Allowed_Clothing: Mechanic
+
+Name: Hotel Rooms
+Type: Private
+Ambience_Cue: 
+Allowed_Clothing: Green jacket
+Allowed_Clothing: Red jacket
+Allowed_Clothing: Tuxedo
+
+Name: Private
+Type: Private
+Ambience_Cue: 
+Allowed_Clothing: Bodyguard
+Allowed_Clothing: Goth Party Outfit
+Allowed_Clothing: Guard
+Allowed_Clothing: Medic
+Allowed_Clothing: Medical Scrubs
+Allowed_Clothing: Stylish Jacket
+Allowed_Clothing: Tech crew
+
+Name: Red Dragon HQ
+Type: Private
+Ambience_Cue: 
+Allowed_Clothing: Red dragon
+Allowed_Clothing: Red dragon leader
+
+Name: Dragon drop-off
+Type: Drop Off
+Ambience_Cue: 
+
+Name: Park
+Type: Public
+Ambience_Cue: 
+
+Name: Slaughterhouse
+Type: Private
+Ambience_Cue: slaughter_loop
+Allowed_Clothing: Bodyguard
+Allowed_Clothing: Goth Party Outfit
+Allowed_Clothing: Guard
+Allowed_Clothing: Purple jacket
+Allowed_Clothing: Stylish Jacket
+Allowed_Clothing: Tech crew
+Allowed_Clothing: Tuxedo
+
+Name: Night club
+Type: High Security
+Ambience_Cue: blade_loop
+Allowed_Clothing: Bodyguard
+Allowed_Clothing: Goth Party Outfit
+Allowed_Clothing: Guard
+Allowed_Clothing: Purple jacket
+Allowed_Clothing: Stylish Jacket
+Allowed_Clothing: Tech crew
+Allowed_Clothing: Tuxedo
+

@@ -1,0 +1,370 @@
+ObjectAt: (29,14)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (22,40)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (55,56)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (34,4)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (55,39)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (51,29)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (8,53)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (41,60)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (35,7)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (13,30)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (25,56)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (30,32)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (56,29)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (32,21)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (25,30)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (35,1)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (19,30)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (45,21)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (34,50)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (46,29)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (45,3)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (33,61)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (60,43)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (8,46)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (34,15)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (2,33)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (43,40)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (34,62)
+Name: power box (distractor)
+FgColor: (1.00, 1.00, 1.00)
+BgColor: (0.00, 0.00, 0.00)
+
+ObjectAt: (34,10)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (29,8)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (29,19)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (22,30)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (50,39)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (29,2)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (16,30)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (29,50)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (24,59)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (49,6)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (45,15)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (39,50)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (54,34)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (5,46)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (57,34)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (16,52)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (7,32)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (36,19)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (51,52)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (61,29)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (7,30)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (1,38)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (9,59)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (45,9)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (10,30)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (50,43)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (19,52)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (57,41)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (48,34)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (21,56)
+Name: light door (open)
+FgColor: (1.00, 1.00, 1.00)
+BgColor: (0.00, 0.00, 0.00)
+
+ObjectAt: (33,36)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (5,36)
+Name: light door (open)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (46,35)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (5,60)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (49,18)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (62,40)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (62,30)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (35,13)
+Name: cabinet (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (4,34)
+Name: locker (container)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (43,36)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (2,29)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (42,56)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (49,12)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (16,56)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (10,40)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
+ObjectAt: (60,39)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+

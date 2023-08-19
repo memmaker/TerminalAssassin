@@ -1,0 +1,91 @@
+TA Testplan:
+
+# Technical
+[X] Intro
+[X] Main menu
+[X] Start mission
+[ ] Editor
+
+# Movement
+[ ] Sneaking
+[X] Peeking
+[X] Hiding in container
+
+# Items
+[X] Pickup
+[X] Drop
+[X] Ring menu
+[X] Put away
+[X] Throwing
+[ ] Throwing creates a distraction
+
+# Doors & Windows
+[X] Open
+[X] Close
+[X] Melee weapons can open doors and break windows
+[X] Shots can open doors and penetrate windows while breaking them
+[ ] Doors that cannot be shot open
+[ ] Windows cannot be opened from the outside
+
+# Keys
+[X] Locked Doors
+[X] Unlock with Key / KeyCard
+[X] Lockpicking
+
+# Combat
+[X] Shooting
+[X] Silenced Shooting
+[X] Auto fire
+[X] Sniping
+[X] Throwing
+[X] Melee attacks
+[X] Prodding (downed) actors
+[X] Drown in toilet
+
+# Downed Actors
+[X] Drag
+[X] Hide
+[X] Snap neck
+[X] Blood trail
+[X] Take clothes
+
+# Poisons
+[X] Poison food
+[X] Actor eating food
+[X] Emetic poison effect
+[X] Deadly poison effect
+[ ] Sleep poison effect
+
+# Explosives
+[X] Grenades
+[X] Remote detonated bombs
+[ ] Gas containers being shot
+
+# Actor behaviour
+[X] Investigate distractions
+[X] React to illegal actions
+[X] Enter combat and shoot player
+[X] Show alert status visually
+[X] Return to idle state
+[X] Civilians panic when they see open violence
+[X] Guards attack when they see open violence
+[X] Civilians report suspicious activities to guards
+[X] Guards know about their allies and won't fire at them
+[X] Only one civilian will report a suspicion and only one guard will react
+[ ] Guards will search an area after hostile activity and loss of LoS
+[X] Guards will carry corpses and weapons to the security area
+[ ] Changing clothes unseen will clear the suspicions
+
+# Systemic interactions
+[X] Liquid leaking
+[X] Burnable liquid can be set on fire
+[X] Fire kills people
+[X] Fire will propagate along burnable areas
+[ ] Water will kill Fire
+[ ] Electricity is distributed along water
+
+# Special Items
+[ ] Liquid Canisters can be thrown and used while sneaking
+[ ] Remote detonated items
+[X] Cloth for cleaning
+[ ] Fiber-wire for quick dragging

@@ -1,0 +1,87 @@
+ItemAt: (12,81)
+Name: a soda can
+
+ItemAt: (13,63)
+Name: lethal poison
+
+ItemAt: (14,83)
+Name: a crowbar
+
+ItemAt: (14,92)
+Name: a coin
+
+ItemAt: (16,39)
+Name: a soda can
+
+ItemAt: (16,65)
+Name: a piece of cloth
+
+ItemAt: (16,70)
+Name: a screwdriver
+
+ItemAt: (27,90)
+Name: a soda can
+
+ItemAt: (32,86)
+Name: a baseball bat
+
+ItemAt: (34,84)
+Name: a soda can
+
+ItemAt: (36,86)
+Name: a soda can
+
+ItemAt: (38,64)
+Name: Blaser Jagdwaffen R93 Sniper
+
+ItemAt: (39,93)
+Name: a soda can
+
+ItemAt: (42,34)
+Name: a piece of cloth
+
+ItemAt: (42,40)
+Name: a piece of cloth
+
+ItemAt: (42,46)
+Name: a piece of cloth
+
+ItemAt: (42,72)
+Name: a wrench
+
+ItemAt: (45,44)
+Name: scissors
+
+ItemAt: (45,89)
+Name: a piece of cloth
+
+ItemAt: (47,84)
+Name: a baseball bat
+
+ItemAt: (48,34)
+Name: a coin
+
+ItemAt: (48,46)
+Name: a coin
+
+ItemAt: (55,92)
+Name: a soda can
+
+ItemAt: (56,67)
+Name: Fiber Wire
+
+ItemAt: (62,51)
+Name: a soda can
+
+ItemAt: (64,86)
+Name: a cigarette
+
+ItemAt: (67,38)
+Name: a fragmentation grenade
+
+ItemAt: (70,71)
+Name: a knife
+
+ItemAt: (74,75)
+Name: emetic poison
+

@@ -1,0 +1,12 @@
+ItemAt: (23,102)
+Name: a coin
+
+ItemAt: (24,102)
+Name: a coin
+
+ItemAt: (25,102)
+Name: a coin
+
+ItemAt: (6,28)
+Name: a wrench
+

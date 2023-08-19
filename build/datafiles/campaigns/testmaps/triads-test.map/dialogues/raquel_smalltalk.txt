@@ -1,0 +1,46 @@
+$RAQUEL = ActorWithName(Raquel)
+$VICTIM = ActorWithName(Dennis)
+
+## DIALOGUE: raquel_smalltalk
+
+$VICTIM: So where we going?
+
+$RAQUEL: It's a surprise.
+
+$VICTIM: I like surprises.
+
+$RAQUEL: What do you have down there, little man?
+
+$VICTIM: Heat-seeker.
+
+$RAQUEL: I'll bet.
+
+$VICTIM: Wanna see?
+
+$RAQUEL: Save it for later.
+
+$VICTIM: Never been in this part of town before.
+
+$RAQUEL: You're gonna love it.
+
+$VICTIM: I'm sure I will.
+
+$VICTIM: What did you say you do for a living?
+
+$RAQUEL: I didn't.
+
+$VICTIM: Oh. Well, what do you do for a living?
+
+$RAQUEL: I work in a hospital.
+
+$VICTIM: Nice, so you're a nurse?
+
+$RAQUEL: Kind of.
+
+$VICTIM: That's a real turn-on.
+
+$RAQUEL: I'm sure it is.
+
+$RAQUEL: We'll be there in a minute.
+
+$RAQUEL: Let me do the talking.

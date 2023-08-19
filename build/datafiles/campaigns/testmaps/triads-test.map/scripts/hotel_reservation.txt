@@ -1,0 +1,17 @@
+# Definitions
+
+$HOTELIER = ActorWithName(Hotelier)
+$KEYCARD = KeyItem($HOTELIER, Room 102)
+
+# NEWFRAME
+
+## AND-STARTCONDITIONS
+
+HasDialogueEnded(player_hotel_reservation)
+CanSeeActor($HOTELIER, $PLAYER)
+HasItemInInventory($HOTELIER, $KEYCARD)
+
+## ACTIONS
+
+InstantDropFromInventory($HOTELIER, $KEYCARD)
+DeleteDialogue(player_hotel_reservation)
