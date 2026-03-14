@@ -585,7 +585,7 @@ func (e *ExternalData) LoadHardCodedClothing() []*core.Clothing {
             BgColor: common.RGBAColor{R: 240, G: 184, B: 160, A: 1.0}.ToHSV(),
         },
         {
-            Name:    "47's Signature Suit",
+            Name:    "Suit",
             FgColor: common.NewHSVColor(346/360.0, 0.97, 0.50),
             BgColor: common.NewHSVColor(0, 0, 0),
         },
