@@ -82,11 +82,12 @@ func (l *MovableLabel) Clear() {
 func (l *MovableLabel) GetText() string {
 	return l.currText.Text()
 }
+
 func (l *MovableLabel) updateBounds() {
 	// we set the screenbox from the current position and text
 	l.currText = l.newText
 	l.currOrigin = l.newOrigin
-	l.currBounds = l.newBounds(l.currOrigin, l.currText.Size().X)
+	l.currBounds = l.newBounds(l.currOrigin, l.currText.Size().X) // TOFIX: currBounds can be outside the window after this
 	l.isDirty = true
 }
 

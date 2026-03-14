@@ -521,7 +521,7 @@ scope_range: 0
 scope_fov: 0.00
 style_fg: (0.06, 0.06, 0.06)
 style_bg: (0.00, 0.00, 0.00)
-trigger_effects: ImpactExplosionTrigger(10, 3, 3)
+trigger_effects: ImpactExplosionTrigger(50, 3, 3)
 
 name: remote bomb
 icon: ˺
