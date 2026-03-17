@@ -47,7 +47,6 @@ type ExternalData struct {
     ItemUnlockMap          map[string][]*core.Item
     noClothing             *core.Clothing
     definedStims           map[string]ParametrizedStimuliRecord
-    definedEffects         map[string]EffectRecord
     definedTrigger         map[string]ParametrizedTriggerRecord
     definedReactionTrigger map[string]ParametrizedTriggerRecord
 }
@@ -116,7 +115,6 @@ func (e *ExternalData) setPredefinedUnlocks() {
 
 func (e *ExternalData) loadCoreDataFromDirectory(files DataSource, dataFilesSubDir string) {
     e.definedStims = merge(e.definedStims, e.LoadCustomStimuli(files, dataFilesSubDir))
-    e.definedEffects = merge(e.definedEffects, e.LoadCustomEffects(files, dataFilesSubDir))
     e.definedTrigger = merge(e.definedTrigger, e.LoadCustomTriggers(files, dataFilesSubDir))
     e.definedReactionTrigger = merge(e.definedReactionTrigger, e.LoadCustomReactionTriggers(files, dataFilesSubDir))
     e.items = append(e.items, e.LoadListOfCustomItems(files, dataFilesSubDir)...)
@@ -209,13 +207,13 @@ func indexOf(needle []string, haystack string) int {
 
 func (p ParametrizedTriggerRecord) ToTriggers(context *EvalContext) map[core.ItemEffectTrigger]stimuli.StimEffect {
     effects := map[core.ItemEffectTrigger]stimuli.StimEffect{}
-    for triggerName, effectCall := range p.EffectMap {
+    for triggerName, stimCall := range p.EffectMap {
         trigger := core.NewItemEffectTriggerFromString(triggerName)
         if trigger == core.NoTrigger {
             println("Unknown trigger: " + triggerName)
             continue
         }
-        effects[trigger] = resolveEffect(effectCall, context)
+        effects[trigger] = resolveStimEffect(stimCall, context)
     }
     return effects
 }
@@ -239,7 +237,7 @@ func (p ParametrizedTriggerRecord) ToReactionTriggers(context *EvalContext) map[
         effectCall := matches[2]
         reaction[stimType] = core.StimReaction{
             ForceThreshold:   threshold,
-            EffectOnReaction: resolveEffect(effectCall, context),
+            EffectOnReaction: resolveStimEffect(effectCall, context),
         }
     }
     return reaction
@@ -280,58 +278,20 @@ func NewTriggerFromRecord(record map[string]string) ParametrizedTriggerRecord {
     }
 }
 
-func resolveEffect(call string, context *EvalContext) stimuli.StimEffect {
-    effectName, callArgs := core.GetNameAndArgs(call)
-    // we need the effect record for this name now..
-    effect := context.DefinedEffects[effectName]
-    argNames := effect.Args()
+func resolveStimEffect(call string, context *EvalContext) stimuli.StimEffect {
+    stimName, callArgs := core.GetNameAndArgs(call)
+    stim, ok := context.DefinedStimuli[stimName]
+    if !ok {
+        println("Unknown stim: " + stimName)
+        return stimuli.StimEffect{}
+    }
+    argNames := stim.Args()
     for i, arg := range callArgs {
-        context.ArgMap[argNames[i]] = resolveValue(arg, context.ArgMap)
+        if i < len(argNames) {
+            context.ArgMap[argNames[i]] = resolveValue(arg, context.ArgMap)
+        }
     }
-    // then we have to lookup the stimuli record for the effect record
-    return effect.Evaluate(context)
-}
-
-type EffectRecord struct {
-    Signature            string
-    Stimuli              string
-    Distribution         string
-    Distance             string
-    Pressure             string
-    DestroyOnApplication bool
-}
-
-func (r EffectRecord) Name() string {
-    name, _ := core.GetNameAndArgs(r.Signature)
-    return name
-}
-
-func (r EffectRecord) Args() []string {
-    _, args := core.GetNameAndArgs(r.Signature)
-    return args
-}
-
-func (r EffectRecord) Evaluate(context *EvalContext) stimuli.StimEffect {
-    stimName, _ := core.GetNameAndArgs(r.Stimuli)
-    effect := stimuli.StimEffect{
-        Stimuli:              context.DefinedStimuli[stimName].ToStimuli(context),
-        Distribution:         stimuli.NewMethodOfDistributionFromString(r.Distribution),
-        Distance:             resolveValue(r.Distance, context.ArgMap),
-        Pressure:             resolveValue(r.Pressure, context.ArgMap),
-        DestroyOnApplication: r.DestroyOnApplication,
-    }
-    return effect
-}
-
-func NewEffectFromRecord(record map[string]string) EffectRecord {
-    return EffectRecord{
-        Signature:            valueOrEmpty(record, "Signature"),
-        Stimuli:              valueOrEmpty(record, "Stimuli"),
-        Distribution:         valueOrEmpty(record, "Distribution"),
-        Distance:             valueOrEmpty(record, "Distance"),
-        Pressure:             valueOrEmpty(record, "Pressure"),
-        DestroyOnApplication: valueOrEmpty(record, "DestroyOnApplication") == "true",
-    }
+    return stim.ToStimEffect(context)
 }
 
 func valueOrEmpty(record map[string]string, s string) string {
@@ -342,16 +302,31 @@ func valueOrEmpty(record map[string]string, s string) string {
 }
 
 type ParametrizedStimuliRecord struct {
-    Signature string
+    Signature            string
+    Distribution         string
+    Distance             string
+    Pressure             string
+    DestroyOnApplication bool
     // StimMap is a map of stimuli type to stimuli force.
-    // eg: "FIRE: 10, PIERCING: $POWER"
+    // eg: "fire: 10, piercing_damage: $POWER"
     StimMap map[string]string
 }
 
 func NewStimuliFromRecord(record map[string]string) ParametrizedStimuliRecord {
-    signature := record["Signature"]
-    delete(record, "Signature")
-    return NewParametrizedStimuliRecord(signature, record)
+	result := ParametrizedStimuliRecord{
+		Signature:            record["Signature"],
+		Distribution:         valueOrEmpty(record, "Distribution"),
+		Distance:             valueOrEmpty(record, "Distance"),
+		Pressure:             valueOrEmpty(record, "Pressure"),
+		DestroyOnApplication: valueOrEmpty(record, "DestroyOnApplication") == "true",
+	}
+	delete(record, "Signature")
+	delete(record, "Distribution")
+	delete(record, "Distance")
+	delete(record, "Pressure")
+	delete(record, "DestroyOnApplication")
+	result.StimMap = record
+	return result
 }
 
 func NewParametrizedStimuliRecord(signature string, record map[string]string) ParametrizedStimuliRecord {
@@ -385,9 +360,31 @@ func (p ParametrizedStimuliRecord) ToStimuli(context *EvalContext) []stimuli.Sti
     return result
 }
 
+func (p ParametrizedStimuliRecord) ToStimEffect(context *EvalContext) stimuli.StimEffect {
+    return stimuli.StimEffect{
+        Stimuli:              p.ToStimuli(context),
+        Distribution:         stimuli.NewMethodOfDistributionFromString(p.Distribution),
+        Distance:             resolveValue(p.Distance, context.ArgMap),
+        Pressure:             resolveValue(p.Pressure, context.ArgMap),
+        DestroyOnApplication: p.DestroyOnApplication,
+    }
+}
+
 func (p ParametrizedStimuliRecord) ToRecord() []rec_files.Field {
     var result []rec_files.Field
     result = append(result, rec_files.Field{Name: "Signature", Value: p.Signature})
+    if p.Distribution != "" {
+        result = append(result, rec_files.Field{Name: "Distribution", Value: p.Distribution})
+    }
+    if p.Distance != "" {
+        result = append(result, rec_files.Field{Name: "Distance", Value: p.Distance})
+    }
+    if p.Pressure != "" {
+        result = append(result, rec_files.Field{Name: "Pressure", Value: p.Pressure})
+    }
+    if p.DestroyOnApplication {
+        result = append(result, rec_files.Field{Name: "DestroyOnApplication", Value: "true"})
+    }
     for k, v := range p.StimMap {
         result = append(result, rec_files.Field{Name: k, Value: v})
     }
@@ -412,24 +409,6 @@ func (e *ExternalData) LoadCustomStimuli(files DataSource, dataDir string) map[s
     println(fmt.Sprintf("Loaded %d custom stimuli from %s", len(result), stimDataFileName))
     return result
 }
-func (e *ExternalData) LoadCustomEffects(files DataSource, dataDir string) map[string]EffectRecord {
-    effectDataFileName := path.Join(dataDir, "effects.txt")
-    file, err := files.Open(effectDataFileName)
-    if err != nil {
-        println(fmt.Sprintf("Could not open custom effect file %s: %s", effectDataFileName, err.Error()))
-        return map[string]EffectRecord{}
-    }
-    defer file.Close()
-
-    records := rec_files.Read(file)
-    result := make(map[string]EffectRecord)
-    for _, record := range records {
-        effect := NewEffectFromRecord(record.ToMap())
-        result[effect.Name()] = effect
-    }
-    println(fmt.Sprintf("Loaded %d custom effects from %s", len(result), effectDataFileName))
-    return result
-}
 func (e *ExternalData) LoadCustomTriggers(files DataSource, dataDir string) map[string]ParametrizedTriggerRecord {
     triggerDataFileName := path.Join(dataDir, "triggers.txt")
     file, err := files.Open(triggerDataFileName)
@@ -451,16 +430,14 @@ func (e *ExternalData) LoadCustomTriggers(files DataSource, dataDir string) map[
 
 type EvalContext struct {
     ArgMap                 map[string]int
-    DefinedEffects         map[string]EffectRecord
     DefinedStimuli         map[string]ParametrizedStimuliRecord
     DefinedTrigger         map[string]ParametrizedTriggerRecord
     DefinedReactionTrigger map[string]ParametrizedTriggerRecord
 }
 
-func NewEvalContext(definedEffects map[string]EffectRecord, definedStimuli map[string]ParametrizedStimuliRecord, definedTrigger map[string]ParametrizedTriggerRecord, reactionTrigger map[string]ParametrizedTriggerRecord) *EvalContext {
+func NewEvalContext(definedStimuli map[string]ParametrizedStimuliRecord, definedTrigger map[string]ParametrizedTriggerRecord, reactionTrigger map[string]ParametrizedTriggerRecord) *EvalContext {
     return &EvalContext{
         ArgMap:                 map[string]int{},
-        DefinedEffects:         definedEffects,
         DefinedStimuli:         definedStimuli,
         DefinedTrigger:         definedTrigger,
         DefinedReactionTrigger: reactionTrigger,
@@ -469,7 +446,7 @@ func NewEvalContext(definedEffects map[string]EffectRecord, definedStimuli map[s
 func (e *ExternalData) LoadListOfCustomItems(files DataSource, dataDir string) []*core.Item {
 
     definedItems := make([]*core.Item, 0)
-    evalContext := NewEvalContext(e.definedEffects, e.definedStims, e.definedTrigger, e.definedReactionTrigger)
+    evalContext := NewEvalContext(e.definedStims, e.definedTrigger, e.definedReactionTrigger)
 
     itemFileName := path.Join(dataDir, "items.txt")
     file, err := files.Open(itemFileName)

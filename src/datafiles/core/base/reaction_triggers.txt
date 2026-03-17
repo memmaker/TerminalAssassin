@@ -1,8 +1,9 @@
 Signature: GasCanisterReaction
-fire: 30, ExplosionEffect(30, 4, 30)
-piercing_damage: 30, ExplosionEffect(30, 4, 30)
+fire: 30, ExplosionAreaStims(30, 4, 30)
+piercing_damage: 30, ExplosionAreaStims(30, 4, 30)
+explosion_damage: 30, ExplosionAreaStims(30, 4, 30)
 
 Signature: CanOfGasolineReaction
-fire: 30, ExplosionEffect(30, 3, 10)
-piercing_damage: 0, OilSpillEffect
-
+fire: 30, ExplosionAreaStims(30, 3, 10)
+piercing_damage: 0, OilSpillAreaStims
+explosion_damage:  30, ExplosionAreaStims(30, 3, 10)

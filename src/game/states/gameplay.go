@@ -48,6 +48,9 @@ type GameStateGameplay struct {
 
     runningScripts []*director.Script
     mapDialogues   map[string]*director.DialogueInfo
+
+    padAimPos    geometry.PointF // accumulated gamepad aim cursor position
+    padAimActive bool            // true while aiming via gamepad (suppresses mouse-based scope scroll)
 }
 
 func (g *GameStateGameplay) Print(text string) {
@@ -447,6 +450,7 @@ func (g *GameStateGameplay) resetPlayerState() {
     player.FovMode = gridmap.FoVModeNormal
     player.FovShiftForPeeking = geometry.PointZero
     g.Ui = defaultUIState
+    g.padAimActive = false
 }
 
 func (g *GameStateGameplay) updatePlayerMovementMode(newPosition geometry.Point) {
@@ -554,14 +558,21 @@ func (g *GameStateGameplay) clearTooltip() {
 func (g *GameStateGameplay) scrollCameraForScope() {
     game := g.engine.GetGame()
     player := game.GetMap().Player
-    if player != nil && player.FovMode == gridmap.FoVModeScoped {
-        if g.aimScrollTimer == 0 {
-            g.ensureWorldPosInView(game.GetCamera().ScreenToWorld(g.MousePositionOnScreen), 4)
-            g.AdjustPlayerAimFromMouse()
-            g.aimScrollTimer = 10
+    if player == nil || player.FovMode != gridmap.FoVModeScoped {
+        return
+    }
+    if g.aimScrollTimer == 0 {
+        if g.padAimActive {
+            // Pad: aim position is already in world space.
+            g.ensureWorldPosInView(g.padAimPos.ToPointRounded(), 4)
         } else {
-            g.aimScrollTimer--
+            // Mouse: aim position was already set by the last mouse-move event.
+            // Just ensure the aim target stays in view as the camera scrolls.
+            g.ensureWorldPosInView(game.GetCamera().ScreenToWorld(g.MousePositionOnScreen), 4)
         }
+        g.aimScrollTimer = 10
+    } else {
+        g.aimScrollTimer--
     }
 }
 

@@ -163,18 +163,39 @@ func ToStyled(list []string) []core.StyledText {
 }
 
 func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64) {
-    if math.Abs(xAxis) < 0.08 && math.Abs(yAxis) < 0.08 {
-        g.ToNormalUIState() // removed for now.. let's see what we can do here later
-        return
-    }
-    if g.Ui.ID != aimingUIState.ID {
-        g.Ui = aimingUIState
-    }
-    source := g.engine.GetGame().GetMap().Player.FoVSource().ToPointF()
+	const deadzone = 0.08
+	const aimSpeed = 0.3 // tiles per tick at full stick deflection
 
-    aimVector := geometry.PointF{X: xAxis, Y: yAxis}.Mul(3.0)
-    aimPositionInWorld := source.Add(aimVector)
-    g.AdjustPlayerAim(aimPositionInWorld.ToPointRounded())
+	if math.Abs(xAxis) < deadzone && math.Abs(yAxis) < deadzone {
+		// Stick released: cursor stays in place, keep aiming mode active.
+		return
+	}
+
+	game := g.engine.GetGame()
+	currentMap := game.GetMap()
+	player := currentMap.Player
+
+	if g.Ui.ID != aimingUIState.ID {
+		// Entering aim mode: mirror what BeginAimOrUseItem does for keyboard/mouse.
+		g.Ui = aimingUIState
+		g.padAimActive = true
+		g.padAimPos = player.FoVSource().ToPointF()
+		if player.EquippedItem != nil && player.EquippedItem.Scope.FoVinDegrees > 0 {
+			player.FovMode = gridmap.FoVModeScoped
+			currentMap.UpdateFieldOfView(player)
+		}
+	}
+
+	g.padAimPos.X += xAxis * aimSpeed
+	g.padAimPos.Y += yAxis * aimSpeed
+	aimTarget := g.padAimPos.ToPointRounded()
+	g.AdjustPlayerAim(aimTarget)
+
+	// Scoped weapons: camera scrolling is handled by scrollCameraForScope,
+	// identical to the mouse path. For non-scoped weapons scroll immediately.
+	if player.FovMode != gridmap.FoVModeScoped {
+		g.ensureWorldPosInView(aimTarget, 4)
+	}
 }
 
 func (g *GameStateGameplay) AdjustPlayerAimFromMouse() {
