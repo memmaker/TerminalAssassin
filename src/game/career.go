@@ -38,5 +38,6 @@ func NewEmptyCareer(data *services.ExternalData) *services.CareerData {
 		MapStatistics:    make(map[string]*services.MapStatistics),
 		UnlockedClothes:  map[string]*core.Clothing{defaultClothes.Name: &defaultClothes},
 		UnlockedItems:    *unlockedItems,
+		UnlockedSkills:   services.PlayerSkills{DoubleAssassination: true},
 	}
 }

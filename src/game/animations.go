@@ -64,6 +64,49 @@ func (a *Animator) drawWorldToScreen(grid console.CellInterface, p geometry.Poin
 	grid.SetSquare(screenPos, c)
 }
 
+// AssassinationAnimation plays a brief blinking animation of the weapon icon on
+// each target's position to give the assassination action a moment of weight.
+// It lasts ~0.6 s (4 frames × 0.15 s) and calls finishedCallback when done.
+func (a *Animator) AssassinationAnimation(targets []*core.Actor, icon rune, finishedCallback func()) {
+	// Capture positions at the moment the animation starts.
+	targetPositions := make([]geometry.Point, len(targets))
+	for i, t := range targets {
+		targetPositions[i] = t.Pos()
+	}
+
+	drawFunc := func(grid console.CellInterface, frameIndex int) {
+		game := a.engine.GetGame()
+		for _, pos := range targetPositions {
+			if !game.IsOnScreen(pos) {
+				continue
+			}
+			cellAt := a.cellOnScreen(grid, pos)
+			style := cellAt.Style
+			if frameIndex%2 == 0 {
+				style.Foreground = core.ColorFromCode(core.ColorBlood)
+			}
+			a.drawWorldToScreen(grid, pos, common.Cell{Rune: icon, Style: style})
+		}
+	}
+
+	const frameDelayInSeconds = 0.15
+	frameDelayInTicks := uint64(utils.SecondsToTicks(frameDelayInSeconds))
+	nextFrameFunc := func(frameIndex int, ticksAlive uint64) bool {
+		return ticksAlive >= frameDelayInTicks
+	}
+
+	animation := &ActiveAnimation{
+		nextFrame:        nextFrameFunc,
+		DrawFrame:        drawFunc,
+		frameCount:       4,
+		FinishedCallback: finishedCallback,
+		FinishCondition:  nil,
+		CancelCondition:  nil,
+		CancelCallback:   nil,
+	}
+	a.addAnimation(animation)
+}
+
 func (a *Animator) ActorEngagedAnimation(person *core.Actor, r rune, actionPosition geometry.Point, timeNeededInSeconds float64, finishedCallback func()) {
 	drawFunc := func(grid console.CellInterface, frameIndex int) {
 		game := a.engine.GetGame()

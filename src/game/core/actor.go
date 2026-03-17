@@ -120,6 +120,12 @@ const (
     MovementModeRunning  MovementMode = '˃'
 )
 
+const (
+    WalkStepDelayMs    = 150
+    SneakStepDelayMs   = 400
+    RunningStepDelayMs = 80
+)
+
 // AutoMove represents the information for an automatic-movement step.
 type AutoMove struct {
     // Delta represents a position variation such as (0,1), that

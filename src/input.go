@@ -24,13 +24,14 @@ var rightAnalogStickAxisY = 4 // for xbox controller
 //var rightAnalogStickAxisY = 5 // for ps4 controller
 
 type InputState struct {
-    config                console.GridConfig
-    MousePosOnScreenGrid  geometry.Point
-    LastMousePos          geometry.Point
-    movementDelayInTicks  int
-    timeSinceLastMovement float64
-    sneaking              bool
-    dpiScale              float64
+    config               console.GridConfig
+    MousePosOnScreenGrid geometry.Point
+    LastMousePos         geometry.Point
+    movementDelayInTicks int
+    lastMovementAt       time.Time // used for ms-based sneak-step delay
+    sneaking             bool      // keyboard sneak state (CapsLock)
+    padSneaking          bool      // gamepad sneak state (Circle toggle)
+    dpiScale             float64
     //axes                  [6]float64
     inputConsumed bool
     keyBuffer     []ebiten.Key
@@ -333,7 +334,7 @@ func (i *InputState) pollKeyBoardForGameplay() []core.InputCommand {
 
         if !(i.mustWaitForSneakDelay()) && playerWantsToMove {
             commands = append(commands, core.DirectionalGameCommand{Command: core.MovementDirection, XAxis: float64(movementDirectionX), YAxis: float64(movementDirectionY)})
-            i.timeSinceLastMovement = 0
+            i.lastMovementAt = time.Now()
         }
 
         actionDirX, actionDirY = i.directionFromKeys(i.keyboardActionKeys)
@@ -415,7 +416,7 @@ func (i *InputState) pollKeyBoardForGameplay() []core.InputCommand {
 }
 
 func (i *InputState) mustWaitForSneakDelay() bool {
-    return i.sneaking && i.timeSinceLastMovement < 0.75
+    return i.sneaking && time.Since(i.lastMovementAt).Milliseconds() < int64(core.SneakStepDelayMs)
 }
 
 func (i *InputState) directionFromKeys(directionalKeys [4]ebiten.Key) (int, int) {
@@ -456,12 +457,10 @@ func (i *InputState) getPadID() ebiten.GamepadID {
     return -1
 }
 
-const DefaultDelayForRunning = 7 //12
-
 func NewInput(config console.GridConfig) *InputState {
 
     inputState := &InputState{
-        movementDelayInTicks: DefaultDelayForRunning,
+        movementDelayInTicks: core.RunningStepDelayMs * 60 / 1000, // = 7 at 60 TPS
         config:               config,
         // key definitions
         keyboardMovementKeys:      [4]ebiten.Key{ebiten.KeyW, ebiten.KeyA, ebiten.KeyS, ebiten.KeyD},
@@ -717,10 +716,14 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             msgs = append(msgs, core.DirectionalGameCommand{Command: core.AimingDirection, XAxis: axes[rightAnalogStickAxisX], YAxis: axes[rightAnalogStickAxisY]})
         }
 
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontBottomLeft) {
-            msgs = append(msgs, core.StartSneaking)
-        } else if inpututil.IsStandardGamepadButtonJustReleased(padId, ebiten.StandardGamepadButtonFrontBottomLeft) {
-            msgs = append(msgs, core.StopSneaking)
+        // Circle (RightRight) toggles sneaking on/off.
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightRight) {
+            i.padSneaking = !i.padSneaking
+            if i.padSneaking {
+                msgs = append(msgs, core.StartSneaking)
+            } else {
+                msgs = append(msgs, core.StopSneaking)
+            }
         }
 
         if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontBottomRight) {
@@ -729,48 +732,80 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
         if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontTopLeft) {
             msgs = append(msgs, core.NextItem)
         }
-
-        movementDirectionX := 0
-        movementDirectionY := 0
-        if i.padMovementButtonIsPressed(padId, ebiten.StandardGamepadButtonLeftBottom) {
-            movementDirectionY = 1
-        }
-        if i.padMovementButtonIsPressed(padId, ebiten.StandardGamepadButtonLeftTop) {
-            movementDirectionY = -1
-        }
-        if i.padMovementButtonIsPressed(padId, ebiten.StandardGamepadButtonLeftLeft) {
-            movementDirectionX = -1
-        }
-        if i.padMovementButtonIsPressed(padId, ebiten.StandardGamepadButtonLeftRight) {
-            movementDirectionX = 1
-        }
-        playerWantsToMove := movementDirectionX != 0 || movementDirectionY != 0
-
-        if !(i.mustWaitForSneakDelay()) && playerWantsToMove {
-            msgs = append(msgs, core.DirectionalGameCommand{Command: core.MovementDirection, XAxis: float64(movementDirectionX), YAxis: float64(movementDirectionY)})
-            i.timeSinceLastMovement = 0
-        }
-
-        actionDirectionX := 0
-        actionDirectionY := 0
-        actionTriggered := false
         if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightBottom) {
-            actionDirectionY = 1
-            actionTriggered = true
-        } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightTop) {
-            actionDirectionY = -1
-            actionTriggered = true
-        } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightLeft) {
-            actionDirectionX = -1
-            actionTriggered = true
-        } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightRight) {
-            actionDirectionX = 1
-            actionTriggered = true
-        } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontTopRight) {
-            actionTriggered = true
+            msgs = append(msgs, core.Assassinate)
         }
-        if actionTriggered {
-            msgs = append(msgs, core.DirectionalGameCommand{Command: core.ActionDirection, XAxis: float64(actionDirectionX), YAxis: float64(actionDirectionY)})
+
+        triangleHeld := ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonRightTop)
+
+        if triangleHeld {
+            // Triangle held + D-Pad → directional context action
+            // Triangle tapped alone (no D-Pad) → same-tile context action
+            actionDirX, actionDirY := 0, 0
+            actionTriggered := false
+            if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftTop) {
+                actionDirY = -1
+                actionTriggered = true
+            } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftBottom) {
+                actionDirY = 1
+                actionTriggered = true
+            } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftLeft) {
+                actionDirX = -1
+                actionTriggered = true
+            } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftRight) {
+                actionDirX = 1
+                actionTriggered = true
+            } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightTop) {
+                // Triangle just tapped with no simultaneous D-Pad → same-tile action
+                actionTriggered = true
+            }
+            if actionTriggered {
+                msgs = append(msgs, core.DirectionalGameCommand{Command: core.ActionDirection, XAxis: float64(actionDirX), YAxis: float64(actionDirY)})
+            }
+        } else {
+            // D-Pad controls movement with three explicit speed modes:
+            //   Circle toggled (padSneaking) → sneak  → MovementModeSneaking
+            //   L1 held                      → sprint → MovementModeRunning
+            //   default                      → walk   → MovementModeWalking
+            //
+            // We enforce the delay via lastMovementAt (shared across all directions)
+            // so that neither re-pressing nor changing direction can bypass the delay.
+            l1Held := ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonFrontBottomLeft)
+
+            var stepDelayMs int64
+            switch {
+            case i.padSneaking:
+                stepDelayMs = int64(core.SneakStepDelayMs)
+            case l1Held:
+                stepDelayMs = int64(core.RunningStepDelayMs)
+            default:
+                stepDelayMs = int64(core.WalkStepDelayMs)
+            }
+
+            readyForNextStep := i.lastMovementAt.IsZero() || time.Since(i.lastMovementAt).Milliseconds() >= stepDelayMs
+
+            padCheck := func(button ebiten.StandardGamepadButton) bool {
+                return readyForNextStep && ebiten.IsStandardGamepadButtonPressed(padId, button)
+            }
+
+            movementDirectionX := 0
+            movementDirectionY := 0
+            if padCheck(ebiten.StandardGamepadButtonLeftBottom) {
+                movementDirectionY = 1
+            }
+            if padCheck(ebiten.StandardGamepadButtonLeftTop) {
+                movementDirectionY = -1
+            }
+            if padCheck(ebiten.StandardGamepadButtonLeftLeft) {
+                movementDirectionX = -1
+            }
+            if padCheck(ebiten.StandardGamepadButtonLeftRight) {
+                movementDirectionX = 1
+            }
+            if movementDirectionX != 0 || movementDirectionY != 0 {
+                msgs = append(msgs, core.DirectionalGameCommand{Command: core.MovementDirection, XAxis: float64(movementDirectionX), YAxis: float64(movementDirectionY)})
+                i.lastMovementAt = time.Now()
+            }
         }
 
         if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftStick) {

@@ -51,6 +51,8 @@ type GameStateGameplay struct {
 
     padAimPos    geometry.PointF // accumulated gamepad aim cursor position
     padAimActive bool            // true while aiming via gamepad (suppresses mouse-based scope scroll)
+
+    assassinationTargets map[*core.Actor]struct{} // NPCs highlighted for assassination
 }
 
 func (g *GameStateGameplay) Print(text string) {
@@ -455,38 +457,31 @@ func (g *GameStateGameplay) resetPlayerState() {
 
 func (g *GameStateGameplay) updatePlayerMovementMode(newPosition geometry.Point) {
     timeNow := time.Now()
-
-    timespanSinceLastMove := timeNow.Sub(g.lastPlayerMovementAt)
-    msSinceLastMove := timespanSinceLastMove.Milliseconds()
-    game := g.engine.GetGame()
-
-    player := game.GetMap().Player
-
-    if msSinceLastMove > 600 {
-        player.MovementMode = core.MovementModeSneaking
-    } else if msSinceLastMove > 300 {
-        player.MovementMode = core.MovementModeWalking
-        g.engine.Schedule(0.300, func() { g.downgradeMovementMode(newPosition) })
-    } else {
-        player.MovementMode = core.MovementModeRunning
-        g.engine.Schedule(0.300, func() { g.downgradeMovementMode(newPosition) })
-    }
+    msSinceLastMove := timeNow.Sub(g.lastPlayerMovementAt).Milliseconds()
     g.lastPlayerMovementAt = timeNow
+
+    player := g.engine.GetGame().GetMap().Player
+
+    // Sneaking is only ever set via an explicit toggle (StartSneaking command).
+    // Here we only decide between Running and Walking based on step cadence.
+    if player.MovementMode == core.MovementModeSneaking {
+        return
+    }
+    if msSinceLastMove < int64(core.WalkStepDelayMs) {
+        player.MovementMode = core.MovementModeRunning
+        g.engine.Schedule(1, func() { g.downgradeMovementMode(newPosition) })
+    } else {
+        player.MovementMode = core.MovementModeWalking
+    }
 }
 
 func (g *GameStateGameplay) downgradeMovementMode(position geometry.Point) {
     player := g.engine.GetGame().GetMap().Player
-    if player.Pos() != position {
+    if player.Pos() != position || player.MovementMode != core.MovementModeRunning {
         return
     }
     defer g.UpdateStatusLine()
-    switch player.MovementMode {
-    case core.MovementModeRunning:
-        player.MovementMode = core.MovementModeWalking
-        g.engine.Schedule(0.300, func() { g.downgradeMovementMode(position) })
-    case core.MovementModeWalking:
-        player.MovementMode = core.MovementModeSneaking
-    }
+    player.MovementMode = core.MovementModeWalking
 }
 
 func (g *GameStateGameplay) SetDirty() {
@@ -530,6 +525,8 @@ func (g *GameStateGameplay) Update(input services.InputInterface) {
     g.updateDialogue()
     actions := game.GetActions()
     actions.Update()
+
+    g.assassinationTargets = assassinationTargets(g.engine)
 
     currentMap := game.GetMap()
     if currentMap.DynamicLightsChanged && game.GetConfig().LightSources {
@@ -670,6 +667,7 @@ func playerMovementFromInput(g *GameStateGameplay, pdelta geometry.Point) {
         oldPos := player.Pos()
         np := player.Pos().Add(pdelta)
         if np != player.Pos() && currentMap.CurrentlyPassableForActor(player)(np) {
+            player.LookDirection = geometry.DirectionVectorToAngleInDegrees(pdelta)
             g.resetPlayerState()
             m.MoveActor(player, np)
             g.playerMoved(oldPos, np)
@@ -734,6 +732,11 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
             if action, isActionAtPos := g.ActionMap[posRelativeToPlayer]; isActionAtPos {
                 _, actionStyle := action.Description(g.engine, player, p)
                 style = style.WithBg(actionStyle.Background)
+            }
+            if c.Actor != nil {
+                if _, ok := g.assassinationTargets[*c.Actor]; ok {
+                    style = style.WithBg(common.IllegalActionRed)
+                }
             }
         }
         drawPos := m.GetCamera().WorldToScreen(p)
@@ -937,8 +940,12 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
     switch command {
     case core.StartSneaking:
         input.SetMovementDelayForSneaking()
+        player.MovementMode = core.MovementModeSneaking
+        defer g.UpdateStatusLine()
     case core.StopSneaking:
         input.SetMovementDelayForWalkingAndRunning()
+        player.MovementMode = core.MovementModeWalking
+        defer g.UpdateStatusLine()
     case core.NextItem:
         g.EquipNextInventoryItem(player)
     case core.OpenInventory:
@@ -970,9 +977,67 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
         g.UpdateHUD()
     case core.UseItem:
         g.BeginAimOrUseItem()
+    case core.Assassinate:
+        g.executeAssassination()
     case core.Cancel:
         g.OpenPauseMenu()
     }
+}
+
+func (g *GameStateGameplay) executeAssassination() {
+    if len(g.assassinationTargets) == 0 {
+        return
+    }
+    game := g.engine.GetGame()
+    player := game.GetMap().Player
+
+    var weapon *core.Item
+    if player.EquippedItem != nil && player.EquippedItem.HasMeleePiercingDamage() {
+        weapon = player.EquippedItem
+    } else {
+        for _, item := range player.Inventory.Items {
+            if item.HasMeleePiercingDamage() {
+                weapon = item
+                break
+            }
+        }
+    }
+
+    // Collect targets and clear the field so no second trigger can fire.
+    targets := make([]*core.Actor, 0, len(g.assassinationTargets))
+    for target := range g.assassinationTargets {
+        targets = append(targets, target)
+    }
+    g.assassinationTargets = nil
+
+    // Choose the icon: weapon icon, fallback to dagger rune.
+    icon := rune('†')
+    if weapon != nil {
+        icon = weapon.Icon()
+    }
+
+    // Lock player and victims for the duration of the animation.
+    aic := g.engine.GetAI()
+    animationDone := false
+    until := func() bool { return animationDone }
+    aic.SetEngaged(player, core.ActorStatusEngagedIllegal, until)
+    for _, target := range targets {
+        aic.SetEngaged(target, core.ActorStatusVictimOfEngagement, until)
+    }
+
+    capturedWeapon := weapon
+    finished := func() {
+        animationDone = true
+        for _, target := range targets {
+            game.IllegalActionAt(target.Pos(), core.ObservationPersonAttacked)
+            game.Kill(target, core.CauseOfDeath{
+                Description: core.CoDStabbed,
+                Source:      core.EffectSource{Actor: player, Item: capturedWeapon},
+            })
+        }
+    }
+
+    g.engine.GetAnimator().AssassinationAnimation(targets, icon, finished)
 }
 
 func (g *GameStateGameplay) handleDirectionalInput(directionalCommand core.DirectionalGameCommand) {

@@ -277,6 +277,20 @@ func (i *Item) HasUsesLeft() bool {
 	return i.Uses > 0
 }
 
+// HasMeleePiercingDamage reports whether this item deals piercing damage on a melee hit.
+func (i *Item) HasMeleePiercingDamage() bool {
+	effect, ok := i.TriggerEffects[TriggerOnMeleeAttack]
+	if !ok {
+		return false
+	}
+	for _, stim := range effect.Stimuli {
+		if stim.Type() == stimuli.StimulusPiercingDamage {
+			return true
+		}
+	}
+	return false
+}
+
 type ScopeInfo struct {
 	Range        int
 	FoVinDegrees float64
