@@ -163,39 +163,79 @@ func ToStyled(list []string) []core.StyledText {
 }
 
 func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64) {
-	const deadzone = 0.08
-	const aimSpeed = 0.3 // tiles per tick at full stick deflection
+    const deadzone = 0.08
+    const aimSpeed = 0.3 // tiles per tick at full stick deflection
 
-	if math.Abs(xAxis) < deadzone && math.Abs(yAxis) < deadzone {
-		// Stick released: cursor stays in place, keep aiming mode active.
-		return
-	}
+    if math.Abs(xAxis) < deadzone && math.Abs(yAxis) < deadzone {
+        // Stick released: cursor stays in place, keep aiming mode active.
+        return
+    }
 
-	game := g.engine.GetGame()
-	currentMap := game.GetMap()
-	player := currentMap.Player
+    game := g.engine.GetGame()
+    currentMap := game.GetMap()
+    player := currentMap.Player
 
-	if g.Ui.ID != aimingUIState.ID {
-		// Entering aim mode: mirror what BeginAimOrUseItem does for keyboard/mouse.
-		g.Ui = aimingUIState
-		g.padAimActive = true
-		g.padAimPos = player.FoVSource().ToPointF()
-		if player.EquippedItem != nil && player.EquippedItem.Scope.FoVinDegrees > 0 {
-			player.FovMode = gridmap.FoVModeScoped
-			currentMap.UpdateFieldOfView(player)
-		}
-	}
+    if g.Ui.ID != aimingUIState.ID {
+        // Entering aim mode: mirror what BeginAimOrUseItem does for keyboard/mouse.
+        g.Ui = aimingUIState
+        g.padAimActive = true
+        g.padAimPos = player.FoVSource().ToPointF()
+        if player.EquippedItem != nil && player.EquippedItem.Scope.FoVinDegrees > 0 {
+            player.FovMode = gridmap.FoVModeScoped
+            currentMap.UpdateFieldOfView(player)
+        }
+    }
 
-	g.padAimPos.X += xAxis * aimSpeed
-	g.padAimPos.Y += yAxis * aimSpeed
-	aimTarget := g.padAimPos.ToPointRounded()
-	g.AdjustPlayerAim(aimTarget)
+    g.padAimPos.X += xAxis * aimSpeed
+    g.padAimPos.Y += yAxis * aimSpeed
+    aimTarget := g.padAimPos.ToPointRounded()
+    g.AdjustPlayerAim(aimTarget)
 
-	// Scoped weapons: camera scrolling is handled by scrollCameraForScope,
-	// identical to the mouse path. For non-scoped weapons scroll immediately.
-	if player.FovMode != gridmap.FoVModeScoped {
-		g.ensureWorldPosInView(aimTarget, 4)
-	}
+    // Scoped weapons: camera scrolling is handled by scrollCameraForScope,
+    // identical to the mouse path. For non-scoped weapons scroll immediately.
+    if player.FovMode != gridmap.FoVModeScoped {
+        g.ensureWorldPosInView(aimTarget, 4)
+    }
+}
+
+// assassinationTargets returns adjacent active NPCs that can be assassinated.
+// Single assassination: 1 piercing weapon + 1 adjacent NPC (no skill required).
+// Double assassination: DoubleAssassination skill + 2 piercing weapons + 2 adjacent NPCs.
+// Returns nil if no valid targets exist.
+func assassinationTargets(engine services.Engine) map[*core.Actor]struct{} {
+    player := engine.GetGame().GetMap().Player
+
+    piercingCount := 0
+    for _, item := range player.Inventory.Items {
+        if item.HasMeleePiercingDamage() {
+            piercingCount++
+        }
+    }
+    if piercingCount < 1 {
+        return nil
+    }
+
+    maxTargets := 1
+    if piercingCount >= 2 && engine.GetCareer().UnlockedSkills.DoubleAssassination {
+        maxTargets = 2
+    }
+
+    currentMap := engine.GetGame().GetMap()
+    targets := make(map[*core.Actor]struct{})
+    for _, pos := range currentMap.NeighborsAll(player.Pos(), func(p geometry.Point) bool {
+        return currentMap.IsActorAt(p)
+    }) {
+        if actor := currentMap.ActorAt(pos); actor.IsActive() {
+            targets[actor] = struct{}{}
+            if len(targets) == maxTargets {
+                return targets
+            }
+        }
+    }
+    if len(targets) > 0 {
+        return targets
+    }
+    return nil
 }
 
 func (g *GameStateGameplay) AdjustPlayerAimFromMouse() {

@@ -190,6 +190,7 @@ type AnimationInterface interface {
 	ActorEngagedIllegalAnimation(person *core.Actor, icon rune, actionPosition geometry.Point, timeNeededInSeconds float64, finishedCallback func(), cancelled func())
 	ActorEngagedIllegalAnimationWithSound(person *core.Actor, icon rune, actionPosition geometry.Point, audioCue string, finishedCallback func(), cancelled func())
 	ActorEngagedAnimation(person *core.Actor, rune int32, pos geometry.Point, time float64, finished func())
+	AssassinationAnimation(targets []*core.Actor, icon rune, finishedCallback func())
 	BriefingAnimation(script *core.BriefingAnimation, finish func())
 	ImageFadeIn(pixels [][]common.Color, cancel, finish func())
 	ImageToImageFade(src, dest [][]common.Color, draw, cancel, finish func())
