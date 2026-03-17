@@ -20,7 +20,20 @@ choking_damage: 100
 Signature: OilSpillStims
 make_burnable: 50
 
+Signature: OilSpillAreaStims
+Distribution: liquid
+Distance: 5
+make_burnable: 50
+
 Signature: ExplosionStims($POWER)
+fire: 10
+explosion_damage: $POWER
+
+Signature: ExplosionAreaStims($POWER, $DISTANCE, $PRESSURE)
+Distribution: explode
+Distance: $DISTANCE
+Pressure: $PRESSURE
+DestroyOnApplication: true
 fire: 10
 explosion_damage: $POWER
 

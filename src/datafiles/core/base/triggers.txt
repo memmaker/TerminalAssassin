@@ -1,52 +1,48 @@
 Signature: BulletTrigger($POWER)
-on_ranged_shot_hit: BulletEffect($POWER)
-on_melee_attack: BluntEffect($POWER)
-on_flightpath: BulletEffect($POWER)
+on_ranged_shot_hit: BulletStims($POWER)
+on_melee_attack: BluntStims($POWER)
+on_flightpath: BulletStims($POWER)
 
 Signature: BluntTrigger($POWER)
-on_item_impact: BluntEffect($POWER)
-on_melee_attack: BluntEffect($POWER)
-on_flightpath: BluntEffect($POWER)
+on_item_impact: BluntStims($POWER)
+on_melee_attack: BluntStims($POWER)
+on_flightpath: BluntStims($POWER)
 
 Signature: PiercingTrigger($POWER)
-on_item_impact: PiercingEffect($POWER)
-on_melee_attack: PiercingEffect($POWER)
-on_flightpath: PiercingEffect($POWER)
+on_item_impact: PiercingStims($POWER)
+on_melee_attack: PiercingStims($POWER)
+on_flightpath: PiercingStims($POWER)
 
 Signature: FireStarterTrigger($POWER)
-on_item_impact: FireEffect($POWER)
-on_item_dropped: FireEffect($POWER)
+on_item_impact: FireStims($POWER)
+on_item_dropped: FireStims($POWER)
 
 Signature: ImpactExplosionTrigger($POWER, $DISTANCE, $PRESSURE)
-on_item_impact: ExplosionEffect($POWER, $DISTANCE, $PRESSURE)
+on_item_impact: ExplosionAreaStims($POWER, $DISTANCE, $PRESSURE)
 
 Signature: RemoteExplosionTrigger($POWER, $DISTANCE, $PRESSURE)
-on_remote_control: ExplosionEffect($POWER, $DISTANCE, $PRESSURE)
+on_remote_control: ExplosionAreaStims($POWER, $DISTANCE, $PRESSURE)
 
 Signature: EmeticPoisonTrigger
-on_tool_usage: EmeticPoisonEffect
+on_tool_usage: EmeticPoisonStims
 
 Signature: LethalPoisonTrigger
-on_tool_usage: LethalPoisonEffect
+on_tool_usage: LethalPoisonStims
 
 Signature: GasolineTrigger
-on_sneaking_with_item: OilEffect
-on_item_dropped: OilSpillEffect
-on_item_impact: BluntEffect(35)
-after_item_impact: OilSpillEffect
+on_sneaking_with_item: OilSpillStims
+on_item_dropped: OilSpillAreaStims
+on_item_impact: BluntStims(35)
+after_item_impact: OilSpillAreaStims
 
 Signature: PianoWireTrigger
-on_melee_attack: ChokingEffect
+on_melee_attack: ChokeStims
 
 Signature: TranquilizerTrigger($POWER)
-on_ranged_shot_hit: TranquilizerEffect($POWER)
+on_ranged_shot_hit: TranquilizerStims($POWER)
 
 Signature: TaserTrigger($POWER)
-on_melee_attack: TaserEffect($POWER)
+on_melee_attack: ElectricStims($POWER)
 
 Signature: RemoteTaserTrigger($POWER)
-on_remote_control: TaserEffect($POWER)
-
-Signature: FireStarterTrigger($POWER)
-on_item_impact: FireEffect($POWER)
-on_item_dropped: FireEffect($POWER)
+on_remote_control: ElectricStims($POWER)

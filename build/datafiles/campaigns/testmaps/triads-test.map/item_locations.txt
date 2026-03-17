@@ -61,11 +61,23 @@ Name: a baseball bat
 ItemAt: (48,34)
 Name: a coin
 
+ItemAt: (48,40)
+Name: a crowbar
+
 ItemAt: (48,46)
 Name: a coin
 
+ItemAt: (50,43)
+Name: a cigarette
+
 ItemAt: (55,92)
 Name: a soda can
+
+ItemAt: (56,38)
+Name: an electronic lockpick
+
+ItemAt: (56,46)
+Name: a lockpick
 
 ItemAt: (56,67)
 Name: Fiber Wire
@@ -76,8 +88,23 @@ Name: a soda can
 ItemAt: (64,86)
 Name: a cigarette
 
+ItemAt: (65,28)
+Name: a gas canister
+
+ItemAt: (65,38)
+Name: a can of gasoline
+
+ItemAt: (66,28)
+Name: a gas canister
+
 ItemAt: (67,38)
 Name: a fragmentation grenade
+
+ItemAt: (68,28)
+Name: a gas canister
+
+ItemAt: (69,28)
+Name: a gas canister
 
 ItemAt: (70,71)
 Name: a knife
