@@ -148,6 +148,16 @@ func DirectionVectorToAngleInDegreesF(directionX float64, directionY float64) fl
     return rawDirection
 }
 
+// AngleDeltaDegrees returns the smallest angular distance (0–180°) between
+// two bearings given in degrees.
+func AngleDeltaDegrees(a, b float64) float64 {
+    d := math.Abs(a - b)
+    if d > 180 {
+        d = 360 - d
+    }
+    return d
+}
+
 func InVisionCone(sourcePos Point, targetPos Point, fovLeftBorder Point, fovRightBorder Point) bool {
     isLeftOfRightBorder := isLeft(sourcePos, fovRightBorder, targetPos)
     isRightOfLeftBorder := isRight(sourcePos, fovLeftBorder, targetPos)

@@ -16,6 +16,10 @@ import (
     "github.com/memmaker/terminal-assassin/utils"
 )
 
+// ThrowingRange is the maximum distance (in tiles) at which thrown items can
+// be aimed. The LoS cursor will not extend beyond this radius.
+const ThrowingRange = 10
+
 type CoDDescription string
 
 type CauseOfDeath struct {
@@ -478,6 +482,28 @@ func (a *Actor) IsEngagedInIllegalAction() bool {
 
 func (a *Actor) HasIllegalItemEquipped() bool {
     return a.EquippedItem != nil && !a.EquippedItem.IsLegalForActor(a)
+}
+
+func (a *Actor) HasThrownItemEquipped() bool {
+    return a.EquippedItem != nil &&
+        (a.EquippedItem.RangedAttack == ActionTypeThrow ||
+            a.EquippedItem.RangedAttack == ActionTypeThrowRemote)
+}
+
+// AimDistance returns the maximum aiming distance for the player's currently
+// equipped item. throwingRange is passed in because it is a gameplay
+// configuration value owned by the states layer, not by core.
+func (a *Actor) AimDistance() int {
+    if a.EquippedItem == nil || (a.EquippedItem.RangedAttack == NoAction && a.EquippedItem.MeleeAttack != NoAction) {
+        return 1 // melee
+    }
+    if a.HasThrownItemEquipped() {
+        return ThrowingRange
+    }
+    if a.EquippedItem.Scope.Range > 0 {
+        return a.EquippedItem.Scope.Range // scoped
+    }
+    return a.VisionRange()
 }
 func (a *Actor) AddDamage(Amount int, Type stimuli.StimulusType) {
     a.DamageTaken = append(a.DamageTaken, DamageInfo{Amount, Type})
