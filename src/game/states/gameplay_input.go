@@ -11,6 +11,12 @@ import (
     "github.com/memmaker/terminal-assassin/gridmap"
 )
 
+// LockOnAngleDegrees is the half-width of the snap cone for thrown-item
+// target locking. Any visible NPC whose bearing from the player is within this
+// many degrees of the right-stick direction will be considered for lock-on.
+// The NPC with the smallest angular delta wins.
+var LockOnAngleDegrees = 15.0
+
 func (g *GameStateGameplay) OpenPauseMenu() {
     userInterface := g.engine.GetUI()
     audio := g.engine.GetAudio()
@@ -162,6 +168,41 @@ func ToStyled(list []string) []core.StyledText {
     return result
 }
 
+// tryLockOn returns the position of the visible, active NPC within maxRange
+// tiles whose bearing from the player is closest to the stick direction and
+// falls inside LockOnAngleDegrees. Returns (pos, true) when a suitable
+// target is found, (zero, false) otherwise.
+//
+// Rather than iterating every actor on the map, only the tiles inside the
+// circular area of radius maxRange are examined via TryGetActorAt.
+func (g *GameStateGameplay) tryLockOn(player *core.Actor, stickX, stickY float64, maxRange int) (geometry.Point, bool) {
+    stickAngle := geometry.DirectionVectorToAngleInDegreesF(stickX, stickY)
+    currentMap := g.engine.GetGame().GetMap()
+    origin := player.FoVSource()
+    maxRangeSq := maxRange * maxRange
+
+    bestPos := geometry.Point{}
+    bestDelta := LockOnAngleDegrees
+    found := false
+
+    for _, actor := range currentMap.Actors() {
+        p := actor.Pos()
+        if actor == player || !actor.IsActive() || !player.CanSee(p) {
+            continue
+        }
+        if geometry.DistanceSquared(origin, p) > maxRangeSq {
+            continue
+        }
+        delta := geometry.AngleDeltaDegrees(stickAngle, geometry.DirectionVectorToAngleInDegrees(p.Sub(origin)))
+        if delta < bestDelta {
+            bestDelta = delta
+            bestPos = p
+            found = true
+        }
+    }
+    return bestPos, found
+}
+
 func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64) {
     const deadzone = 0.08
     const aimSpeed = 0.3 // tiles per tick at full stick deflection
@@ -188,7 +229,28 @@ func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64)
 
     g.padAimPos.X += xAxis * aimSpeed
     g.padAimPos.Y += yAxis * aimSpeed
+
+    aimDistance := player.AimDistance()
+
+    origin := player.FoVSource().ToPointF()
+    dx := g.padAimPos.X - origin.X
+    dy := g.padAimPos.Y - origin.Y
+    if dist := math.Sqrt(dx*dx + dy*dy); dist > float64(aimDistance) {
+        scale := float64(aimDistance) / dist
+        g.padAimPos.X = origin.X + dx*scale
+        g.padAimPos.Y = origin.Y + dy*scale
+    }
+
     aimTarget := g.padAimPos.ToPointRounded()
+
+    // Lock-on: only for thrown items, snap to the best NPC within range.
+    if player.HasThrownItemEquipped() {
+        if lockTarget, locked := g.tryLockOn(player, xAxis, yAxis, aimDistance); locked {
+            aimTarget = lockTarget
+            g.padAimPos = lockTarget.ToPointF()
+        }
+    }
+
     g.AdjustPlayerAim(aimTarget)
 
     // Scoped weapons: camera scrolling is handled by scrollCameraForScope,
@@ -245,17 +307,10 @@ func (g *GameStateGameplay) AdjustPlayerAimFromMouse() {
 func (g *GameStateGameplay) AdjustPlayerAim(aimPosInWorld geometry.Point) {
     m := g.engine.GetGame()
     a := m.GetMap().Player
-    //cam.CenterOn(mouseInWorld, g.engine.MapWindowWidth(), g.engine.MapWindowHeight())
 
     a.LookDirection = geometry.DirectionVectorToAngleInDegrees(aimPosInWorld.Sub(a.FoVSource()))
-    aimDistanceSquared := a.VisionRange() * a.VisionRange()
-    if a.EquippedItem == nil || (a.EquippedItem.RangedAttack == core.NoAction && a.EquippedItem.MeleeAttack != core.NoAction) {
-        // melee
-        aimDistanceSquared = 1
-    } else if a.EquippedItem.Scope.Range > 0 {
-        // scoped
-        aimDistanceSquared = a.EquippedItem.Scope.Range * a.EquippedItem.Scope.Range
-    }
+    aimDistance := a.AimDistance()
+    aimDistanceSquared := aimDistance * aimDistance
 
     g.TargetLoS = geometry.LineOfSight(a.FoVSource(), aimPosInWorld, func(p geometry.Point) bool {
         return geometry.DistanceSquared(p, a.FoVSource()) < aimDistanceSquared
