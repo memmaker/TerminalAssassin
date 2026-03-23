@@ -48,9 +48,13 @@ const (
 // NewPager returns a new pager with given configuration options.
 func (m *Manager) NewPager(title string, lines []core.StyledText) *Pager {
 	gridWidth, gridHeight := m.engine.ScreenGridWidth(), m.engine.ScreenGridHeight()
+	// Text is drawn in half-width mode. The available width per line is:
+	//   gridWidth * 2  (square grid → half-width columns)
+	//   - 4            (1 square-cell border on each side = 2 half-width cols each)
+	availableWidth := gridWidth*2 - 4
 	pg := &Pager{
 		box:    &Box{Title: core.NewStyledText(title, common.DefaultStyle), Style: common.DefaultStyle},
-		lines:  lines,
+		lines:  core.WordWrapLines(lines, availableWidth),
 		bounds: geometry.NewRect(0, 0, gridWidth, gridHeight),
 	}
 	pg.dirty = true
