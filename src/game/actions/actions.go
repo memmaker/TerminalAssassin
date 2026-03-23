@@ -20,7 +20,10 @@ type ActionProvider struct {
 }
 
 func (g *ActionProvider) UseEquippedItemOnSelf(player *core.Actor) {
-	// do nothing for now
+	// Drop the item at the player's current position (or the nearest free tile).
+	// This is how a proximity mine becomes armed: the player activates it and
+	// it is placed on the ground ready to trigger on the next actor contact.
+	g.engine.GetGame().DropEquippedItem(player)
 }
 
 func NewActionProvider(engine services.Engine) *ActionProvider {

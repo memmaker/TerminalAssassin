@@ -715,3 +715,26 @@ scope_fov: 0.00
 style_fg: (0.06, 0.06, 0.06)
 style_bg: (0.00, 0.00, 0.00)
 
+name: proximity mine
+icon: Ő
+type: explosive
+is_big: false
+uses: -1
+melee_attack:
+ranged_attack: throw
+self_use: tool
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue:
+is_silenced: false
+silenced_cue:
+key_string:
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+style_fg: (0.06, 0.06, 0.06)
+style_bg: (0.00, 0.00, 0.00)
+trigger_effects: ProximityMineTrigger(50, 4, 40)

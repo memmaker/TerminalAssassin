@@ -100,6 +100,9 @@ Name: a gas canister
 ItemAt: (67,38)
 Name: a fragmentation grenade
 
+ItemAt: (67,40)
+Name: proximity mine
+
 ItemAt: (68,28)
 Name: a gas canister
 

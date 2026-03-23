@@ -167,6 +167,7 @@ const (
     TriggerOnToolUsage
     TriggerOnTakenToNewCell
     TriggerOnRemoteControl
+    TriggerOnActorContact // fires when any actor steps onto the tile holding this item
 )
 
 func NewItemEffectTriggerFromString(s string) ItemEffectTrigger {
@@ -191,6 +192,8 @@ func NewItemEffectTriggerFromString(s string) ItemEffectTrigger {
         return TriggerOnTakenToNewCell
     case "on_remote_control":
         return TriggerOnRemoteControl
+    case "on_actor_contact":
+        return TriggerOnActorContact
     default:
         return NoTrigger
     }
