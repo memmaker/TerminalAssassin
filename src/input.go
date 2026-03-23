@@ -217,47 +217,52 @@ func (i *InputState) KeyToKeyCommand(key ebiten.Key, caps bool) core.InputComman
     }
 }
 func (i *InputState) pollKeyBoardForUI() []core.InputCommand {
+    commands := make([]core.InputCommand, 0)
+
+    // Navigation keys: support held + auto-repeat so the user can scroll menus
+    // by holding an arrow key.
     i.keyBuffer = i.keyBuffer[:0]
     i.keyBuffer = inpututil.AppendPressedKeys(i.keyBuffer)
-
-    for l := len(i.keyBuffer) - 1; l >= 0; l-- {
-        key := i.keyBuffer[l]
+    for _, key := range i.keyBuffer {
         if !i.isStillPressed(key, 14) {
-            i.keyBuffer = append(i.keyBuffer[:l], i.keyBuffer[l+1:]...)
+            continue
+        }
+        switch key {
+        case ebiten.KeyArrowUp, ebiten.KeyW:
+            commands = append(commands, core.MenuUp)
+        case ebiten.KeyArrowDown, ebiten.KeyS:
+            commands = append(commands, core.MenuDown)
+        case ebiten.KeyArrowLeft, ebiten.KeyA:
+            commands = append(commands, core.MenuLeft)
+        case ebiten.KeyArrowRight, ebiten.KeyD:
+            commands = append(commands, core.MenuRight)
         }
     }
-    //buffer := make([]ebiten.Key, 0)
-    //buffer = inpututil.AppendJustPressedKeys(buffer)
-    commands := make([]core.InputCommand, len(i.keyBuffer))
-    for index, key := range i.keyBuffer {
+
+    // Action and text keys: only on the very first press.
+    // Using AppendJustPressedKeys here prevents spurious extra triggers when
+    // the OS fires a new keydown event after the window regains focus during a
+    // fullscreen/windowed mode switch.
+    var justPressed []ebiten.Key
+    justPressed = inpututil.AppendJustPressedKeys(justPressed)
+    isCaps := ebiten.IsKeyPressed(ebiten.KeyShift) || ebiten.IsKeyPressed(ebiten.KeyCapsLock)
+    for _, key := range justPressed {
         switch key {
         case ebiten.KeyEnter:
-            commands[index] = core.MenuConfirm
+            commands = append(commands, core.MenuConfirm)
         case ebiten.KeyE:
-            commands[index] = core.MenuConfirm
+            commands = append(commands, core.MenuConfirm)
         case ebiten.KeyQ:
-            commands[index] = core.MenuCancel
+            commands = append(commands, core.MenuCancel)
         case ebiten.KeyEscape:
-            commands[index] = core.MenuCancel
-        case ebiten.KeyArrowUp:
-            commands[index] = core.MenuUp
-        case ebiten.KeyW:
-            commands[index] = core.MenuUp
-        case ebiten.KeyArrowDown:
-            commands[index] = core.MenuDown
-        case ebiten.KeyS:
-            commands[index] = core.MenuDown
-        case ebiten.KeyArrowLeft:
-            commands[index] = core.MenuLeft
-        case ebiten.KeyA:
-            commands[index] = core.MenuLeft
-        case ebiten.KeyArrowRight:
-            commands[index] = core.MenuRight
-        case ebiten.KeyD:
-            commands[index] = core.MenuRight
+            commands = append(commands, core.MenuCancel)
+        case ebiten.KeyArrowUp, ebiten.KeyW,
+            ebiten.KeyArrowDown, ebiten.KeyS,
+            ebiten.KeyArrowLeft, ebiten.KeyA,
+            ebiten.KeyArrowRight, ebiten.KeyD:
+            // Already handled with repeat above; skip the first-press duplicate.
         default:
-            isCaps := ebiten.IsKeyPressed(ebiten.KeyShift) || ebiten.IsKeyPressed(ebiten.KeyCapsLock)
-            commands[index] = i.KeyToKeyCommand(key, isCaps)
+            commands = append(commands, i.KeyToKeyCommand(key, isCaps))
         }
     }
     return commands
