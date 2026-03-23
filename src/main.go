@@ -50,6 +50,8 @@ type ConsoleEngine struct {
     ItemFactory   *services.ItemFactory
     ObjectFactory *objects.ObjectFactory
 
+    graphicsConfig GraphicsConfig
+
     deviceDPIScale float64
     wantsToQuit    bool
 
@@ -95,6 +97,7 @@ func (g *ConsoleEngine) PushState(newGameState services.GameState) {
 }
 
 func (g *ConsoleEngine) QuitGame() {
+    SaveGraphicsConfig(g.graphicsConfig)
     g.wantsToQuit = true
 }
 
@@ -151,12 +154,8 @@ func main() {
     squareFontName := "Square-H"
     halfWidthFontName := "Px437 EagleSpCGA Alt2-2y"
 
-    config := console.GridConfig{
-        TileSize:       40,
-        GridWidth:      32, //32, //64,
-        GridHeight:     18, //18, //36,
-        MaxVisionRange: 10,
-    }
+    config := console.OptimalGridConfig(50, 10)
+    graphicsConfig := LoadGraphicsConfig(config.TileSize)
     gameConfig := &services.GameConfig{
         ActorDefaultHealth: 3,
         CampaignDirectory:  "datafiles/campaigns",
@@ -166,6 +165,7 @@ func main() {
         Audio:              true,
         LightSources:       true,
         ShowHints:          true,
+        Fullscreen:         graphicsConfig.Fullscreen,
     }
 
     con := console.NewConsole(config)
@@ -174,6 +174,7 @@ func main() {
     externalData := services.NewExternalDataFromDisk(files)
     consoleGame := &ConsoleEngine{
         Config:         config,
+        graphicsConfig: graphicsConfig,
         Console:        con,
         Input:          NewInput(config),
         Model:          game.NewModel(gameConfig),
@@ -183,7 +184,10 @@ func main() {
         scheduledCalls: map[uint64][]func(){},
     }
     ebiten.SetWindowTitle(gameTitle)
-    ebiten.SetWindowSize(int(float64(config.GridWidth*config.TileSize)), int(float64(config.GridHeight*config.TileSize)))
+    ebiten.SetWindowSize(graphicsConfig.WindowedWidth, graphicsConfig.WindowedHeight)
+    if graphicsConfig.Fullscreen {
+        ebiten.SetFullscreen(true)
+    }
     ebiten.SetScreenClearedEveryFrame(false)
     consoleGame.Init()
     if err := ebiten.RunGameWithOptions(consoleGame, &ebiten.RunGameOptions{
@@ -251,37 +255,42 @@ func (g *ConsoleEngine) LayoutF(outsideWidth, outsideHeight float64) (screenWidt
     scale := ebiten.Monitor().DeviceScaleFactor()
     g.deviceDPIScale = scale
 
-    config := g.GetGame().GetConfig()
-    if config.Fullscreen {
-        physicalW := outsideWidth * scale
-        physicalH := outsideHeight * scale
+    physicalW := outsideWidth * scale
+    physicalH := outsideHeight * scale
 
-        gameW := float64(g.Config.GridWidth * g.Config.TileSize)
-        gameH := float64(g.Config.GridHeight * g.Config.TileSize)
+    gameW := float64(g.Config.GridWidth * g.Config.TileSize)
+    gameH := float64(g.Config.GridHeight * g.Config.TileSize)
 
-        fsScale := math.Min(physicalW/gameW, physicalH/gameH)
+    renderScale := math.Min(physicalW/gameW, physicalH/gameH)
+    offsetX := (physicalW - gameW*renderScale) / 2
+    offsetY := (physicalH - gameH*renderScale) / 2
 
-        offsetX := (physicalW - gameW*fsScale) / 2
-        offsetY := (physicalH - gameH*fsScale) / 2
+    g.Console.SetRenderParams(renderScale, offsetX, offsetY)
+    g.Input.SetRenderParams(
+        float64(g.Config.TileSize)*renderScale,
+        float64(g.Config.TileSize)*renderScale,
+        offsetX, offsetY,
+    )
 
-        g.Console.SetRenderParams(fsScale, offsetX, offsetY)
-        g.Input.SetRenderParams(
-            float64(g.Config.TileSize)*fsScale,
-            float64(g.Config.TileSize)*fsScale,
-            offsetX, offsetY,
-        )
-        return physicalW, physicalH
+    // Track windowed size so we can persist it on quit / fullscreen toggle.
+    if !g.GetGame().GetConfig().Fullscreen {
+        newW, newH := int(outsideWidth), int(outsideHeight)
+        if newW > 0 && newH > 0 && (newW != g.graphicsConfig.WindowedWidth || newH != g.graphicsConfig.WindowedHeight) {
+            g.graphicsConfig.WindowedWidth = newW
+            g.graphicsConfig.WindowedHeight = newH
+        }
     }
 
-    g.Console.SetRenderParams(scale, 0, 0)
-    g.Input.SetScale(scale)
-    return float64(g.Config.GridWidth*g.Config.TileSize) * scale, float64(g.Config.GridHeight*g.Config.TileSize) * scale
+    return physicalW, physicalH
 }
 
 func (g *ConsoleEngine) SetFullscreen(enabled bool) {
     g.GetGame().GetConfig().Fullscreen = enabled
+    g.graphicsConfig.Fullscreen = enabled
     ebiten.SetFullscreen(enabled)
-    g.Console.ClearSurface()
+    g.Console.ClearSurface() // fillScreenNext=true: Draw() will clear screen black
+    g.Console.ClearConsole() // mark all cells dirty so the full frame is redrawn
+    SaveGraphicsConfig(g.graphicsConfig)
 }
 
 func (g *ConsoleEngine) GetUI() services.UIInterface {
