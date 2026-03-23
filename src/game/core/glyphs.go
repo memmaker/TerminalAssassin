@@ -61,6 +61,7 @@ const (
 	GlyphWallSocket           = 'Ш'
 	GlyphElectricalGadget     = 'ˮ'
 	GlyphRemoteBomb           = '˺'
+	GlyphProximityMine        = '˰'
 	GlyphShower               = '˻'
 	GlyphTree                 = '˼'
 	GlyphFountain             = '˽'

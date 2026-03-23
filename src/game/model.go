@@ -715,6 +715,16 @@ func (m *Model) ActorEnteredCell(person *core.Actor, oldPosition geometry.Point,
     m.handleDragging(person, oldPosition)
     m.ReEmitStimuliOnTileToThings(core.NewEffectSourceFromActor(person), newPosition)
 
+    // Proximity trigger: fire any item on this cell that reacts to actor contact
+    // (e.g. a placed mine). The player is excluded so they can retrieve their
+    // own mines. Downed/dragged bodies are also excluded.
+    if !person.IsDowned() && currentMap.IsItemAt(newPosition) {
+        itemAt := currentMap.ItemAt(newPosition)
+        if !itemAt.IsDestroyed {
+            m.SendTriggerStimuli(person, itemAt, newPosition, core.TriggerOnActorContact)
+        }
+    }
+
     oldZone := currentMap.ZoneAt(oldPosition)
     newZone := currentMap.ZoneAt(newPosition)
 

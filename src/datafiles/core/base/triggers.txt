@@ -46,3 +46,7 @@ on_melee_attack: ElectricStims($POWER)
 
 Signature: RemoteTaserTrigger($POWER)
 on_remote_control: ElectricStims($POWER)
+
+Signature: ProximityMineTrigger($POWER, $DISTANCE, $PRESSURE)
+on_actor_contact: ExplosionAreaStims($POWER, $DISTANCE, $PRESSURE)
+
