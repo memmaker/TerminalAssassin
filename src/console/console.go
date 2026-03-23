@@ -32,18 +32,18 @@ type CellInterface interface {
 }
 
 type GridConfig struct {
-    TileWidth      int
-    TileHeight     int
-    GridWidth      int
-    GridHeight     int
-    MaxVisionRange int
+	TileSize       int
+	GridWidth      int
+	GridHeight     int
+	MaxVisionRange int
 }
 
 type Console struct {
-    // basics
-    screenDPIScale float64
-    TileWidth      int
-    TileHeight     int
+	// basics
+	screenDPIScale float64
+	renderOffsetX  float64
+	renderOffsetY  float64
+	TileSize       int
 
     // fonts
     txtRenderer   *etxt.Renderer
@@ -95,21 +95,20 @@ func (c *Console) AtHalfWidth(p geometry.Point) common.Cell {
 }
 
 func NewConsole(config GridConfig) *Console {
-    newCon := &Console{
-        TileWidth:                 config.TileWidth,
-        TileHeight:                config.TileHeight,
-        GridWidth:                 config.GridWidth,
-        GridHeight:                config.GridHeight,
-        txtRenderer:               NewTextRenderer(),
-        squareCurrentGrid:         geometry.NewGrid(config.GridWidth, config.GridHeight),
-        squareAccumulatedFrame:    make(map[geometry.Point]common.Cell, config.GridWidth*config.GridHeight),
-        halfWidthCurrentGrid:      geometry.NewGrid(config.GridWidth*2, config.GridHeight),
-        halfWidthAccumulatedFrame: make(map[geometry.Point]common.Cell, config.GridWidth*config.GridHeight*2),
-        squareBuffer:              ebiten.NewImage(config.GridWidth*config.TileWidth, config.GridHeight*config.TileHeight),
-        halfWidthBuffer:           ebiten.NewImage(config.GridWidth*config.TileWidth, config.GridHeight*config.TileHeight),
-        halfWidthPreviousGrid:     geometry.NewGrid(config.GridWidth*2, config.GridHeight),
-        squarePreviousGrid:        geometry.NewGrid(config.GridWidth, config.GridHeight),
-    }
+	newCon := &Console{
+		TileSize:                  config.TileSize,
+		GridWidth:                 config.GridWidth,
+		GridHeight:                config.GridHeight,
+		txtRenderer:               NewTextRenderer(),
+		squareCurrentGrid:         geometry.NewGrid(config.GridWidth, config.GridHeight),
+		squareAccumulatedFrame:    make(map[geometry.Point]common.Cell, config.GridWidth*config.GridHeight),
+		halfWidthCurrentGrid:      geometry.NewGrid(config.GridWidth*2, config.GridHeight),
+		halfWidthAccumulatedFrame: make(map[geometry.Point]common.Cell, config.GridWidth*config.GridHeight*2),
+		squareBuffer:              ebiten.NewImage(config.GridWidth*config.TileSize, config.GridHeight*config.TileSize),
+		halfWidthBuffer:           ebiten.NewImage(config.GridWidth*config.TileSize, config.GridHeight*config.TileSize),
+		halfWidthPreviousGrid:     geometry.NewGrid(config.GridWidth*2, config.GridHeight),
+		squarePreviousGrid:        geometry.NewGrid(config.GridWidth, config.GridHeight),
+	}
     newCon.HalfWidthTransparent()
     return newCon
 }
@@ -138,23 +137,25 @@ func (c *Console) drawCellsToScreen(cells CellIterator, screen *ebiten.Image, fo
     }
     //println(fmt.Sprintf("drawing %v cells", count))
     c.txtRenderer.SetFont(font)
-    scale := c.screenDPIScale
-    tilewidth := int(math.Ceil(float64(c.TileWidth) * scale * tileScale.X))
-    tileheight := int(math.Ceil(float64(c.TileHeight) * scale * tileScale.Y))
+	scale := c.screenDPIScale
+	tilewidth := int(math.Ceil(float64(c.TileSize) * scale * tileScale.X))
+	tileheight := int(math.Ceil(float64(c.TileSize) * scale * tileScale.Y))
+    offsetX := int(math.Round(c.renderOffsetX))
+    offsetY := int(math.Round(c.renderOffsetY))
     cells.Iter(func(tilePos geometry.Point, cellAt common.Cell) {
-        vector.DrawFilledRect(screen, float32((tilePos.X)*tilewidth), float32((tilePos.Y)*tileheight), float32(tilewidth), float32(tileheight), cellAt.Style.Background, false)
+        vector.FillRect(screen, float32(offsetX+(tilePos.X)*tilewidth), float32(offsetY+(tilePos.Y)*tileheight), float32(tilewidth), float32(tileheight), cellAt.Style.Background, false)
     })
 
     c.txtRenderer.SetTarget(screen)
-    c.txtRenderer.SetSizePx(int(math.Ceil(float64(c.TileHeight) * scale)))
+	c.txtRenderer.SetSizePx(int(math.Ceil(float64(c.TileSize) * scale)))
     cells.Iter(func(tilePos geometry.Point, cellAt common.Cell) {
         glyph := string(cellAt.Rune)
         runes, _ := etxt.GetMissingRunes(font, glyph)
         if len(runes) > 0 {
             glyph = " "
         }
-        xPos := (tilePos.X) * tilewidth
-        yPos := (tilePos.Y) * tileheight
+        xPos := offsetX + (tilePos.X)*tilewidth
+        yPos := offsetY + (tilePos.Y)*tileheight
         c.txtRenderer.SetColor(cellAt.Style.Foreground)
         c.txtRenderer.Draw(glyph, xPos, yPos)
     })
@@ -162,10 +163,17 @@ func (c *Console) drawCellsToScreen(cells CellIterator, screen *ebiten.Image, fo
 }
 
 func (c *Console) SetScale(scale float64) {
-    if scale != c.screenDPIScale {
+    c.SetRenderParams(scale, 0, 0)
+}
+
+func (c *Console) SetRenderParams(scale, offsetX, offsetY float64) {
+    if scale != c.screenDPIScale || offsetX != c.renderOffsetX || offsetY != c.renderOffsetY {
         c.screenDPIScale = scale
-        c.squareBuffer = ebiten.NewImage(int(float64(c.GridWidth*c.TileWidth)*c.screenDPIScale), int(float64(c.GridHeight*c.TileHeight)*c.screenDPIScale))
-        c.halfWidthBuffer = ebiten.NewImage(int(float64(c.GridWidth*c.TileWidth)*c.screenDPIScale), int(float64(c.GridHeight*c.TileHeight)*c.screenDPIScale))
+        c.renderOffsetX = offsetX
+        c.renderOffsetY = offsetY
+        c.squareBuffer = ebiten.NewImage(int(float64(c.GridWidth*c.TileSize)*c.screenDPIScale), int(float64(c.GridHeight*c.TileSize)*c.screenDPIScale))
+        c.halfWidthBuffer = ebiten.NewImage(int(float64(c.GridWidth*c.TileSize)*c.screenDPIScale), int(float64(c.GridHeight*c.TileSize)*c.screenDPIScale))
+        c.clearBeforeNextDraw = true
         c.ClearConsole()
     }
 }

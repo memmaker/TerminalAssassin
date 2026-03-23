@@ -53,6 +53,12 @@ type InputState struct {
     //pressedButtons         map[ebiten.GamepadID][]ebiten.GamepadButton
     pressedStandardButtons     map[ebiten.GamepadID][]ebiten.StandardGamepadButton
     justPressedStandardButtons map[ebiten.GamepadID][]ebiten.StandardGamepadButton
+
+    // required here to correctly calculate the mouse position on screen
+    effectiveTileW float64
+    effectiveTileH float64
+    renderOffsetX  float64
+    renderOffsetY  float64
 }
 
 func (i *InputState) PollGamepad() {
@@ -700,6 +706,17 @@ func (i *InputState) SetMovementDelayForWalkingAndRunning() {
 
 func (i *InputState) SetScale(scale float64) {
     i.dpiScale = scale
+    i.effectiveTileW = float64(i.config.TileSize) * scale
+    i.effectiveTileH = float64(i.config.TileSize) * scale
+    i.renderOffsetX = 0
+    i.renderOffsetY = 0
+}
+
+func (i *InputState) SetRenderParams(tileW, tileH, offsetX, offsetY float64) {
+    i.effectiveTileW = tileW
+    i.effectiveTileH = tileH
+    i.renderOffsetX = offsetX
+    i.renderOffsetY = offsetY
 }
 
 func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
@@ -841,8 +858,16 @@ func (i *InputState) pollGamePadForUI() []core.InputCommand {
 
 func (i *InputState) pollMouse() []core.InputCommand {
     mx, my := ebiten.CursorPosition()
-    xMouse := float64(mx) / (float64(i.config.TileWidth) * i.dpiScale)
-    yMouse := float64(my) / (float64(i.config.TileHeight) * i.dpiScale)
+    tileW := i.effectiveTileW
+    tileH := i.effectiveTileH
+    if tileW == 0 {
+        tileW = float64(i.config.TileSize) * i.dpiScale
+    }
+    if tileH == 0 {
+        tileH = float64(i.config.TileSize) * i.dpiScale
+    }
+    xMouse := (float64(mx) - i.renderOffsetX) / tileW
+    yMouse := (float64(my) - i.renderOffsetY) / tileH
     xMouse = common.Clamp(xMouse, 0, float64(i.config.GridWidth-1))
     yMouse = common.Clamp(yMouse, 0, float64(i.config.GridHeight-1))
     i.MousePosOnScreenGrid = geometry.Point{X: int(xMouse), Y: int(yMouse)}
