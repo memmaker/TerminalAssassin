@@ -273,7 +273,7 @@ func (g *MapSerializer) SaveActorSchedules(currentMap *gridmap.GridMap[*core.Act
 	defer file.Close()
 	listOfSchedules := make([]rec_files.Record, 0)
 	for _, actorAt := range currentMap.Actors() {
-		scheduleAsRecord := actorAt.AI.Schedule.ToRecord(actorAt.Pos())
+		scheduleAsRecord := actorAt.AI.Schedule.ToRecord(actorAt.Name)
 		if len(scheduleAsRecord) == 0 {
 			continue
 		}
@@ -295,13 +295,19 @@ func (g *MapSerializer) LoadActorSchedules(files *Files, loadedMap *gridmap.Grid
 	scheduleCounter := 0
 	for _, record := range records {
 		schedule := core.ScheduleFromRecord(record)
-		pos, _ := geometry.NewPointFromString(record.ToMap()["ForActorAt"])
-		actorAt, isActorAt := loadedMap.TryGetActorAt(pos)
-		if isActorAt {
-			actorAt.AI.Schedule = *schedule
+		actorName := record.ToMap()["ForActorWithName"]
+		var foundActor *core.Actor
+		for _, a := range loadedMap.Actors() {
+			if a.Name == actorName {
+				foundActor = a
+				break
+			}
+		}
+		if foundActor != nil {
+			foundActor.AI.Schedule = *schedule
 			scheduleCounter++
 		} else {
-			println("Error loading actor schedule: no actor at " + pos.String())
+			println("Error loading actor schedule: no actor named '" + actorName + "'")
 		}
 	}
 

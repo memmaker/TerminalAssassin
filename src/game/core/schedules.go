@@ -52,12 +52,12 @@ func (s *Schedule) Clear() {
 	s.CurrentTaskIndex = 0
 }
 
-func (s *Schedule) ToRecord(pos geometry.Point) []rec_files.Field {
+func (s *Schedule) ToRecord(name string) []rec_files.Field {
 	var fields []rec_files.Field
 	if len(s.Tasks) == 0 {
 		return fields
 	}
-	fields = append(fields, rec_files.Field{Name: "ForActorAt", Value: pos.String()})
+	fields = append(fields, rec_files.Field{Name: "ForActorWithName", Value: name})
 	for _, task := range s.Tasks {
 		fields = append(fields, rec_files.Field{Name: "Task", Value: task.ToString()})
 	}
@@ -67,7 +67,7 @@ func (s *Schedule) ToRecord(pos geometry.Point) []rec_files.Field {
 func ScheduleFromRecord(fields []rec_files.Field) *Schedule {
 	var schedule Schedule
 	for _, field := range fields {
-		if field.Name == "ForActorAt" {
+		if field.Name == "ForActorWithName" {
 			continue
 		}
 		if field.Name == "Task" {
