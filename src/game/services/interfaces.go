@@ -97,6 +97,7 @@ type GameConfig struct {
     Audio              bool
     LightSources       bool
     ShowHints          bool
+    Fullscreen         bool
 }
 type GameInterface interface {
     UpdateHUD()
@@ -323,6 +324,7 @@ type Engine interface {
     GetAvailableTextFonts() []string
     SetTextFont(fontName string)
     SetTileFont(fontName string)
+    SetFullscreen(enabled bool)
     CurrentTick() uint64
     ResetForGameplay()
     PublishEvent(event GameEvent)

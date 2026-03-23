@@ -3,6 +3,8 @@ package main
 import (
     "embed"
     "encoding/gob"
+    "math"
+
     "github.com/hajimehoshi/ebiten/v2"
     "github.com/memmaker/terminal-assassin/audio"
     "github.com/memmaker/terminal-assassin/common"
@@ -150,8 +152,7 @@ func main() {
     halfWidthFontName := "Px437 EagleSpCGA Alt2-2y"
 
     config := console.GridConfig{
-        TileWidth:      40,
-        TileHeight:     40,
+        TileSize:       40,
         GridWidth:      32, //32, //64,
         GridHeight:     18, //18, //36,
         MaxVisionRange: 10,
@@ -182,7 +183,7 @@ func main() {
         scheduledCalls: map[uint64][]func(){},
     }
     ebiten.SetWindowTitle(gameTitle)
-    ebiten.SetWindowSize(int(float64(config.GridWidth*config.TileWidth)), int(float64(config.GridHeight*config.TileHeight)))
+    ebiten.SetWindowSize(int(float64(config.GridWidth*config.TileSize)), int(float64(config.GridHeight*config.TileSize)))
     ebiten.SetScreenClearedEveryFrame(false)
     consoleGame.Init()
     if err := ebiten.RunGameWithOptions(consoleGame, &ebiten.RunGameOptions{
@@ -247,11 +248,40 @@ func (g *ConsoleEngine) Layout(outsideWidth, outsideHeight int) (screenWidth, sc
 }
 
 func (g *ConsoleEngine) LayoutF(outsideWidth, outsideHeight float64) (screenWidth, screenHeight float64) {
-    scale := ebiten.DeviceScaleFactor()
+    scale := ebiten.Monitor().DeviceScaleFactor()
     g.deviceDPIScale = scale
-    g.Console.SetScale(scale)
+
+    config := g.GetGame().GetConfig()
+    if config.Fullscreen {
+        physicalW := outsideWidth * scale
+        physicalH := outsideHeight * scale
+
+        gameW := float64(g.Config.GridWidth * g.Config.TileSize)
+        gameH := float64(g.Config.GridHeight * g.Config.TileSize)
+
+        fsScale := math.Min(physicalW/gameW, physicalH/gameH)
+
+        offsetX := (physicalW - gameW*fsScale) / 2
+        offsetY := (physicalH - gameH*fsScale) / 2
+
+        g.Console.SetRenderParams(fsScale, offsetX, offsetY)
+        g.Input.SetRenderParams(
+            float64(g.Config.TileSize)*fsScale,
+            float64(g.Config.TileSize)*fsScale,
+            offsetX, offsetY,
+        )
+        return physicalW, physicalH
+    }
+
+    g.Console.SetRenderParams(scale, 0, 0)
     g.Input.SetScale(scale)
-    return float64(g.Config.GridWidth*g.Config.TileWidth) * scale, float64(g.Config.GridHeight*g.Config.TileHeight) * scale
+    return float64(g.Config.GridWidth*g.Config.TileSize) * scale, float64(g.Config.GridHeight*g.Config.TileSize) * scale
+}
+
+func (g *ConsoleEngine) SetFullscreen(enabled bool) {
+    g.GetGame().GetConfig().Fullscreen = enabled
+    ebiten.SetFullscreen(enabled)
+    g.Console.ClearSurface()
 }
 
 func (g *ConsoleEngine) GetUI() services.UIInterface {

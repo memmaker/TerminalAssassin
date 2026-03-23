@@ -169,6 +169,17 @@ func (g *GameStateMainMenu) openOptionsMenu() {
 				config.ShowHints = !config.ShowHints
 			},
 		},
+		{
+			DynamicLabel: func() string {
+				if config.Fullscreen {
+					return "Display: Fullscreen"
+				}
+				return "Display: Windowed"
+			},
+			Handler: func() {
+				g.engine.SetFullscreen(!config.Fullscreen)
+			},
+		},
 	}
 	g.engine.GetUI().OpenFixedWidthStackedMenu("options", menuItems)
 }
