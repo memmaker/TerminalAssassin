@@ -234,7 +234,7 @@ func (m *Manager) RemoveFromScene(widget services.UIWidget) {
 
 func (m *Manager) OpenXOffsetAutoCloseMenuWithCallback(xOffset int, items []services.MenuItem, onClose func()) {
     height := len(items) + 1
-    yEnd := m.engine.ScreenGridHeight() - 3
+    yEnd := m.engine.ScreenGridHeight() - 4
     yStart := yEnd - height
     if yStart < 0 {
         yStart = 0
