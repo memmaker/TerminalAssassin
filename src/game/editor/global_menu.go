@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/memmaker/terminal-assassin/common"
 	"github.com/memmaker/terminal-assassin/game/core"
@@ -93,6 +95,10 @@ func (g *GameStateEditor) saveMap() {
 			}
 		}
 	}}
-	g.showTextInput("Map name: ", "")
+	prefilledName := ""
+	if existingFileName := currentMap.MapFileName(); existingFileName != "" {
+		prefilledName = strings.TrimSuffix(filepath.Base(existingFileName), ".map")
+	}
+	g.showTextInput("Map name: ", prefilledName)
 	return
 }
