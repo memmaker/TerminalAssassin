@@ -402,6 +402,11 @@ Name: light window (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
 
+ObjectAt: (60,27)
+Name: Boulder: boulder (falling)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
 ObjectAt: (60,67)
 Name: locker (container)
 FgColor: (0.00, 0.00, 0.13)
@@ -432,6 +437,11 @@ Name: light window (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
 
+ObjectAt: (63,27)
+Name: Trigger: lever (trigger)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
+
 ObjectAt: (63,62)
 Name: light window (closed)
 FgColor: (0.00, 0.00, 0.13)
@@ -446,6 +456,11 @@ ObjectAt: (66,67)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (67,26)
+Name: gravestone|Willy Wonka
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
 
 ObjectAt: (67,72)
 Name: light door (open)
@@ -466,6 +481,11 @@ ObjectAt: (69,67)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+
+ObjectAt: (70,23)
+Name: gravestone|Helga
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (0.80, 0.80, 0.80)
 
 ObjectAt: (72,76)
 Name: light window (closed)
