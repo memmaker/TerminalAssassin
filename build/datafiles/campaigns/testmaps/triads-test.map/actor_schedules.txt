@@ -4,16 +4,16 @@ Task: Location(16,44) Duration(10.00) -> Dummy
 ForActorWithName: Blue Lotus Guard 2
 Task: Location(14,48) Duration(10.00) -> Dummy
 
-ForActorWithName: Warehouse Manager
-Task: Location(22,72) Duration(10.00) -> Dummy
-Task: Location(13,68) Duration(10.00) -> Dummy
-
 ForActorWithName: Blue Lotus Leader
 Task: Location(15,48) Duration(10.00) -> Dummy
 
 ForActorWithName: Detective
 Task: Location(17,82) Duration(10.00) -> Dummy
 Task: Location(18,89) Duration(10.00) -> Dummy
+
+ForActorWithName: Doc. Brown
+Task: Location(73,74) Duration(10.00) -> Dummy
+Task: Location(59,74) Duration(10.00) -> Dummy
 
 ForActorWithName: Homeless man
 Task: Location(15,73) Duration(10.00) -> Dummy
@@ -22,6 +22,45 @@ Task: Location(35,83) Duration(10.00) -> Dummy
 Task: Location(54,64) Duration(10.00) -> Dummy
 Task: Location(62,54) Duration(10.00) -> Dummy
 Task: Location(34,54) Duration(10.00) -> Dummy
+
+ForActorWithName: Hotel Guest 1
+Task: Location(47,47) Duration(10.00) -> Dummy
+Task: Location(55,47) Duration(10.00) -> Dummy
+
+ForActorWithName: Hotel Guest 2
+Task: Location(48,40) Duration(10.00) -> Dummy
+Task: Location(55,40) Duration(10.00) -> Dummy
+Task: Location(48,44) Duration(10.00) -> Dummy
+
+ForActorWithName: Hotel Guest 3
+Task: Location(42,41) Duration(10.00) -> Dummy
+Task: Location(43,44) Duration(10.00) -> Dummy
+
+ForActorWithName: Ms. Brown
+Task: Location(58,65) Duration(10.00) -> Dummy
+Task: Location(59,63) Duration(10.00) -> Dummy
+Task: Location(56,64) Duration(10.00) -> Dummy
+Task: Location(72,69) Duration(10.00) -> Dummy
+
+ForActorWithName: Red Dragon Guard 1
+Task: Location(45,87) Duration(10.00) -> Dummy
+Task: Location(41,84) Duration(10.00) -> Dummy
+
+ForActorWithName: Red Dragon Guard 2
+Task: Location(51,84) Duration(10.00) -> Dummy
+Task: Location(46,88) Duration(10.00) -> Dummy
+Task: Location(52,93) Duration(10.00) -> Dummy
+
+ForActorWithName: Red Dragon Guard 3
+Task: Location(28,86) Duration(10.00) -> Dummy
+Task: Location(45,87) Duration(10.00) -> Dummy
+
+ForActorWithName: Red Dragon Leader
+Task: Location(66,89) Duration(10.00) -> Dummy
+Task: Location(63,86) Duration(10.00) -> Dummy
+Task: Location(55,89) Duration(10.00) -> Dummy
+Task: Location(33,89) Duration(10.00) -> Dummy
+Task: Location(46,84) Duration(10.00) -> Dummy
 
 ForActorWithName: Tourist 1
 Task: Location(37,59) Duration(10.00) -> Dummy
@@ -33,53 +72,6 @@ Task: Location(69,93) Duration(10.00) -> Dummy
 Task: Location(24,95) Duration(10.00) -> Dummy
 Task: Location(16,75) Duration(10.00) -> Dummy
 
-ForActorWithName: Warehouse Worker
-Task: Location(19,69) Duration(10.00) -> Dummy
-Task: Location(42,69) Duration(10.00) -> Dummy
-
-ForActorWithName: Red Dragon Guard 1
-Task: Location(45,87) Duration(10.00) -> Dummy
-Task: Location(41,84) Duration(10.00) -> Dummy
-
-ForActorWithName: Hotel Guest 3
-Task: Location(42,41) Duration(10.00) -> Dummy
-Task: Location(43,44) Duration(10.00) -> Dummy
-
-ForActorWithName: Red Dragon Guard 3
-Task: Location(28,86) Duration(10.00) -> Dummy
-Task: Location(45,87) Duration(10.00) -> Dummy
-
-ForActorWithName: Hotel Guest 2
-Task: Location(48,40) Duration(10.00) -> Dummy
-Task: Location(55,40) Duration(10.00) -> Dummy
-Task: Location(48,44) Duration(10.00) -> Dummy
-
-ForActorWithName: Red Dragon Guard 2
-Task: Location(51,84) Duration(10.00) -> Dummy
-Task: Location(46,88) Duration(10.00) -> Dummy
-Task: Location(52,93) Duration(10.00) -> Dummy
-
-ForActorWithName: Hotel Guest 1
-Task: Location(47,47) Duration(10.00) -> Dummy
-Task: Location(55,47) Duration(10.00) -> Dummy
-
-ForActorWithName: Red Dragon Leader
-Task: Location(66,89) Duration(10.00) -> Dummy
-Task: Location(63,86) Duration(10.00) -> Dummy
-Task: Location(55,89) Duration(10.00) -> Dummy
-Task: Location(33,89) Duration(10.00) -> Dummy
-Task: Location(46,84) Duration(10.00) -> Dummy
-
-ForActorWithName: Doc. Brown
-Task: Location(73,74) Duration(10.00) -> Dummy
-Task: Location(59,74) Duration(10.00) -> Dummy
-
-ForActorWithName: Ms. Brown
-Task: Location(58,65) Duration(10.00) -> Dummy
-Task: Location(59,63) Duration(10.00) -> Dummy
-Task: Location(56,64) Duration(10.00) -> Dummy
-Task: Location(72,69) Duration(10.00) -> Dummy
-
 ForActorWithName: Tourist 2
 Task: Location(50,56) Duration(10.00) -> Dummy
 Task: Location(46,63) Duration(10.00) -> Dummy
@@ -87,3 +79,12 @@ Task: Location(46,75) Duration(10.00) -> Dummy
 Task: Location(16,75) Duration(10.00) -> Dummy
 Task: Location(24,95) Duration(10.00) -> Dummy
 Task: Location(46,76) Duration(10.00) -> Dummy
+
+ForActorWithName: Warehouse Manager
+Task: Location(22,72) Duration(10.00) -> Dummy
+Task: Location(13,68) Duration(10.00) -> Dummy
+
+ForActorWithName: Warehouse Worker
+Task: Location(19,69) Duration(10.00) -> Dummy
+Task: Location(42,69) Duration(10.00) -> Dummy
+

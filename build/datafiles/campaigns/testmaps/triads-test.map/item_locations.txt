@@ -85,6 +85,12 @@ Name: Fiber Wire
 ItemAt: (62,51)
 Name: a soda can
 
+ItemAt: (63,42)
+Name: lethal poison
+
+ItemAt: (64,42)
+Name: emetic poison
+
 ItemAt: (64,86)
 Name: a cigarette
 
@@ -96,6 +102,12 @@ Name: a can of gasoline
 
 ItemAt: (66,28)
 Name: a gas canister
+
+ItemAt: (67,36)
+Name: poison gas grenade
+
+ItemAt: (67,37)
+Name: sleep gas grenade
 
 ItemAt: (67,38)
 Name: a fragmentation grenade
@@ -111,6 +123,12 @@ Name: a gas canister
 
 ItemAt: (70,71)
 Name: a knife
+
+ItemAt: (71,38)
+Name: sleep gas trip mine
+
+ItemAt: (73,38)
+Name: poison gas trip mine
 
 ItemAt: (74,75)
 Name: emetic poison
