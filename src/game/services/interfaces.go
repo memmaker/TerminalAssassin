@@ -186,6 +186,7 @@ type AnimationInterface interface {
     TaskAnimation(person *core.Actor, seconds float64, cancelled func(), finished func())
     BlastDistribution(location geometry.Point, source core.EffectSource, applyStim []stimuli.Stimulus, size int, pressure int)
     LiquidDistribution(location geometry.Point, source core.EffectSource, applyStim []stimuli.Stimulus, size int)
+    GasDistribution(location geometry.Point, source core.EffectSource, stims []stimuli.Stimulus, radius int, durationSecs int)
     PlayerChangeClothesAnimation(location geometry.Point, clothing core.Clothing, finished, cancelled func())
     ElectricityAnimation(tiles []geometry.Point, source core.EffectSource, stim stimuli.Stimulus)
     ActorEngagedIllegalAnimation(person *core.Actor, icon rune, actionPosition geometry.Point, timeNeededInSeconds float64, finishedCallback func(), cancelled func())

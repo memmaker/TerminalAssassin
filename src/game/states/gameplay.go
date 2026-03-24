@@ -789,9 +789,9 @@ func (g *GameStateGameplay) UpdateStatusLine() {
         if !player.EquippedItem.IsLegalForActor(player) {
             itemStyle = itemStyle.WithFg(core.ColorFromCode(core.ColorBlood))
         } else if player.EquippedItem.Type == core.ItemTypeEmeticPoison {
-            itemStyle = itemStyle.WithFg(core.ColorFromCode(core.ColorPoisonEmetic))
+            itemStyle = itemStyle.WithFg(core.ColorFromCode(core.ColorEmetic))
         } else if player.EquippedItem.Type == core.ItemTypeLethalPoison {
-            itemStyle = itemStyle.WithFg(core.ColorFromCode(core.ColorPoisonLethal))
+            itemStyle = itemStyle.WithFg(core.ColorFromCode(core.ColorLethal))
         }
         if player.EquippedItem.Uses > 0 {
             itemSymbol += fmt.Sprintf(" (%d)", player.EquippedItem.Uses)

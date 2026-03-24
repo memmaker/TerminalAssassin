@@ -63,6 +63,10 @@ func (t ItemType) ToString() string {
         return "loot"
     case ItemTypeExplosive:
         return "explosive"
+    case ItemTypeSleepGas:
+        return "sleep_gas"
+    case ItemTypePoisonGas:
+        return "poison_gas"
     default:
         return "unknown"
     }
@@ -119,6 +123,10 @@ func NewItemTypeFromString(text string) ItemType {
         return ItemTypeKnife
     case "explosive":
         return ItemTypeExplosive
+    case "sleep_gas":
+        return ItemTypeSleepGas
+    case "poison_gas":
+        return ItemTypePoisonGas
     default:
         return ItemTypeCommon
     }
@@ -151,6 +159,8 @@ const (
     ItemTypeLoot
     ItemTypeExplosive
     ItemTypeMessage
+    ItemTypeSleepGas
+    ItemTypePoisonGas
 )
 
 type ItemEffectTrigger uint16
@@ -260,9 +270,13 @@ func (i *Item) Style(st common.Style) common.Style {
     itemStyle := i.DefinedStyle.WithBg(st.Background)
     switch i.Type {
     case ItemTypeEmeticPoison:
-        itemStyle = itemStyle.WithFg(ColorFromCode(ColorPoisonEmetic))
+        itemStyle = itemStyle.WithFg(ColorFromCode(ColorEmetic))
     case ItemTypeLethalPoison:
-        itemStyle = itemStyle.WithFg(ColorFromCode(ColorPoisonLethal))
+        itemStyle = itemStyle.WithFg(ColorFromCode(ColorLethal))
+    case ItemTypeSleepGas:
+        itemStyle = itemStyle.WithFg(ColorFromCode(ColorSleep))
+    case ItemTypePoisonGas:
+        itemStyle = itemStyle.WithFg(ColorFromCode(ColorLethal))
     }
     return itemStyle
 }
@@ -450,8 +464,6 @@ func (i *Item) ToRecord() []rec_files.Field {
         {Name: "loot_value", Value: strconv.Itoa(i.LootValue)},
         {Name: "scope_range", Value: strconv.Itoa(i.Scope.Range)},
         {Name: "scope_fov", Value: strconv.FormatFloat(i.Scope.FoVinDegrees, 'f', 2, 64)},
-        {Name: "style_fg", Value: i.DefinedStyle.Foreground.EncodeAsString()},
-        {Name: "style_bg", Value: i.DefinedStyle.Background.EncodeAsString()},
     }
 }
 

@@ -61,6 +61,8 @@ func (d MethodOfDistribution) ToString() string {
 		return "explode"
 	case DistributeLiquid:
 		return "liquid"
+	case DistributeGas:
+		return "gas"
 	}
 	return "unknown"
 }
@@ -73,6 +75,8 @@ func NewMethodOfDistributionFromString(method string) MethodOfDistribution {
 		return DistributeExplode
 	case "liquid":
 		return DistributeLiquid
+	case "gas":
+		return DistributeGas
 	}
 	return DistributeDirect
 }
@@ -81,6 +85,7 @@ const (
 	DistributeDirect MethodOfDistribution = iota
 	DistributeExplode
 	DistributeLiquid
+	DistributeGas
 )
 
 type StimEffect struct {
@@ -125,6 +130,21 @@ func EffectLeak(stimType StimulusType, stimForce int, leakSize int) StimEffect {
 		Stimuli: []Stimulus{
 			Stim{StimType: stimType, StimForce: stimForce},
 		}}
+}
+
+// EffectGas creates a gas cloud that lingers on tiles for durationSecs seconds.
+// Any actor entering a gassed tile is automatically affected.
+// Use StimulusInducedSleep for knockout gas, StimulusLethalPoison for deadly gas.
+func EffectGas(stimType StimulusType, stimForce, radius, durationSecs int) StimEffect {
+	return StimEffect{
+		Distribution:         DistributeGas,
+		Distance:             radius,
+		Pressure:             durationSecs, // repurposed: gas duration in seconds
+		DestroyOnApplication: true,
+		Stimuli: []Stimulus{
+			Stim{StimType: stimType, StimForce: stimForce},
+		},
+	}
 }
 
 func init() {
