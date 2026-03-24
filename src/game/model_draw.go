@@ -123,6 +123,9 @@ func StimDrawInfo(c gridmap.MapCell[*core.Actor, *core.Item, services.Object], t
     } else if c.HasStim(stimuli.StimulusEmeticPoison) {
         stimStyle = styleFromStimType(stimuli.StimulusEmeticPoison, stimStyle)
         icon = runeFromStimType(stimuli.StimulusEmeticPoison)
+    } else if c.HasStim(stimuli.StimulusInducedSleep) {
+        stimStyle = styleFromStimType(stimuli.StimulusInducedSleep, stimStyle)
+        icon = runeFromStimType(stimuli.StimulusInducedSleep)
     } else if c.HasStim(stimuli.StimulusBlood) && c.ForceOfStim(stimuli.StimulusBlood) <= 15 {
         stimStyle = stimStyle.WithFg(core.ColorFromCode(core.ColorBlood))
         icon = core.GlyphBlood
@@ -139,9 +142,11 @@ func styleFromStimType(stimulusType stimuli.StimulusType, st common.Style) commo
     case stimuli.StimulusFire:
         return st.WithFg(core.ColorFromCode(core.ColorExplosionDark)).WithBg(core.ColorFromCode(core.ColorExplosionLight))
     case stimuli.StimulusLethalPoison:
-        return st.WithFg(core.ColorFromCode(core.ColorPoisonLethal))
+        return st.WithFg(core.ColorFromCode(core.ColorLethal))
     case stimuli.StimulusEmeticPoison:
-        return st.WithFg(core.ColorFromCode(core.ColorPoisonEmetic))
+        return st.WithFg(core.ColorFromCode(core.ColorEmetic))
+    case stimuli.StimulusInducedSleep:
+        return st.WithFg(core.ColorFromCode(core.ColorSleep))
     case stimuli.StimulusHighVoltage:
         return st.WithFg(core.ColorFromCode(core.ColorElectricForeground)) //.WithBg(ColorFromCode(ColorElectricBackground))
     }
@@ -163,6 +168,8 @@ func runeFromStimType(stimulusType stimuli.StimulusType) rune {
     case stimuli.StimulusLethalPoison:
         fallthrough
     case stimuli.StimulusEmeticPoison:
+        fallthrough
+    case stimuli.StimulusInducedSleep:
         return core.GlyphFog
     }
     return core.GlyphGround

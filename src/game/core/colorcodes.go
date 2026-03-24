@@ -28,8 +28,8 @@ const (
 	ColorFoVSource
 	ColorBlackBackground
 	ColorWater
-	ColorPoisonEmetic
-	ColorPoisonLethal
+	ColorEmetic
+	ColorLethal
 	ColorSelected
 	ColorElectricForeground
 	ColorElectricBackground
@@ -43,6 +43,7 @@ const (
 	ColorMapGreen
 	ColorMapYellow
 	ColorMapRed
+	ColorSleep
 )
 
 func ColorFromCode(color ColorCode) common.Color {
@@ -75,10 +76,10 @@ func ColorFromCode(color ColorCode) common.Color {
 		return common.NewRGBColorFromBytes(28, 109, 57)
 	case ColorMapForeground:
 		return common.NewHSVColor(0, 0, 0.65)
-	case ColorPoisonLethal:
+	case ColorLethal:
 		return common.NewHSVColorFromRGBBytes(165, 10, 223)
-	case ColorPoisonEmetic:
-		return common.NewHSVColorFromRGBBytes(121, 186, 141)
+	case ColorEmetic:
+		return common.NewHSVColorFromRGBBytes(50, 160, 80) // darker green
 	case ColorExplosionLight:
 		return common.NewHSVColorFromRGBBytes(255, 85, 0)
 	case ColorExplosionDark:
@@ -121,6 +122,8 @@ func ColorFromCode(color ColorCode) common.Color {
 		return common.NewHSVColor(57/360.0, 1, 0.55)
 	case ColorElectricBackground:
 		return common.NewHSVColor(57/360.0, 1, 0.15)
+	case ColorSleep:
+		return common.NewHSVColorFromRGBBytes(30, 140, 120) // darker teal
 	}
 	return common.NewHSVColorFromRGBBytes(255, 255, 255)
 }

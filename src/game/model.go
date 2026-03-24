@@ -384,6 +384,8 @@ func (m *Model) createDistributedStimulus(se stimuli.StimEffect, source core.Eff
         animator.BlastDistribution(atLocation, source, se.Stimuli, se.Distance, se.Pressure)
     case stimuli.DistributeLiquid:
         animator.LiquidDistribution(atLocation, source, se.Stimuli, se.Distance)
+    case stimuli.DistributeGas:
+        animator.GasDistribution(atLocation, source, se.Stimuli, se.Distance, se.Pressure)
     }
 }
 

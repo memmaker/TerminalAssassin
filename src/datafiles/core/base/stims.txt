@@ -42,3 +42,18 @@ fire: $POWER
 
 Signature: EmeticPoisonStims
 emetic_poison: 100
+
+Signature: SleepGasAreaStims($RADIUS, $DURATION)
+Distribution: gas
+Distance: $RADIUS
+Pressure: $DURATION
+DestroyOnApplication: true
+sleep: 100
+
+Signature: PoisonGasAreaStims($RADIUS, $DURATION)
+Distribution: gas
+Distance: $RADIUS
+Pressure: $DURATION
+DestroyOnApplication: true
+lethal_poison: 100
+

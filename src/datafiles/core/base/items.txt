@@ -18,8 +18,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BulletTrigger(35)
 
 name: a coin
@@ -42,8 +40,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 
 name: AMT 1911 'Hardballer' (silenced)
 icon: ٤
@@ -65,8 +61,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BulletTrigger(35)
 
 name: Heckler & Koch MP5
@@ -89,8 +83,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BulletTrigger(35)
 
 name: Kalashnikov AK47
@@ -113,8 +105,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BulletTrigger(35)
 
 name: Franchi PA3/215
@@ -137,8 +127,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BulletTrigger(35)
 
 name: Blaser Jagdwaffen R93 Sniper
@@ -161,8 +149,6 @@ key_string:
 loot_value: 0
 scope_range: 40
 scope_fov: 20.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BulletTrigger(80)
 
 name: Sieger 300 Ghost
@@ -185,8 +171,6 @@ key_string:
 loot_value: 0
 scope_range: 50
 scope_fov: 25.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BulletTrigger(100)
 
 name: Even Calmer 2
@@ -209,8 +193,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: TranquilizerTrigger(50)
 
 name: a taser
@@ -233,8 +215,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: TaserTrigger(50)
 
 name: a lockpick
@@ -257,8 +237,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 
 name: an electronic lockpick
 icon: ´
@@ -280,8 +258,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 
 name: a knife
 icon: ¹
@@ -303,8 +279,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: PiercingTrigger(50)
 
 name: scissors
@@ -327,8 +301,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: PiercingTrigger(35)
 
 name: a screwdriver
@@ -351,8 +323,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: PiercingTrigger(35)
 
 name: Fiber Wire
@@ -375,8 +345,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: PianoWireTrigger
 
 name: a baseball bat
@@ -399,8 +367,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BluntTrigger(80)
 
 name: a crowbar
@@ -423,8 +389,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BluntTrigger(80)
 
 name: a wrench
@@ -447,8 +411,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BluntTrigger(80)
 
 name: a soda can
@@ -471,8 +433,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BluntTrigger(20)
 
 name: a cigarette
@@ -495,8 +455,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: FireStarterTrigger(15)
 
 name: a fragmentation grenade
@@ -519,8 +477,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: ImpactExplosionTrigger(50, 3, 3)
 
 name: remote bomb
@@ -543,8 +499,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: RemoteExplosionTrigger(10, 3, 3)
 
 name: remote taser
@@ -567,8 +521,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: RemoteTaserTrigger(10)
 
 name: lethal poison
@@ -591,8 +543,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: LethalPoisonTrigger
 
 name: emetic poison
@@ -615,8 +565,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: EmeticPoisonTrigger
 
 name: a piece of cloth
@@ -639,8 +587,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 
 name: a can of gasoline
 icon: ˓
@@ -662,8 +608,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: GasolineTrigger
 reaction_effects: CanOfGasolineReaction
 
@@ -687,8 +631,6 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: BluntTrigger(35)
 reaction_effects: GasCanisterReaction
 
@@ -712,8 +654,6 @@ key_string:
 loot_value: 100
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 
 name: proximity mine
 icon: Ő
@@ -735,6 +675,92 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-style_fg: (0.06, 0.06, 0.06)
-style_bg: (0.00, 0.00, 0.00)
 trigger_effects: ProximityMineTrigger(50, 4, 40)
+
+name: sleep gas grenade
+icon: ˑ
+type: sleep_gas
+is_big: false
+uses: 1
+melee_attack:
+ranged_attack: throw
+self_use:
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue:
+is_silenced: false
+silenced_cue:
+key_string:
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+trigger_effects: SleepGasGrenadeTrigger(4, 10)
+
+name: poison gas grenade
+icon: ː
+type: poison_gas
+is_big: false
+uses: 1
+melee_attack:
+ranged_attack: throw
+self_use:
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue:
+is_silenced: false
+silenced_cue:
+key_string:
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+trigger_effects: PoisonGasGrenadeTrigger(4, 10)
+
+name: sleep gas trip mine
+icon: Ő
+type: sleep_gas
+is_big: false
+uses: -1
+melee_attack:
+ranged_attack: throw
+self_use: tool
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue:
+is_silenced: false
+silenced_cue:
+key_string:
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+trigger_effects: SleepGasTripMineTrigger(3, 10)
+
+name: poison gas trip mine
+icon: Ő
+type: poison_gas
+is_big: false
+uses: -1
+melee_attack:
+ranged_attack: throw
+self_use: tool
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.07
+noise_radius: 0
+audio_cue:
+is_silenced: false
+silenced_cue:
+key_string:
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+trigger_effects: PoisonGasTripMineTrigger(3, 10)

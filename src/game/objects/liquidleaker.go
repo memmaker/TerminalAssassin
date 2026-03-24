@@ -66,9 +66,9 @@ func (l *LiquidLeaker) Style(st common.Style) common.Style {
 	case stimuli.StimulusWater:
 		st = st.WithFg(core.ColorFromCode(core.ColorWater))
 	case stimuli.StimulusLethalPoison:
-		st = st.WithFg(core.ColorFromCode(core.ColorPoisonLethal))
+		st = st.WithFg(core.ColorFromCode(core.ColorLethal))
 	case stimuli.StimulusEmeticPoison:
-		st = st.WithFg(core.ColorFromCode(core.ColorPoisonEmetic))
+		st = st.WithFg(core.ColorFromCode(core.ColorEmetic))
 	}
 	return st
 }

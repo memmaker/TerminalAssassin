@@ -734,8 +734,6 @@ func NewItemFromRecord(record map[string]string, context *EvalContext) *core.Ite
     item.LootValue, _ = strconv.Atoi(record["loot_value"])
     item.Scope.Range, _ = strconv.Atoi(record["scope_range"])
     item.Scope.FoVinDegrees, _ = strconv.ParseFloat(record["scope_fov"], 64)
-    item.DefinedStyle.Foreground = common.NewColorFromString(record["style_fg"])
-    item.DefinedStyle.Background = common.NewColorFromString(record["style_bg"])
 
     // Evaluate TriggerEffects
     name, callArgs := core.GetNameAndArgs(record["trigger_effects"])
