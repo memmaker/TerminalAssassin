@@ -337,6 +337,8 @@ type Engine interface {
     PublishEvent(event GameEvent)
     // SubscribeToEvents is meant to be used together with objects.NewFilter
     SubscribeToEvents(subscriber Subscriber)
+    // RequestScreenshot queues a screenshot to be saved to the given file path on the next render frame.
+    RequestScreenshot(path string)
 }
 type Subscriber interface {
     ReceiveMoreAfter(event GameEvent) bool

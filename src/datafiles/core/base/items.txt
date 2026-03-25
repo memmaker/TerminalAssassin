@@ -764,3 +764,25 @@ loot_value: 0
 scope_range: 0
 scope_fov: 0.00
 trigger_effects: PoisonGasTripMineTrigger(3, 10)
+
+name: Camera
+icon: Ư
+type: camera
+is_big: false
+uses: 5
+melee_attack:
+ranged_attack:
+self_use:
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.00
+noise_radius: 0
+audio_cue:
+is_silenced: false
+silenced_cue:
+key_string:
+loot_value: 0
+scope_range: 0
+scope_fov: 0.00
+
