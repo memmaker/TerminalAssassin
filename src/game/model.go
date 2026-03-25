@@ -870,7 +870,7 @@ func (m *Model) IsDoorAt(p geometry.Point) bool {
 func (m *Model) PickUpItem(person *core.Actor) {
     actorWantsToPickupAt := person.Pos().Add(person.FovShiftForPeeking)
     itemHere := m.GetMap().ItemAt(actorWantsToPickupAt)
-    if itemHere == nil {
+    if itemHere == nil || itemHere.Buried {
         return
     }
 
@@ -1002,6 +1002,12 @@ func (m *Model) SnapNeck(actingPerson, victim *core.Actor) {
 func (m *Model) UpdateHUD() {
     if gs, ok := m.CurrentGameState().(*states.GameStateGameplay); ok {
         gs.UpdateHUD()
+    }
+}
+
+func (m *Model) PrintMessage(text string) {
+    if gs, ok := m.CurrentGameState().(*states.GameStateGameplay); ok {
+        gs.Print(text)
     }
 }
 

@@ -83,9 +83,8 @@ func (m *Model) DrawWorldAtPosition(p geometry.Point, c gridmap.MapCell[*core.Ac
         return (*c.Actor).Symbol(), (*c.Actor).Style(st)
     case c.DownedActor != nil && (*c.DownedActor).IsVisible():
         return (*c.DownedActor).Symbol(), (*c.DownedActor).Style(st)
-    case m.GetMap().IsItemAt(p):
-        visibleItem := m.GetMap().ItemAt(p)
-        return visibleItem.Icon(), visibleItem.Style(st)
+    case c.Item != nil && !(*c.Item).Buried:
+        return (*c.Item).Icon(), (*c.Item).Style(st)
     case c.IsExplored && m.GetMap().IsObjectAt(p):
         visibleObject := m.GetMap().ObjectAt(p)
         return visibleObject.Icon(), visibleObject.Style(st)

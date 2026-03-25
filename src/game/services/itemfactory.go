@@ -153,6 +153,33 @@ func (f ItemFactory) applyItemBehavior(item *core.Item) {
     switch item.Type {
     case core.ItemTypeCamera:
         f.applyCameraBehavior(item)
+    case core.ItemTypeShovel:
+        f.applyShovelBehavior(item)
+    }
+}
+
+// applyShovelBehavior wires up the shovel's InsteadOfUse action.
+// When used, it searches for buried items at the player's FoV source position
+// and uncovers the first one found.
+func (f ItemFactory) applyShovelBehavior(item *core.Item) {
+    engine := f.engine
+    item.InsteadOfUse = func() {
+        currentMap := engine.GetGame().GetMap()
+        player := currentMap.Player
+        digPos := player.FoVSource()
+
+        if !currentMap.IsItemAt(digPos) {
+            engine.GetGame().PrintMessage("Nothing to find here.")
+            return
+        }
+        itemAtPos := currentMap.ItemAt(digPos)
+        if itemAtPos == nil || !itemAtPos.Buried {
+            engine.GetGame().PrintMessage("Nothing to find here.")
+            return
+        }
+        itemAtPos.Buried = false
+        engine.GetGame().PrintMessage("You uncover " + itemAtPos.Name + ".")
+        engine.GetGame().UpdateHUD()
     }
 }
 

@@ -886,7 +886,7 @@ func (i *InputState) pollMouse() []core.InputCommand {
     if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
         msgs = append(msgs, core.PointerCommand{Action: core.MouseRight, Pos: i.MousePosOnScreenGrid})
     }
-    if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) || inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonRight) {
+    if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
         msgs = append(msgs, core.PointerCommand{Action: core.MouseLeftReleased, Pos: i.MousePosOnScreenGrid})
     }
     xOff, yOff := ebiten.Wheel()

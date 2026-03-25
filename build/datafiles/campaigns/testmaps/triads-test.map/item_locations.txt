@@ -119,6 +119,7 @@ Name: poison gas grenade
 
 ItemAt: (67,37)
 Name: sleep gas grenade
+Buried: true
 
 ItemAt: (67,38)
 Name: a fragmentation grenade
@@ -131,6 +132,7 @@ Name: a gas canister
 
 ItemAt: (69,28)
 Name: a gas canister
+Buried: true
 
 ItemAt: (69,32)
 Name: piece of paper
@@ -141,6 +143,9 @@ Name: a knife
 
 ItemAt: (71,38)
 Name: sleep gas trip mine
+
+ItemAt: (72,31)
+Name: Shovel
 
 ItemAt: (73,38)
 Name: poison gas trip mine

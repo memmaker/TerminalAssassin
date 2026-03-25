@@ -254,6 +254,41 @@ func (m *Manager) OpenXOffsetAutoCloseMenuWithCallback(xOffset int, items []serv
     }))
 }
 
+func (m *Manager) OpenAtPosAutoCloseMenuWithCallback(pos geometry.Point, items []services.MenuItem, onClose func()) {
+    screenW := m.engine.ScreenGridWidth()
+    screenH := m.engine.ScreenGridHeight()
+    height := len(items) + 1
+    width := (widthFromItems(items) / 2) + 4
+
+    // Prefer opening downward from the click; flip upward if near bottom.
+    yStart := pos.Y + 1
+    yEnd := yStart + height
+    if yEnd >= screenH {
+        yEnd = pos.Y
+        yStart = yEnd - height
+    }
+    if yStart < 0 {
+        yStart = 0
+    }
+
+    xStart := pos.X
+    if xStart+width > screenW {
+        xStart = screenW - width
+    }
+    if xStart < 0 {
+        xStart = 0
+    }
+
+    bbox := geometry.NewRect(xStart, yStart, xStart+width, yEnd)
+    closeFunc := func() {
+        m.PopModal()
+        if onClose != nil {
+            onClose()
+        }
+    }
+    m.pushModal(NewMenu("", items, bbox, closeFunc, closeFunc))
+}
+
 func (m *Manager) OpenFixedWidthAutoCloseMenuWithCallback(title string, items []services.MenuItem, onClose func()) {
     itemCount := ConditionalCount(items)
     if itemCount == 0 {

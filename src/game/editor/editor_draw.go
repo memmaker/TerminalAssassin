@@ -11,6 +11,8 @@ import (
 	"github.com/memmaker/terminal-assassin/gridmap"
 )
 
+var buriedItemColor common.Color = common.NewRGBColorFromBytes(101, 67, 33)
+
 func (g *GameStateEditor) Draw(con console.CellInterface) {
 	if g.clearHalfWidth {
 		con.HalfWidthTransparent()
@@ -32,6 +34,20 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
 		screenPos := m.GetCamera().WorldToScreen(worldPos)
 		icon, style := m.DrawWorldAtPosition(worldPos, c)
 		style = m.ApplyLighting(worldPos, c, style)
+
+		// In the editor, buried items are rendered with a dirt-brown background
+		// so the designer can see and select them. This is done inline so no
+		// intermediate rendering step can produce an unexpected colour first.
+		if currentMap.IsItemAt(worldPos) {
+			if item := currentMap.ItemAt(worldPos); item.Buried {
+				icon = item.Icon()
+				if g.selectedItem == item {
+					style = style.WithBg(core.ColorFromCode(core.ColorMarked))
+				} else {
+					style = style.WithBg(buriedItemColor)
+				}
+			}
+		}
 
 		if g.LastSelectedPos == worldPos {
 			style = style.WithBg(core.ColorFromCode(core.ColorMarked))
@@ -105,6 +121,7 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
 		}
 		con.SetSquare(screenPos, cell.WithBackgroundColor(colorForLocation))
 	}
+
 	if g.currentPrefab != nil {
 		g.currentPrefab.Draw(con, g.MousePositionOnScreen)
 	}
@@ -112,7 +129,6 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
 	cellAtMouse := con.AtSquare(g.MousePositionOnScreen)
 	con.SetSquare(g.MousePositionOnScreen, cellAtMouse.WithStyle(cellAtMouse.Style.Reversed()))
 
-	//con.HalfWidthFill(geometry.NewRect(0, 0, g.engine.ScreenGridWidth()*2, g.engine.ScreenGridHeight()), common.Cell{Rune: ' ', Style: common.Style{Foreground: common.White, Background: common.Transparent}})
 	g.gridIsDirty = false
 }
 

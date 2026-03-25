@@ -69,6 +69,8 @@ func (t ItemType) ToString() string {
         return "poison_gas"
     case ItemTypeCamera:
         return "camera"
+    case ItemTypeShovel:
+        return "shovel"
     default:
         return "unknown"
     }
@@ -131,6 +133,8 @@ func NewItemTypeFromString(text string) ItemType {
         return ItemTypePoisonGas
     case "camera":
         return ItemTypeCamera
+    case "shovel":
+        return ItemTypeShovel
     default:
         return ItemTypeCommon
     }
@@ -166,6 +170,7 @@ const (
     ItemTypeSleepGas
     ItemTypePoisonGas
     ItemTypeCamera
+    ItemTypeShovel
 )
 
 type ItemEffectTrigger uint16
@@ -243,6 +248,7 @@ type Item struct {
     OnCooldown              bool
     DelayBetweenShotsInSecs float64
     IsDestroyed             bool
+    Buried                  bool
     DefinedStyle            common.Style
     SilencedCue             string
     AudioCue                string

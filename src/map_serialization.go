@@ -99,6 +99,9 @@ func (g *MapSerializer) SaveItemLocations(currentMap *gridmap.GridMap[*core.Acto
         if itemAt.KeyString != "" {
             record = append(record, rec_files.Field{Name: "Key", Value: itemAt.GetKey()})
         }
+        if itemAt.Buried {
+            record = append(record, rec_files.Field{Name: "Buried", Value: "true"})
+        }
         records = append(records, record)
     }
     sort.SliceStable(records, func(i, j int) bool {
@@ -119,6 +122,7 @@ func (g *MapSerializer) LoadItemLocations(files *Files, currentMap *gridmap.Grid
         var pos geometry.Point
         var itemName string
         var keyString string
+        var buried bool
         for _, field := range record {
             switch field.Name {
             case "ItemAt":
@@ -127,10 +131,13 @@ func (g *MapSerializer) LoadItemLocations(files *Files, currentMap *gridmap.Grid
                 itemName = field.Value
             case "Key":
                 keyString = field.Value
+            case "Buried":
+                buried = field.Value == "true"
             }
         }
         itemFactory := g.engine.GetItemFactory()
         itemRef := itemFactory.ItemFromNameAndKey(itemName, keyString)
+        itemRef.Buried = buried
         currentMap.AddItem(itemRef, pos)
         itemCount++
     }
