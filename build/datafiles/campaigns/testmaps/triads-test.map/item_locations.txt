@@ -82,6 +82,9 @@ Name: a lockpick
 ItemAt: (56,67)
 Name: Fiber Wire
 
+ItemAt: (61,26)
+Name: Camera
+
 ItemAt: (61,28)
 Name: Key card
 Key: Security Night Club

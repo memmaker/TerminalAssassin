@@ -3,7 +3,10 @@ package main
 import (
     "embed"
     "encoding/gob"
+    "image"
+    "image/png"
     "math"
+    "os"
 
     "github.com/hajimehoshi/ebiten/v2"
     "github.com/memmaker/terminal-assassin/audio"
@@ -59,6 +62,8 @@ type ConsoleEngine struct {
     scheduledCalls              map[uint64][]func()
     scheduledCallsWithCondition []ScheduledCallWithCondition
     subscribers                 []services.Subscriber
+
+    pendingScreenshotPath string
 }
 
 func (g *ConsoleEngine) GetObjectFactory() services.ObjectFactoryInterface {
@@ -136,6 +141,41 @@ func (g *ConsoleEngine) Update() error {
 }
 func (g *ConsoleEngine) Draw(screen *ebiten.Image) {
     g.Console.Draw(screen)
+    if g.pendingScreenshotPath != "" {
+        savePath := g.pendingScreenshotPath
+        g.pendingScreenshotPath = ""
+        saveEbitenImageAsPNG(screen, savePath)
+    }
+}
+
+// RequestScreenshot queues a screenshot of the next rendered frame to be
+// saved as a PNG at the given file path.
+func (g *ConsoleEngine) RequestScreenshot(filePath string) {
+    g.pendingScreenshotPath = filePath
+}
+
+// saveEbitenImageAsPNG reads pixel data from an ebiten image and writes it
+// to disk as a PNG file.
+func saveEbitenImageAsPNG(img *ebiten.Image, filePath string) {
+    bounds := img.Bounds()
+    w, h := bounds.Dx(), bounds.Dy()
+    pixels := make([]byte, w*h*4)
+    img.ReadPixels(pixels)
+    rgba := &image.RGBA{
+        Pix:    pixels,
+        Stride: w * 4,
+        Rect:   image.Rect(0, 0, w, h),
+    }
+    f, err := os.Create(filePath)
+    if err != nil {
+        println("Camera: failed to create screenshot file:", err.Error())
+        return
+    }
+    defer f.Close()
+    if err := png.Encode(f, rgba); err != nil {
+        println("Camera: failed to encode screenshot:", err.Error())
+    }
+    println("Camera: screenshot saved to", filePath)
 }
 
 /*

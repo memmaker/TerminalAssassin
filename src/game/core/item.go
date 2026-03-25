@@ -67,6 +67,8 @@ func (t ItemType) ToString() string {
         return "sleep_gas"
     case ItemTypePoisonGas:
         return "poison_gas"
+    case ItemTypeCamera:
+        return "camera"
     default:
         return "unknown"
     }
@@ -127,6 +129,8 @@ func NewItemTypeFromString(text string) ItemType {
         return ItemTypeSleepGas
     case "poison_gas":
         return ItemTypePoisonGas
+    case "camera":
+        return ItemTypeCamera
     default:
         return ItemTypeCommon
     }
@@ -161,6 +165,7 @@ const (
     ItemTypeMessage
     ItemTypeSleepGas
     ItemTypePoisonGas
+    ItemTypeCamera
 )
 
 type ItemEffectTrigger uint16

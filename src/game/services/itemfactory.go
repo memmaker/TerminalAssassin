@@ -2,10 +2,15 @@ package services
 
 import (
     "fmt"
+    "os"
+    "path"
+    "path/filepath"
+    "regexp"
+    "time"
+
     "github.com/memmaker/terminal-assassin/common"
     "github.com/memmaker/terminal-assassin/game/core"
-    "path"
-    "regexp"
+    "github.com/memmaker/terminal-assassin/gridmap"
 )
 
 func NewFactory(engine Engine) *ItemFactory {
@@ -60,6 +65,7 @@ func (f ItemFactory) ItemFromNameAndKey(name string, key string) *core.Item {
         if key != "" {
             result.SetKey(key)
         }
+        f.applyItemBehavior(&result)
         return &result
     }
     if key != "" {
@@ -96,7 +102,9 @@ func (f ItemFactory) DecodeStringToItem(name string) core.Item {
         return *paper
     }
     if item, ok := externalData.ItemByName(name); ok {
-        return *item
+        result := *item
+        f.applyItemBehavior(&result)
+        return result
     }
     println("WARNING: Could not find item with name " + name)
     return core.Item{}
@@ -135,4 +143,63 @@ func EncodeItemAsString(item *core.Item) string {
         return fmt.Sprintf("Message(%s): %s", item.KeyString, item.Name)
     }
     return item.Name
+}
+
+// applyItemBehavior wires up engine-bound runtime behaviour (InsteadOfUse etc.)
+// for any item type that requires it, based solely on the item's Type field.
+// Call this whenever an item is produced from external data so the data file
+// provides the static definition while the factory provides the behaviour.
+func (f ItemFactory) applyItemBehavior(item *core.Item) {
+    switch item.Type {
+    case core.ItemTypeCamera:
+        f.applyCameraBehavior(item)
+    }
+}
+
+// applyCameraBehavior attaches the camera flash + screenshot + metadata
+// InsteadOfUse closure to an item whose static properties come from the data file.
+func (f ItemFactory) applyCameraBehavior(item *core.Item) {
+    engine := f.engine
+
+    // Each camera item gets its own flash light instance so concurrent
+    // uses (e.g. if multiple cameras exist) don't share state.
+    cameraFlashLight := &gridmap.LightSource{
+        Radius:       15,
+        Color:        common.RGBAColor{R: 8, G: 8, B: 8, A: 1.0},
+        MaxIntensity: 20,
+    }
+
+    item.InsteadOfUse = func() {
+        currentMap := engine.GetGame().GetMap()
+        playerPos := currentMap.Player.Pos()
+
+        // Camera flash — same mechanism as a gun muzzle flash, just brighter.
+        if engine.GetGame().GetConfig().LightSources {
+            cameraFlashLight.Pos = playerPos
+            currentMap.AddDynamicLightSource(playerPos, cameraFlashLight)
+            currentMap.UpdateDynamicLights()
+            engine.Schedule(0.5, func() {
+                currentMap.RemoveDynamicLightAt(playerPos)
+                currentMap.UpdateDynamicLights()
+            })
+        }
+
+        // Collect scene metadata.
+        metadata := CapturePhotoMetadata(engine)
+
+        // Derive timestamped output paths.
+        timestamp := time.Now().Format("2006-01-02_15-04-05")
+        photoDir := "photos"
+        if err := os.MkdirAll(photoDir, 0o755); err != nil {
+            println("Camera: could not create photos directory:", err.Error())
+            return
+        }
+        basePath := filepath.Join(photoDir, "photo_"+timestamp)
+
+        // Request screenshot (captured on the next render frame).
+        engine.RequestScreenshot(basePath + ".png")
+
+        // Save JSON sidecar.
+        SavePhotoMetadata(metadata, basePath+".json")
+    }
 }

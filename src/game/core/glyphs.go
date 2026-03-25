@@ -79,4 +79,5 @@ const (
     GlyphRadio                = 'σ'
     GlyphPowerBox             = 'τ'
     GlyphGravestone           = 'Ʈ'
+    GlyphCamera               = 'Ư'
 )
