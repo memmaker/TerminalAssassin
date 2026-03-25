@@ -39,8 +39,13 @@ type Object interface {
 }
 
 type KeyBound interface {
-    GetKey() string
-    SetKey(key string)
+	GetKey() string
+	SetKey(key string)
+}
+
+type Textable interface {
+	GetText() string
+	SetText(string)
 }
 
 type UIWidget interface {
@@ -211,6 +216,7 @@ type DataInterface interface {
     DefaultPlayerClothing() core.Clothing
 
     Items() []*core.Item
+    ItemByName(name string) (*core.Item, bool)
     Clothing() []*core.Clothing
     Tiles() []*gridmap.Tile
     NameToClothing(clothesName string) core.Clothing

@@ -38,10 +38,20 @@ func (g *Gravestone) EncodeAsString() string {
 
 // Description is shown in the mouseover tooltip.
 func (g *Gravestone) Description() string {
-    if g.inscription == "" {
-        return "A weathered gravestone."
-    }
-    return g.inscription
+	if g.inscription == "" {
+		return "A weathered gravestone."
+	}
+	return g.inscription
+}
+
+// GetText implements services.Textable.
+func (g *Gravestone) GetText() string {
+	return g.inscription
+}
+
+// SetText implements services.Textable — updates the inscription in place.
+func (g *Gravestone) SetText(text string) {
+	g.inscription = text
 }
 
 func (g *Gravestone) Icon() rune {

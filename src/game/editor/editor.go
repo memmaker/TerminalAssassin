@@ -441,8 +441,8 @@ func (g *GameStateEditor) Init(engine services.Engine) {
 	gridHeight := g.engine.ScreenGridHeight()
 	gridWidth := g.engine.ScreenGridWidth()
 	g.CurrentRune = '.'
-	g.bottomMessageLabel = ui.NewSquareLabelWithWidth("", geometry.Point{X: 0, Y: gridHeight - 1}, gridWidth)
-	g.topStatusLineLabel = ui.NewSquareLabelWithWidth("", geometry.Point{X: 0, Y: gridHeight - 3}, gridWidth)
+    g.bottomMessageLabel = ui.NewHalfLabelWithWidth("", geometry.Point{X: 0, Y: gridHeight - 1}, gridWidth*2)
+    g.topStatusLineLabel = ui.NewSquareLabelWithWidth("", geometry.Point{X: 0, Y: gridHeight - 3}, gridWidth)
 	userInterface := g.engine.GetUI()
 	userInterface.AddToScene(g.bottomMessageLabel)
 	userInterface.AddToScene(g.topStatusLineLabel)

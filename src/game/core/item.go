@@ -468,11 +468,11 @@ func (i *Item) ToRecord() []rec_files.Field {
 }
 
 func NewEmptyKey() *Item {
-    return &Item{Name: "Key", DefinedIcon: GlyphKey, Type: ItemTypeKey, DefinedStyle: common.DefaultStyle, Uses: UnlimitedUses}
+    return &Item{Name: "Key", DefinedIcon: GlyphKey, Type: ItemTypeKey, DefinedStyle: common.DefaultStyle.Reversed(), Uses: UnlimitedUses}
 }
 
 func NewEmptyKeyCard() *Item {
-    return &Item{Name: "Key card", DefinedIcon: GlyphKeyCard, Type: ItemTypeKeyCard, DefinedStyle: common.DefaultStyle, Uses: UnlimitedUses}
+    return &Item{Name: "Key card", DefinedIcon: GlyphKeyCard, Type: ItemTypeKeyCard, DefinedStyle: common.DefaultStyle.Reversed(), Uses: UnlimitedUses}
 }
 
 func NewKeyCard(key string) *Item {
