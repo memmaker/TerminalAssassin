@@ -89,7 +89,7 @@ func (t *TextInput) Draw(grid console.CellInterface) {
 		startY = grid.Size().Y - 1
 	}
 	endX := startX + t.width
-	bbox := geometry.NewRect(startX, startY, endX, startY)
+	bbox := geometry.NewRect(startX, startY, endX, startY+1)
 	blankCell := common.Cell{Rune: ' ', Style: common.Style{Foreground: common.TerminalColor, Background: common.TerminalColorBackground}}
 	grid.HalfWidthFill(bbox, blankCell)
 	PrintToGrid(grid, t.prompt, geometry.Point{X: startX, Y: startY}, common.TerminalColor, common.TerminalColorBackground)

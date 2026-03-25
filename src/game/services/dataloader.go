@@ -37,6 +37,7 @@ func NewExternalDataFromDisk(files DataSource) *ExternalData {
 
 type ExternalData struct {
     items                  []*core.Item
+    itemsByName            map[string]*core.Item
     tiles                  []*gridmap.Tile
     clothing               []*core.Clothing
     defaultFloor           *gridmap.Tile
@@ -635,6 +636,17 @@ func (e *ExternalData) Clothing() []*core.Clothing {
 }
 func (e *ExternalData) Items() []*core.Item {
     return e.items
+}
+
+func (e *ExternalData) ItemByName(name string) (*core.Item, bool) {
+    if e.itemsByName == nil {
+        e.itemsByName = make(map[string]*core.Item, len(e.items))
+        for _, item := range e.items {
+            e.itemsByName[item.Name] = item
+        }
+    }
+    item, ok := e.itemsByName[name]
+    return item, ok
 }
 func (e *ExternalData) Tiles() []*gridmap.Tile {
     return e.tiles
