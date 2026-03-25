@@ -374,7 +374,9 @@ func (g *GameStateGameplay) UpdateHUD() {
     shiftedPlayerPos := player.Pos().Add(player.FovShiftForPeeking)
     if currentMap.IsItemAt(shiftedPlayerPos) {
         itemAt := currentMap.ItemAt(shiftedPlayerPos)
-        g.ActionMap[geometry.PointZero] = game.CreatePickupAction(itemAt)
+        if !itemAt.Buried {
+            g.ActionMap[geometry.PointZero] = game.CreatePickupAction(itemAt)
+        }
     }
 
     // dialogue has lowest priority
@@ -1107,7 +1109,9 @@ func (g *GameStateGameplay) printTileContentsMessage(position geometry.Point) {
     tileType := m.GetMap().CellAt(position).TileType
     if m.GetMap().IsItemAt(position) {
         itemHere := m.GetMap().ItemAt(position)
-        g.Print(fmt.Sprintf("There is %s here.", itemHere.Name))
+        if !itemHere.Buried {
+            g.Print(fmt.Sprintf("There is %s here.", itemHere.Name))
+        }
     } else if tileType.Special != gridmap.SpecialTileDefaultFloor {
         tileName := tileType.Description()
         g.Print(fmt.Sprintf("There is %s here.", tileName))
@@ -1137,7 +1141,9 @@ func (g *GameStateGameplay) updateMouseOver() {
         g.showActorTooltip(actorAtMouse)
     } else if currentMap.IsItemAt(mouseInWorld) {
         itemHere := currentMap.ItemAt(mouseInWorld)
-        g.showItemTooltip(itemHere)
+        if !itemHere.Buried {
+            g.showItemTooltip(itemHere)
+        }
     } else if currentMap.IsObjectAt(mouseInWorld) {
         objectHere := currentMap.ObjectAt(mouseInWorld)
         g.showObjectTooltip(objectHere)

@@ -102,3 +102,18 @@ func (g *GameStateEditor) selectItemAt(world geometry.Point) {
 	itemString = services.EncodeItemAsString(itemAt)
 	g.PrintAsMessage(fmt.Sprintf("Item: %s", itemString))
 }
+
+func (g *GameStateEditor) toggleBuriedOnSelectedItem() {
+	if g.selectedItem == nil {
+		g.PrintAsMessage("ERR: select an item first")
+		return
+	}
+	g.selectedItem.Buried = !g.selectedItem.Buried
+	state := "buried"
+	if !g.selectedItem.Buried {
+		state = "unburied"
+	}
+	g.PrintAsMessage(fmt.Sprintf("%s is now %s", g.selectedItem.Name, state))
+	g.SetDirty()
+}
+

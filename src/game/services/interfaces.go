@@ -65,6 +65,7 @@ type UIInterface interface {
     OpenMapsMenu(afterLoad func(*gridmap.GridMap[*core.Actor, *core.Item, Object]))
     OpenFancyMenu(menuItems []MenuItem)
     OpenXOffsetAutoCloseMenuWithCallback(xOffset int, items []MenuItem, callback func())
+    OpenAtPosAutoCloseMenuWithCallback(pos geometry.Point, items []MenuItem, callback func())
     PopModal()
     ShowTextInputAt(pos geometry.Point, width int, prompt string, prefilled string, onClose func(string), onAbort func())
     ShowTextInput(prompt string, prefilled string, onClose func(string), onAbort func())
@@ -106,6 +107,7 @@ type GameConfig struct {
 }
 type GameInterface interface {
     UpdateHUD()
+    PrintMessage(text string)
 
     UpdateKnowledgeFromVision(person *core.Actor)
     GetMap() *gridmap.GridMap[*core.Actor, *core.Item, Object]

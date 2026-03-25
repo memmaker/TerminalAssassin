@@ -124,6 +124,15 @@ func (g *GameStateEditor) OpenMenuBarDropDown(title string, xOffset int, items [
     })
 }
 
+func (g *GameStateEditor) openContextMenuAtMousePos(items []services.MenuItem) {
+    userInterface := g.engine.GetUI()
+    userInterface.OpenAtPosAutoCloseMenuWithCallback(g.MousePositionOnScreen, items, func() {
+        g.gridIsDirty = true
+        g.menuBar.SetDirty()
+        g.topStatusLineLabel.SetDirty()
+    })
+}
+
 func (g *GameStateEditor) setSelectionCompletedHandler(f func()) func() {
     return func() {
         g.handler.CellsSelected = func() {
@@ -179,6 +188,11 @@ func (g *GameStateEditor) handlePointerCommand(cmd core.PointerCommand) {
     g.MousePositionInWorld = g.engine.GetGame().GetCamera().ScreenToWorld(g.MousePositionOnScreen)
 
     switch cmd.Action {
+    case core.MouseRight:
+        g.selectAtMousePos()
+        if len(g.handler.ContextMenu) > 0 {
+            g.openContextMenuAtMousePos(g.handler.ContextMenu)
+        }
     case core.MouseWheelUp:
         g.moveCameraOnMap(geometry.Point{X: 0, Y: -1})
         g.gridIsDirty = true
@@ -303,11 +317,14 @@ func (g *GameStateEditor) ToolTipAt(world geometry.Point) string {
     }
     item, isItemAt := model.GetMap().TryGetItemAt(world)
     if isItemAt {
+        label := item.Name
         if item.GetKey() != "" {
-            return fmt.Sprintf("%s (%s)", item.Name, item.GetKey())
-        } else {
-            return item.Name
+            label = fmt.Sprintf("%s (%s)", item.Name, item.GetKey())
         }
+        if item.Buried {
+            label += " [buried]"
+        }
+        return label
     }
     namedLocation := currentMap.GetNamedLocationByPos(world)
     cell := model.GetMap().CellAt(world)

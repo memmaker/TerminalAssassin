@@ -80,4 +80,5 @@ const (
     GlyphPowerBox             = 'τ'
     GlyphGravestone           = 'Ʈ'
     GlyphCamera               = 'Ư'
+    GlyphShovel               = 'ư'
 )
