@@ -1,6 +1,7 @@
 package core
 
 import (
+    "fmt"
     "strconv"
 
     "github.com/memmaker/terminal-assassin/common"
@@ -259,6 +260,13 @@ type Item struct {
 
 func (i *Item) Icon() rune {
     return i.DefinedIcon
+}
+
+func (i *Item) Description() string {
+    if (i.Type == ItemTypeKey || i.Type == ItemTypeKeyCard) && i.KeyString != "" {
+        return fmt.Sprintf("%s (%s)", i.Name, i.KeyString)
+    }
+    return i.Name
 }
 
 func (i *Item) SetPos(point geometry.Point) {

@@ -1,6 +1,7 @@
 package objects
 
 import (
+    "fmt"
     "github.com/memmaker/terminal-assassin/common"
     "github.com/memmaker/terminal-assassin/game/core"
     "github.com/memmaker/terminal-assassin/game/services"
@@ -98,6 +99,9 @@ func (s *Safe) Style(st common.Style) common.Style {
 func (s *Safe) Description() string {
     switch s.State {
     case SafeStateLocked:
+        if s.KeyString != "" {
+            return fmt.Sprintf("a locked safe (%s)", s.KeyString)
+        }
         return "a locked safe"
     case SafeStateClosed:
         return "an unlocked safe"
