@@ -47,7 +47,7 @@ func (b Box) Draw(bbox geometry.Rect, con console.CellInterface) {
 				}
 			}
 			if c.Rune != 0 {
-				con.SetSquare(bbox.Min.Add(geometry.Point{x, y}), c)
+				con.SetSquare(bbox.Min.Add(geometry.Point{X: x, Y: y}), c)
 			}
 		}
 	}

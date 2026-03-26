@@ -136,7 +136,6 @@ type MapLighter[ActorType interface {
 func (m *MapLighter[ActorType, ItemType, ObjectType]) Cost(src geometry.Point, from geometry.Point, to geometry.Point) float64 {
 	if src == from {
 		return 1
-		return geometry.Distance(from, to)
 	}
 	currentMap := m.gridmap
 	switch {
