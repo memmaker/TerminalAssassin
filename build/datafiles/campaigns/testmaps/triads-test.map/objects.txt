@@ -349,6 +349,14 @@ Name: light window (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
 
+ObjectAt: (52,34)
+Name: mechanical safe (locked)
+FgColor: (0.00, 0.00, 0.13)
+BgColor: (1.20, 1.09, 1.08)
+Key: triads safe
+Content: a diamond necklace
+Content: a gold watch
+
 ObjectAt: (53,93)
 Name: locker (container)
 FgColor: (0.00, 0.00, 0.13)
