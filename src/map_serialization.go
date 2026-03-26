@@ -528,7 +528,7 @@ func (g *MapSerializer) SaveTileColors(loadedMap *gridmap.GridMap[*core.Actor, *
         tileStyle := loadedMap.GetCell(pos).TileType.DefinedStyle
         return g.colorToPaletteIndex(tileStyle.Foreground.ToRGB())
     }
-    g.writeGrid(file, geometry.Point{loadedMap.MapWidth, loadedMap.MapHeight}, writeFunc)
+    g.writeGrid(file, geometry.Point{X: loadedMap.MapWidth, Y: loadedMap.MapHeight}, writeFunc)
 
     bgFile, err := os.Create(filename + ".bg")
     if err != nil {
@@ -540,7 +540,7 @@ func (g *MapSerializer) SaveTileColors(loadedMap *gridmap.GridMap[*core.Actor, *
         tileStyle := loadedMap.GetCell(pos).TileType.DefinedStyle
         return g.colorToPaletteIndex(tileStyle.Background.ToRGB())
     }
-    g.writeGrid(bgFile, geometry.Point{loadedMap.MapWidth, loadedMap.MapHeight}, bgWriteFunc)
+    g.writeGrid(bgFile, geometry.Point{X: loadedMap.MapWidth, Y: loadedMap.MapHeight}, bgWriteFunc)
 
     return nil
 }
@@ -557,7 +557,7 @@ func (g *MapSerializer) LoadTileColors(files *Files, loadedMap *gridmap.GridMap[
         cell.TileType.DefinedStyle.Foreground = color
         loadedMap.SetCell(pos, cell)
     }
-    fgReadErr := g.readGrid(fgFile, geometry.Point{loadedMap.MapWidth, loadedMap.MapHeight}, fgReadFunc)
+    fgReadErr := g.readGrid(fgFile, geometry.Point{X: loadedMap.MapWidth, Y: loadedMap.MapHeight}, fgReadFunc)
     if fgReadErr != nil {
         return fgReadErr
     }
@@ -573,7 +573,7 @@ func (g *MapSerializer) LoadTileColors(files *Files, loadedMap *gridmap.GridMap[
         cell.TileType.DefinedStyle.Background = color
         loadedMap.SetCell(pos, cell)
     }
-    return g.readGrid(bgFile, geometry.Point{loadedMap.MapWidth, loadedMap.MapHeight}, bgReadFunc)
+    return g.readGrid(bgFile, geometry.Point{X: loadedMap.MapWidth, Y: loadedMap.MapHeight}, bgReadFunc)
 }
 
 func (g *MapSerializer) SaveZones(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {

@@ -191,8 +191,8 @@ func (f ItemFactory) applyCameraBehavior(item *core.Item) {
     // Each camera item gets its own flash light instance so concurrent
     // uses (e.g. if multiple cameras exist) don't share state.
     cameraFlashLight := &gridmap.LightSource{
-        Radius:       15,
-        Color:        common.RGBAColor{R: 8, G: 8, B: 8, A: 1.0},
+        Radius:       8,
+        Color:        common.RGBAColor{R: 1, G: 1, B: 1, A: 1.0},
         MaxIntensity: 20,
     }
 
@@ -202,12 +202,14 @@ func (f ItemFactory) applyCameraBehavior(item *core.Item) {
 
         // Camera flash — same mechanism as a gun muzzle flash, just brighter.
         if engine.GetGame().GetConfig().LightSources {
-            cameraFlashLight.Pos = playerPos
-            currentMap.AddDynamicLightSource(playerPos, cameraFlashLight)
-            currentMap.UpdateDynamicLights()
-            engine.Schedule(0.5, func() {
-                currentMap.RemoveDynamicLightAt(playerPos)
+            engine.ScheduleInTicks(1, func() {
+                cameraFlashLight.Pos = playerPos
+                currentMap.AddDynamicLightSource(playerPos, cameraFlashLight)
                 currentMap.UpdateDynamicLights()
+                engine.Schedule(0.150, func() {
+                    currentMap.RemoveDynamicLightAt(playerPos)
+                    currentMap.UpdateDynamicLights()
+                })
             })
         }
 

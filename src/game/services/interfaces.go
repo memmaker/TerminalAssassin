@@ -39,13 +39,13 @@ type Object interface {
 }
 
 type KeyBound interface {
-	GetKey() string
-	SetKey(key string)
+    GetKey() string
+    SetKey(key string)
 }
 
 type Textable interface {
-	GetText() string
-	SetText(string)
+    GetText() string
+    SetText(string)
 }
 
 type UIWidget interface {
@@ -323,6 +323,7 @@ type Engine interface {
     // Schedule should only be used if the effect MUST NOT be cancelled or re-scheduled.
     // And the call must handle being run after the gameplay state has quit.
     Schedule(delayInSeconds float64, functionCall func())
+    ScheduleInTicks(delayInTicks uint64, functionCall func())
     ScheduleWhen(condition func() bool, functionCall func())
     QuitGame()
 

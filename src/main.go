@@ -266,6 +266,13 @@ func (g *ConsoleEngine) Schedule(relativeSeconds float64, call func()) {
     }
     g.ScheduleAbs(g.WorldTicks+relativeTicks, call)
 }
+func (g *ConsoleEngine) ScheduleInTicks(relativeTicks uint64, call func()) {
+    if relativeTicks == 0 {
+        relativeTicks = 1
+    }
+    g.ScheduleAbs(g.WorldTicks+relativeTicks, call)
+}
+
 func (g *ConsoleEngine) ScheduleAbs(absoluteWorldTick uint64, call func()) {
     if _, ok := g.scheduledCalls[absoluteWorldTick]; !ok {
         g.scheduledCalls[absoluteWorldTick] = []func(){}
