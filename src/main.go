@@ -422,6 +422,7 @@ func init() {
     gob.Register(&objects.Window{})
     gob.Register(&objects.CorpseContainer{})
     gob.Register(&objects.LiquidLeaker{})
+    gob.Register(&objects.Safe{})
     gob.Register(&ai.FollowerMovement{})
     gob.Register(&ai.GuardMovement{})
     gob.Register(&ai.ScheduledMovement{})

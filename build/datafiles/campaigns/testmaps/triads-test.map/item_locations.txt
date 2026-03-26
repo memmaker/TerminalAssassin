@@ -19,6 +19,10 @@ Name: a piece of cloth
 ItemAt: (16,70)
 Name: a screwdriver
 
+ItemAt: (25,47)
+Name: Key
+Key: triads safe
+
 ItemAt: (27,90)
 Name: a soda can
 

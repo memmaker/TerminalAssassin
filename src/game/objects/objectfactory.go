@@ -168,6 +168,20 @@ func (f ObjectFactory) SimpleObjects() []services.ObjectCreator {
             },
         },
         {
+            Name: "mechanical safe (locked)",
+            Icon: core.GlyphMechanicalSafe,
+            Create: func(name string) services.Object {
+                return newMechanicalSafe()
+            },
+        },
+        {
+            Name: "electronic safe (locked)",
+            Icon: core.GlyphElectronicSafe,
+            Create: func(name string) services.Object {
+                return newElectronicSafe()
+            },
+        },
+        {
             Name: gravestonePrefix,
             Icon: core.GlyphGravestone,
             Create: func(name string) services.Object {

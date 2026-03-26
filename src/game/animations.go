@@ -117,24 +117,20 @@ func (a *Animator) ActorEngagedAnimation(person *core.Actor, r rune, actionPosit
         cellAt := a.cellOnScreen(grid, actionPosition)
         style := cellAt.Style
         if frameIndex%2 == 0 {
-            style.Foreground = core.ColorFromCode(core.ColorGood)
+            a.drawWorldToScreen(grid, actionPosition, common.Cell{Rune: r, Style: style})
         }
-        a.drawWorldToScreen(grid, actionPosition, common.Cell{Rune: r, Style: style})
     }
     frameDelayInSeconds := 0.5
     frameDelayInTicks := uint64(utils.SecondsToTicks(frameDelayInSeconds))
     advanceToNextFrame := func(frameIndex int, ticksAlive uint64) bool {
         return ticksAlive >= frameDelayInTicks
     }
-    onFinish := func() {
-        finishedCallback()
-    }
 
     animation := &ActiveAnimation{
         nextFrame:        advanceToNextFrame,
         DrawFrame:        drawFunc,
         frameCount:       int(timeNeededInSeconds / frameDelayInSeconds),
-        FinishedCallback: onFinish,
+        FinishedCallback: finishedCallback,
         FinishCondition:  nil,
         CancelCondition:  nil,
         CancelCallback:   nil,

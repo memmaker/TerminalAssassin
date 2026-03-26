@@ -163,6 +163,11 @@ func (g *MapSerializer) SaveObjects(currentMap *gridmap.GridMap[*core.Actor, *co
         if keyboundObject, ok := objectAt.(services.KeyBound); ok && keyboundObject.GetKey() != "" {
             record = append(record, rec_files.Field{Name: "Key", Value: keyboundObject.GetKey()})
         }
+        if contentHolder, ok := objectAt.(services.ContentHolder); ok {
+            for _, itemName := range contentHolder.GetContents() {
+                record = append(record, rec_files.Field{Name: "Content", Value: itemName})
+            }
+        }
         records = append(records, record)
     }
     sort.SliceStable(records, func(i, j int) bool {
@@ -184,6 +189,7 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
         var objectName string
         var fgColor, bgColor common.Color
         var key string
+        var contents []string
         for _, field := range record {
             switch field.Name {
             case "ObjectAt":
@@ -196,6 +202,8 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
                 bgColor = common.NewColorFromString(field.Value)
             case "Key":
                 key = field.Value
+            case "Content":
+                contents = append(contents, field.Value)
             }
         }
         object := factory.NewObjectFromName(objectName)
@@ -206,6 +214,9 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
         object.SetStyle(common.Style{Foreground: fgColor, Background: bgColor})
         if keyboundObject, ok := object.(services.KeyBound); ok && key != "" {
             keyboundObject.SetKey(key)
+        }
+        if contentHolder, ok := object.(services.ContentHolder); ok && len(contents) > 0 {
+            contentHolder.SetContents(contents)
         }
         loadedMap.AddObject(object, pos)
     }

@@ -43,6 +43,14 @@ type KeyBound interface {
     SetKey(key string)
 }
 
+// ContentHolder is implemented by objects that contain items (e.g. a safe).
+// Each content entry is an item name that can be decoded by the item factory.
+// The serialiser writes one "Content" field per entry and restores them on load.
+type ContentHolder interface {
+    GetContents() []string
+    SetContents([]string)
+}
+
 type Textable interface {
     GetText() string
     SetText(string)
