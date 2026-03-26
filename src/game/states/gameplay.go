@@ -1174,15 +1174,13 @@ func (g *GameStateGameplay) showActorTooltip(person *core.Actor) {
 }
 
 func (g *GameStateGameplay) showItemTooltip(item *core.Item) {
-    infoString := fmt.Sprintf("%s", item.Name)
-    styledText := core.Text(infoString).WithStyle(common.Style{Foreground: common.Black, Background: common.FourWhite})
+    styledText := core.Text(item.Description()).WithStyle(common.Style{Foreground: common.Black, Background: common.FourWhite})
     screenPos := g.engine.GetGame().GetCamera().WorldToScreen(item.Pos())
     g.showTooltipAt(screenPos, styledText)
 }
 
 func (g *GameStateGameplay) showObjectTooltip(object services.Object) {
-    infoString := fmt.Sprintf("%s", object.Description())
-    styledText := core.Text(infoString).WithStyle(common.Style{Foreground: common.Black, Background: common.FourWhite})
+    styledText := core.Text(object.Description()).WithStyle(common.Style{Foreground: common.Black, Background: common.FourWhite})
     screenPos := g.engine.GetGame().GetCamera().WorldToScreen(object.Pos())
     g.showTooltipAt(screenPos, styledText)
 }
