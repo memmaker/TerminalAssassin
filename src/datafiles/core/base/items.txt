@@ -848,3 +848,4 @@ key_string:
 loot_value: 250
 scope_range: 0
 scope_fov: 0.00
+
