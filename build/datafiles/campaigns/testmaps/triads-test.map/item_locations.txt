@@ -154,6 +154,15 @@ Name: Shovel
 ItemAt: (73,38)
 Name: poison gas trip mine
 
+ItemAt: (74,31)
+Name: Even Calmer 2
+
+ItemAt: (74,34)
+Name: Emetic Dart Pistol
+
 ItemAt: (74,75)
 Name: emetic poison
+
+ItemAt: (76,33)
+Name: a taser
 

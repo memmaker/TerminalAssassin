@@ -43,6 +43,9 @@ fire: $POWER
 Signature: EmeticPoisonStims
 emetic_poison: 100
 
+Signature: TranquilizerStims($POWER)
+sleep: $POWER
+
 Signature: SleepGasAreaStims($RADIUS, $DURATION)
 Distribution: gas
 Distance: $RADIUS
