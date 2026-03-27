@@ -41,6 +41,9 @@ on_melee_attack: ChokeStims
 Signature: TranquilizerTrigger($POWER)
 on_ranged_shot_hit: TranquilizerStims($POWER)
 
+Signature: EmeticDartTrigger
+on_ranged_shot_hit: EmeticPoisonStims
+
 Signature: TaserTrigger($POWER)
 on_melee_attack: ElectricStims($POWER)
 
