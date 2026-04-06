@@ -42,6 +42,10 @@ func (t ItemType) ToString() string {
         return "wrench"
     case ItemTypeTaser:
         return "taser"
+    case ItemTypeDartGun:
+        return "dart_gun"
+    case ItemTypeRemoteTaser:
+        return "remote_taser"
     case ItemTypeCrowbar:
         return "crowbar"
     case ItemTypePianoWire:
@@ -64,8 +68,20 @@ func (t ItemType) ToString() string {
         return "loot"
     case ItemTypeExplosive:
         return "explosive"
+    case ItemTypeRemoteExplosive:
+        return "remote_explosive"
+    case ItemTypeProximityMine:
+        return "proximity_mine"
     case ItemTypeSleepPoison:
         return "sleep_poison"
+    case ItemTypeLethalPoisonGrenade:
+        return "lethal_poison_grenade"
+    case ItemTypeSleepPoisonGrenade:
+        return "sleep_poison_grenade"
+    case ItemTypeLethalPoisonMine:
+        return "lethal_poison_mine"
+    case ItemTypeSleepPoisonMine:
+        return "sleep_poison_mine"
     case ItemTypeCamera:
         return "camera"
     case ItemTypeShovel:
@@ -106,6 +122,10 @@ func NewItemTypeFromString(text string) ItemType {
         return ItemTypeWrench
     case "taser":
         return ItemTypeTaser
+    case "dart_gun":
+        return ItemTypeDartGun
+    case "remote_taser":
+        return ItemTypeRemoteTaser
     case "crowbar":
         return ItemTypeCrowbar
     case "piano_wire":
@@ -128,8 +148,20 @@ func NewItemTypeFromString(text string) ItemType {
         return ItemTypeKnife
     case "explosive":
         return ItemTypeExplosive
+    case "remote_explosive":
+        return ItemTypeRemoteExplosive
+    case "proximity_mine":
+        return ItemTypeProximityMine
     case "sleep_poison":
         return ItemTypeSleepPoison
+    case "lethal_poison_grenade":
+        return ItemTypeLethalPoisonGrenade
+    case "sleep_poison_grenade":
+        return ItemTypeSleepPoisonGrenade
+    case "lethal_poison_mine":
+        return ItemTypeLethalPoisonMine
+    case "sleep_poison_mine":
+        return ItemTypeSleepPoisonMine
     case "camera":
         return ItemTypeCamera
     case "shovel":
@@ -157,6 +189,8 @@ const (
     ItemTypeScrewdriver
     ItemTypeWrench
     ItemTypeTaser
+    ItemTypeDartGun
+    ItemTypeRemoteTaser
     ItemTypeCrowbar
     ItemTypeKnife
     ItemTypePianoWire
@@ -168,11 +202,149 @@ const (
     ItemTypeKeyCard
     ItemTypeLoot
     ItemTypeExplosive
+    ItemTypeRemoteExplosive
+    ItemTypeProximityMine
+    ItemTypeLethalPoisonGrenade
+    ItemTypeSleepPoisonGrenade
+    ItemTypeLethalPoisonMine
+    ItemTypeSleepPoisonMine
     ItemTypeMessage
     ItemTypeCamera
     ItemTypeShovel
     ItemTypeFlashlight
 )
+
+// HasMeleeAction returns true when the item can be used at melee range.
+func (t ItemType) HasMeleeAction() bool {
+    switch t {
+    case ItemTypePistol, ItemTypeShotgun, ItemTypeSniperRifle, ItemTypeAssaultRifle,
+        ItemTypeSubmachineGun, ItemTypeMeleeSharp, ItemTypeMeleeBlunt, ItemTypeTool,
+        ItemTypeLethalPoison, ItemTypeEmeticPoison, ItemTypeSleepPoison,
+        ItemTypeScrewdriver, ItemTypeWrench, ItemTypeTaser, ItemTypeCrowbar,
+        ItemTypeKnife, ItemTypePianoWire, ItemTypeCleaner, ItemTypeFlashlight:
+        return true
+    }
+    return false
+}
+
+// IsMeleeTool returns true when the melee action is a tool-use (applies stimuli
+// via TriggerOnToolUsage) rather than a physical strike.
+func (t ItemType) IsMeleeTool() bool {
+    switch t {
+    case ItemTypeLethalPoison, ItemTypeEmeticPoison, ItemTypeSleepPoison,
+        ItemTypeTool, ItemTypeCleaner:
+        return true
+    }
+    return false
+}
+
+// MeleeDecreaseUses returns true when activating the item in melee should
+// consume a use. Physical-strike weapons (guns pistol-whipping, blades) return
+// false so that ammo / unlimited-use items are not inadvertently decremented.
+func (t ItemType) MeleeDecreaseUses() bool {
+    switch t {
+    case ItemTypeTaser, ItemTypeLethalPoison, ItemTypeEmeticPoison,
+        ItemTypeSleepPoison, ItemTypeTool, ItemTypeCleaner:
+        return true
+    }
+    return false
+}
+
+// HasRangedAction returns true when the item can be used at range.
+func (t ItemType) HasRangedAction() bool {
+    switch t {
+    case ItemTypePistol, ItemTypeShotgun, ItemTypeSniperRifle, ItemTypeAssaultRifle,
+        ItemTypeSubmachineGun, ItemTypeDartGun,
+        ItemTypeKnife, ItemTypeMeleeSharp, ItemTypeMeleeBlunt, ItemTypeScrewdriver,
+        ItemTypeWrench, ItemTypeCrowbar,
+        ItemTypeExplosive, ItemTypeRemoteExplosive, ItemTypeProximityMine,
+        ItemTypeLethalPoisonGrenade, ItemTypeSleepPoisonGrenade,
+        ItemTypeLethalPoisonMine, ItemTypeSleepPoisonMine,
+        ItemTypeRemoteTaser, ItemTypeLoot, ItemTypeCommon:
+        return true
+    }
+    return false
+}
+
+// IsThrowable returns true when the ranged action is a throw (including
+// throw-remote). Used by the aim system to enable target lock-on.
+func (t ItemType) IsThrowable() bool {
+    switch t {
+    case ItemTypeKnife, ItemTypeMeleeSharp, ItemTypeMeleeBlunt, ItemTypeScrewdriver,
+        ItemTypeWrench, ItemTypeCrowbar,
+        ItemTypeExplosive, ItemTypeRemoteExplosive, ItemTypeProximityMine,
+        ItemTypeLethalPoisonGrenade, ItemTypeSleepPoisonGrenade,
+        ItemTypeLethalPoisonMine, ItemTypeSleepPoisonMine,
+        ItemTypeRemoteTaser, ItemTypeLoot, ItemTypeCommon:
+        return true
+    }
+    return false
+}
+
+// CanSelfActivate returns true when the item can be placed / armed at the
+// player's own tile (drop-to-arm, e.g. proximity mines).
+func (t ItemType) CanSelfActivate() bool {
+    switch t {
+    case ItemTypeProximityMine, ItemTypeLethalPoisonMine, ItemTypeSleepPoisonMine:
+        return true
+    }
+    return false
+}
+
+func (t ItemType) IsRemoteDetonated() bool {
+    return t == ItemTypeRemoteExplosive || t == ItemTypeRemoteTaser
+}
+
+func (t ItemType) IsSpreadShot() bool {
+    return t == ItemTypeShotgun
+}
+
+// SpreadShotDegrees is the angular spread (in degrees) for a shotgun blast.
+const SpreadShotDegrees = 44
+
+// ShotgunPelletCount is the number of pellets fired per shotgun shot.
+const ShotgunPelletCount = uint8(5)
+
+// CooldownSecs returns the per-shot cooldown duration in seconds for this
+// item type. This is the delay before the item can be used again after firing
+// or striking.
+func (t ItemType) CooldownSecs() float64 {
+    switch t {
+    case ItemTypePistol:
+        return 0.30
+    case ItemTypeSubmachineGun:
+        return 0.10
+    case ItemTypeAssaultRifle:
+        return 0.20
+    case ItemTypeShotgun:
+        return 1.50
+    case ItemTypeSniperRifle:
+        return 2.00
+    case ItemTypeDartGun:
+        return 2.00
+    case ItemTypeTaser:
+        return 0.20
+    }
+    return 0.07 // default minimum cooldown for melee, throwables, tools, etc.
+}
+
+// HasScope returns true when equipping the item activates a directional narrow
+// FoV cone (scoped mode). True for sniper rifles and the flashlight.
+func (t ItemType) HasScope() bool {
+    return t == ItemTypeSniperRifle || t == ItemTypeFlashlight
+}
+
+// ScopeFoV returns the field-of-view cone angle in degrees used while in
+// scoped mode. Returns 0 for items that have no scope.
+func (t ItemType) ScopeFoV() float64 {
+    switch t {
+    case ItemTypeSniperRifle:
+        return 20.0
+    case ItemTypeFlashlight:
+        return 60.0
+    }
+    return 0
+}
 
 // LockDifficulty controls how many lockpicks a door/safe consumes and how long
 // the picking animation takes (Deus-Ex-style consumable picks).
@@ -279,11 +451,7 @@ type Item struct {
     HeldBy      *Actor
     IsBig       bool
 
-    Type         ItemType
-    MeleeAttack  ItemActionType
-    RangedAttack ItemActionType
-    SelfUse      ItemActionType
-
+    Type      ItemType
     KeyString string
 
     TriggerEffects  map[ItemEffectTrigger]stimuli.StimEffect
@@ -292,26 +460,25 @@ type Item struct {
     InsteadOfUse    func()
     InsteadOfPickup func(actor *Actor, item *Item)
 
-    Uses                    int
-    ProjectileRange         int
-    SpreadInDegrees         int
-    ProjectileCount         uint8
-    Scope                   ScopeInfo
-    IsSilenced              bool
-    OnCooldown              bool
-    DelayBetweenShotsInSecs float64
-    IsDestroyed             bool
-    Buried                  bool
-    DefinedStyle            common.Style
-    SilencedCue             string
-    AudioCue                string
-    NoiseRadius             int
-    StartPosition           geometry.Point
-    LootValue               int
+    Uses            int
+    ProjectileRange int
+    OnCooldown      bool
+    IsDestroyed     bool
+    Buried          bool
+    DefinedStyle    common.Style
+    AudioCue        string
+    NoiseRadius     int
+    StartPosition   geometry.Point
+    LootValue       int
 }
 
 func (i *Item) Icon() rune {
     return i.DefinedIcon
+}
+
+// IsSilenced returns true when this weapon makes no significant noise (noise_radius <= 0).
+func (i *Item) IsSilenced() bool {
+    return i.NoiseRadius <= 0
 }
 
 func (i *Item) Description() string {
@@ -342,9 +509,9 @@ func (i *Item) Style(st common.Style) common.Style {
     switch i.Type {
     case ItemTypeEmeticPoison:
         itemStyle = itemStyle.WithFg(ColorFromCode(ColorEmetic))
-    case ItemTypeLethalPoison:
+    case ItemTypeLethalPoison, ItemTypeLethalPoisonGrenade, ItemTypeLethalPoisonMine:
         itemStyle = itemStyle.WithFg(ColorFromCode(ColorLethal))
-    case ItemTypeSleepPoison:
+    case ItemTypeSleepPoison, ItemTypeSleepPoisonGrenade, ItemTypeSleepPoisonMine:
         itemStyle = itemStyle.WithFg(ColorFromCode(ColorSleep))
     }
     return itemStyle
@@ -376,70 +543,6 @@ func (i *Item) HasMeleePiercingDamage() bool {
     }
     return false
 }
-
-type ScopeInfo struct {
-    Range        int
-    FoVinDegrees float64
-}
-
-type ItemActionType int
-
-func (t ItemActionType) ToString() string {
-    switch t {
-    case ActionTypeMeleeAttack:
-        return "melee_attack"
-    case ActionTypeShot:
-        return "shot"
-    case ActionTypeSpreadShot:
-        return "spread_shot"
-    case ActionTypeThrow:
-        return "throw"
-    case ActionTypeThrowRemote:
-        return "throw_remote"
-    case ActionTypeTool:
-        return "tool"
-    case ActionTypeMeleeUse:
-        return "melee_use"
-    default:
-        return ""
-    }
-}
-
-func NewItemActionTypeFromString(s string) ItemActionType {
-    switch s {
-    case "melee_attack":
-        return ActionTypeMeleeAttack
-    case "shot":
-        return ActionTypeShot
-    case "spread_shot":
-        return ActionTypeSpreadShot
-    case "throw":
-        return ActionTypeThrow
-    case "throw_remote":
-        return ActionTypeThrowRemote
-    case "tool":
-        return ActionTypeTool
-    case "melee_use":
-        return ActionTypeMeleeUse
-    default:
-        return NoAction
-    }
-}
-
-const (
-    NoAction ItemActionType = iota
-    ActionTypeMeleeAttack
-    ActionTypeShot
-    ActionTypeSpreadShot
-    ActionTypeThrow
-    // ActionTypeThrowRemote
-    // 1. Throws the item exactly like a normal throw (rangedThrow)
-    // 2. Creates a remote detonator item linked to the thrown item
-    // 3. Adds the remote to the player's inventory and immediately equips it
-    ActionTypeThrowRemote
-    ActionTypeTool
-    ActionTypeMeleeUse
-)
 
 const UnlimitedUses = -1
 
@@ -512,28 +615,31 @@ func (i *Item) GetKey() string {
 }
 
 func (i *Item) ToRecord() []rec_files.Field {
-    return []rec_files.Field{
+    fields := []rec_files.Field{
         {Name: "name", Value: i.Name},
         {Name: "icon", Value: string(i.DefinedIcon)},
         {Name: "type", Value: i.Type.ToString()},
-        {Name: "is_big", Value: strconv.FormatBool(i.IsBig)},
-        {Name: "uses", Value: strconv.Itoa(i.Uses)},
-        {Name: "melee_attack", Value: i.MeleeAttack.ToString()},
-        {Name: "ranged_attack", Value: i.RangedAttack.ToString()},
-        {Name: "self_use", Value: i.SelfUse.ToString()},
         {Name: "projectile_range", Value: strconv.Itoa(i.ProjectileRange)},
-        {Name: "spread_in_degrees", Value: strconv.Itoa(i.SpreadInDegrees)},
-        {Name: "projectile_count", Value: strconv.Itoa(int(i.ProjectileCount))},
-        {Name: "delay_between_shots_in_secs", Value: strconv.FormatFloat(i.DelayBetweenShotsInSecs, 'f', 2, 64)},
-        {Name: "noise_radius", Value: strconv.Itoa(i.NoiseRadius)},
-        {Name: "audio_cue", Value: i.AudioCue},
-        {Name: "is_silenced", Value: strconv.FormatBool(i.IsSilenced)},
-        {Name: "silenced_cue", Value: i.SilencedCue},
-        {Name: "key_string", Value: i.KeyString},
-        {Name: "loot_value", Value: strconv.Itoa(i.LootValue)},
-        {Name: "scope_range", Value: strconv.Itoa(i.Scope.Range)},
-        {Name: "scope_fov", Value: strconv.FormatFloat(i.Scope.FoVinDegrees, 'f', 2, 64)},
     }
+    if i.IsBig {
+        fields = append(fields, rec_files.Field{Name: "is_big", Value: "true"})
+    }
+    if i.Uses != UnlimitedUses {
+        fields = append(fields, rec_files.Field{Name: "uses", Value: strconv.Itoa(i.Uses)})
+    }
+    if i.NoiseRadius != 0 {
+        fields = append(fields, rec_files.Field{Name: "noise_radius", Value: strconv.Itoa(i.NoiseRadius)})
+    }
+    if i.AudioCue != "" {
+        fields = append(fields, rec_files.Field{Name: "audio_cue", Value: i.AudioCue})
+    }
+    if i.LootValue != 0 {
+        fields = append(fields, rec_files.Field{Name: "loot_value", Value: strconv.Itoa(i.LootValue)})
+    }
+    if i.KeyString != "" {
+        fields = append(fields, rec_files.Field{Name: "key_string", Value: i.KeyString})
+    }
+    return fields
 }
 
 func NewEmptyKey() *Item {

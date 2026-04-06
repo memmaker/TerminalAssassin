@@ -19,10 +19,6 @@ import (
     "github.com/memmaker/terminal-assassin/geometry"
 )
 
-var rightAnalogStickAxisX = 3 // for xbox controller
-var rightAnalogStickAxisY = 4 // for xbox controller
-//var rightAnalogStickAxisX = 2 // for ps4 controller
-//var rightAnalogStickAxisY = 5 // for ps4 controller
 
 type InputState struct {
     config               console.GridConfig
@@ -49,12 +45,9 @@ type InputState struct {
     keyboardUseItemKey        ebiten.Key
     keyboardInventoryKey      ebiten.Key
 
-    gamepadIDsBuf []ebiten.GamepadID
-    gamepadIDs    map[ebiten.GamepadID]struct{}
-    axes          map[ebiten.GamepadID][]float64
-    //pressedButtons         map[ebiten.GamepadID][]ebiten.GamepadButton
-    pressedStandardButtons     map[ebiten.GamepadID][]ebiten.StandardGamepadButton
-    justPressedStandardButtons map[ebiten.GamepadID][]ebiten.StandardGamepadButton
+	gamepadIDsBuf              []ebiten.GamepadID
+	gamepadIDs                 map[ebiten.GamepadID]struct{}
+	justPressedStandardButtons map[ebiten.GamepadID][]ebiten.StandardGamepadButton
 
     // required here to correctly calculate the mouse position on screen
     effectiveTileW float64
@@ -81,48 +74,37 @@ func (i *InputState) PollGamepad() {
         }
     }
 
-    i.axes = map[ebiten.GamepadID][]float64{}
-    //i.pressedButtons = map[ebiten.GamepadID][]ebiten.GamepadButton{}
-    i.pressedStandardButtons = map[ebiten.GamepadID][]ebiten.StandardGamepadButton{}
-    i.justPressedStandardButtons = map[ebiten.GamepadID][]ebiten.StandardGamepadButton{}
-    for id := range i.gamepadIDs {
-        maxAxis := ebiten.GamepadAxisType(ebiten.GamepadAxisCount(id))
-        for a := ebiten.GamepadAxisType(0); a < maxAxis; a++ {
-            v := ebiten.GamepadAxisValue(id, a)
-            i.axes[id] = append(i.axes[id], v)
-        }
-        /*
-           maxButton := ebiten.GamepadButton(ebiten.GamepadButtonCount(id))
-           for b := ebiten.GamepadButton(0); b < maxButton; b++ {
-               if ebiten.IsGamepadButtonPressed(id, b) {
-                   i.pressedButtons[id] = append(i.pressedButtons[id], b)
-               }
+	i.justPressedStandardButtons = map[ebiten.GamepadID][]ebiten.StandardGamepadButton{}
+	for id := range i.gamepadIDs {
+		/*
+		   maxButton := ebiten.GamepadButton(ebiten.GamepadButtonCount(id))
+		   for b := ebiten.GamepadButton(0); b < maxButton; b++ {
+		       if ebiten.IsGamepadButtonPressed(id, b) {
+		           i.pressedButtons[id] = append(i.pressedButtons[id], b)
+		       }
 
-               // Log button events.
-               if inpututil.IsGamepadButtonJustPressed(id, b) {
-                   log.Printf("button pressed: id: %d, button: %d", id, b)
-               }
-               if inpututil.IsGamepadButtonJustReleased(id, b) {
-                   //log.Printf("button released: id: %d, button: %d", id, b)
-               }
-           }
-        */
-        if ebiten.IsStandardGamepadLayoutAvailable(id) {
-            for b := ebiten.StandardGamepadButton(0); b <= ebiten.StandardGamepadButtonMax; b++ {
-                if ebiten.IsStandardGamepadButtonPressed(id, b) {
-                    i.pressedStandardButtons[id] = append(i.pressedStandardButtons[id], b)
-                }
-                // Log button events.
-                if inpututil.IsStandardGamepadButtonJustPressed(id, b) {
-                    //log.Printf("standard button pressed: id: %d, button: %d", id, b)
-                    i.justPressedStandardButtons[id] = append(i.justPressedStandardButtons[id], b)
-                }
-                if inpututil.IsStandardGamepadButtonJustReleased(id, b) {
-                    //log.Printf("standard button released: id: %d, button: %d", id, b)
-                }
-            }
-        }
-    }
+		       // Log button events.
+		       if inpututil.IsGamepadButtonJustPressed(id, b) {
+		           log.Printf("button pressed: id: %d, button: %d", id, b)
+		       }
+		       if inpututil.IsGamepadButtonJustReleased(id, b) {
+		           //log.Printf("button released: id: %d, button: %d", id, b)
+		       }
+		   }
+		*/
+		if ebiten.IsStandardGamepadLayoutAvailable(id) {
+			for b := ebiten.StandardGamepadButton(0); b <= ebiten.StandardGamepadButtonMax; b++ {
+				// Log button events.
+				if inpututil.IsStandardGamepadButtonJustPressed(id, b) {
+					//log.Printf("standard button pressed: id: %d, button: %d", id, b)
+					i.justPressedStandardButtons[id] = append(i.justPressedStandardButtons[id], b)
+				}
+				if inpututil.IsStandardGamepadButtonJustReleased(id, b) {
+					//log.Printf("standard button released: id: %d, button: %d", id, b)
+				}
+			}
+		}
+	}
 }
 func (i *InputState) VibrateGamepad(padId ebiten.GamepadID, duration time.Duration, strong float64, weak float64) {
     if strong > 0 || weak > 0 {
@@ -160,7 +142,7 @@ func (i *InputState) ConfirmOrCancel() bool {
     }
     keyPressed := inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeyEscape) || inpututil.IsKeyJustPressed(ebiten.KeySpace)
     mousePressed := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
-    padPressed := inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightBottom) || inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightRight) || inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightBottom)
+	padPressed := inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightBottom) || inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightRight)
     somethingWasPressed := keyPressed || mousePressed || padPressed
     i.inputConsumed = true
     return somethingWasPressed
@@ -719,16 +701,15 @@ func (i *InputState) SetRenderParams(tileW, tileH, offsetX, offsetY float64) {
 
 func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
 
-    var msgs = make([]core.InputCommand, 0)
+	var msgs = make([]core.InputCommand, 0)
 
-    padId := i.getPadID()
-    axes := i.axes[padId]
+	padId := i.getPadID()
 
-    if padId > -1 {
+	if padId > -1 {
 
-        // ── Right analog stick → peek ─────────
-        rightX := axes[rightAnalogStickAxisX]
-        rightY := axes[rightAnalogStickAxisY]
+		// ── Right analog stick → peek ─────────
+		rightX := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisRightStickHorizontal)
+		rightY := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisRightStickVertical)
         const rightDeadzone = 0.2
         rightStickActive := rightX > rightDeadzone || rightX < -rightDeadzone ||
             rightY > rightDeadzone || rightY < -rightDeadzone
@@ -815,15 +796,15 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             command := core.DirectionalGameCommand{
                 Command: core.MovementDirection,
             }
-            // ── Left analog stick supplements D-Pad for movement ─────────────────
-            const leftStickDeadzone = 0.1
+		// ── Left analog stick supplements D-Pad for movement ─────────────────
+			const leftStickDeadzone = 0.1
 
-            if axes[0] > leftStickDeadzone || axes[0] < -leftStickDeadzone {
-                command.XAxis = axes[0]
-            }
-            if axes[1] > leftStickDeadzone || axes[1] < -leftStickDeadzone {
-                command.YAxis = axes[1]
-            }
+			if v := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisLeftStickHorizontal); v > leftStickDeadzone || v < -leftStickDeadzone {
+				command.XAxis = v
+			}
+			if v := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisLeftStickVertical); v > leftStickDeadzone || v < -leftStickDeadzone {
+				command.YAxis = v
+			}
 
             if command.XAxis != 0 || command.YAxis != 0 {
                 // Use the same 0.5 threshold as toIntDirection in gameplay.go.

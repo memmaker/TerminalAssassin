@@ -478,25 +478,22 @@ func (a *Actor) HasIllegalItemEquipped() bool {
 }
 
 func (a *Actor) HasThrownItemEquipped() bool {
-    return a.EquippedItem != nil &&
-        (a.EquippedItem.RangedAttack == ActionTypeThrow ||
-            a.EquippedItem.RangedAttack == ActionTypeThrowRemote)
+	return a.EquippedItem != nil && a.EquippedItem.Type.IsThrowable()
 }
 
 // AimDistance returns the maximum aiming distance for the player's currently
-// equipped item. throwingRange is passed in because it is a gameplay
-// configuration value owned by the states layer, not by core.
+// equipped item. Priority: per-weapon ProjectileRange > ThrowingRange > VisionRange.
 func (a *Actor) AimDistance() int {
-    if a.EquippedItem == nil || (a.EquippedItem.RangedAttack == NoAction && a.EquippedItem.MeleeAttack != NoAction) {
-        return 1 // melee
-    }
-    if a.HasThrownItemEquipped() {
-        return ThrowingRange
-    }
-    if a.EquippedItem.Scope.Range > 0 {
-        return a.EquippedItem.Scope.Range // scoped
-    }
-    return a.VisionRange()
+	if a.EquippedItem == nil || (!a.EquippedItem.Type.HasRangedAction() && a.EquippedItem.Type.HasMeleeAction()) {
+		return 1 // melee-only item
+	}
+	if a.EquippedItem.ProjectileRange > 0 {
+		return a.EquippedItem.ProjectileRange // per-weapon range (guns, snipers, throwables)
+	}
+	if a.HasThrownItemEquipped() {
+		return ThrowingRange // fallback for throwables without an explicit range
+	}
+	return a.VisionRange()
 }
 func (a *Actor) AddDamage(Amount int, Type stimuli.StimulusType) {
     a.DamageTaken = append(a.DamageTaken, DamageInfo{Amount, Type})
@@ -639,14 +636,13 @@ func (a *Actor) TryRespondToSpeech(currentTick uint64, speechCode string) {
     }
 }
 func (a *Actor) canSeeInScope(p geometry.Point) bool {
-    if a.EquippedItem == nil || a.EquippedItem.Scope.Range == 0 {
-        return false
-    }
-    scopeInfo := a.EquippedItem.Scope
-    left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, scopeInfo.FoVinDegrees)
-    inCone := geometry.InVisionCone(a.FoVSource(), p, left, right)
-    visible := a.Fov.Visible(p)
-    return inCone && visible
+	if a.EquippedItem == nil || !a.EquippedItem.Type.HasScope() {
+		return false
+	}
+	left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.EquippedItem.Type.ScopeFoV())
+	inCone := geometry.InVisionCone(a.FoVSource(), p, left, right)
+	visible := a.Fov.Visible(p)
+	return inCone && visible
 }
 
 func (a *Actor) CanSeeInVisionCone(p geometry.Point) bool {
@@ -881,20 +877,20 @@ func (a *Actor) FoVMode() gridmap.FoVMode {
     return a.FovMode
 }
 func (a *Actor) VisionRange() int {
-    if a.FovMode == gridmap.FoVModeScoped && a.HasScopedItemEquipped() {
-        return a.EquippedItem.Scope.Range
-    }
-    return a.MaxVisionRange
+	if a.FovMode == gridmap.FoVModeScoped && a.HasScopedItemEquipped() {
+		return a.EquippedItem.ProjectileRange
+	}
+	return a.MaxVisionRange
 }
 func (a *Actor) NameOfClothing() string {
     return a.Clothes.Name
 }
 
 func (a *Actor) HasScopedItemEquipped() bool {
-    if a.EquippedItem == nil {
-        return false
-    }
-    return a.EquippedItem.Scope.Range > 0
+	if a.EquippedItem == nil {
+		return false
+	}
+	return a.EquippedItem.Type.HasScope()
 }
 
 func (a *Actor) IsSleeping() bool {

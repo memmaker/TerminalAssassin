@@ -1310,15 +1310,15 @@ func (g *GameStateGameplay) playerUseItem() {
         return
     }
 
-    if isSelf && player.EquippedItem.SelfUse != core.NoAction {
-        player.EquippedItem.DecreaseUsesLeft()
-        actions.UseEquippedItemOnSelf(player)
-    } else if isMelee && player.EquippedItem.MeleeAttack != core.NoAction {
-        if player.EquippedItem.MeleeAttack != core.ActionTypeMeleeAttack {
-            player.EquippedItem.DecreaseUsesLeft()
-        }
-        actions.UseEquippedItemForMelee(player, targetPos)
-    }
+	if isSelf && player.EquippedItem.Type.CanSelfActivate() {
+		player.EquippedItem.DecreaseUsesLeft()
+		actions.UseEquippedItemOnSelf(player)
+	} else if isMelee && player.EquippedItem.Type.HasMeleeAction() {
+		if player.EquippedItem.Type.MeleeDecreaseUses() {
+			player.EquippedItem.DecreaseUsesLeft()
+		}
+		actions.UseEquippedItemForMelee(player, targetPos)
+	}
 
     if player.EquippedItem == nil {
         g.resetPlayerState()
