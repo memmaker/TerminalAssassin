@@ -1,7 +1,6 @@
 package editor
 
 import (
-	"github.com/memmaker/terminal-assassin/common"
 	"github.com/memmaker/terminal-assassin/game/services"
 	"github.com/memmaker/terminal-assassin/geometry"
 	"github.com/memmaker/terminal-assassin/gridmap"
@@ -37,12 +36,11 @@ func (g *GameStateEditor) placeTileAtPos(tile gridmap.Tile, pos geometry.Point) 
 		currentMap.SetPlayerSpawn(pos)
 		return
 	}
-	if g.currentBackgroundColor != tile.DefinedStyle.Background && g.currentBackgroundColor != common.Black {
-		tile = tile.WithBGColor(g.currentBackgroundColor)
-	}
-
-	if g.currentForegroundColor != tile.DefinedStyle.Foreground && g.currentForegroundColor != common.White {
-		tile = tile.WithFGColor(g.currentForegroundColor)
+	if tile.IsWalkable {
+		tile = tile.WithBGColor(g.currentBackgroundColor).WithFGColor(g.currentForegroundColor)
+	} else {
+		// Wall tiles use the reversed default style: fg↔bg swapped.
+		tile = tile.WithBGColor(g.currentForegroundColor).WithFGColor(g.currentBackgroundColor)
 	}
 	currentMap.SetTile(pos, tile)
 }

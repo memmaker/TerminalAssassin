@@ -45,11 +45,18 @@ const (
 type Safe struct {
     State            SafeState
     Type             SafeType
-    KeyString        string   // key / keycard ID that unlocks this safe
-    ContentItemNames []string // items to spawn on open; cleared once spawned
+    Keypad           bool
+    KeyString        string
+    Difficulty       core.LockDifficulty
+    ContentItemNames []string
     position         geometry.Point
     definedStyle     common.Style
 }
+
+// ---- services.LockDifficultyHolder ----
+
+func (s *Safe) GetLockDifficulty() core.LockDifficulty     { return s.Difficulty }
+func (s *Safe) SetLockDifficulty(d core.LockDifficulty)    { s.Difficulty = d }
 
 func newMechanicalSafe() *Safe {
     return &Safe{State: SafeStateLocked, Type: SafeTypeMechanical, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
@@ -57,6 +64,10 @@ func newMechanicalSafe() *Safe {
 
 func newElectronicSafe() *Safe {
     return &Safe{State: SafeStateLocked, Type: SafeTypeElectronic, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
+}
+
+func newKeypadSafe() *Safe {
+    return &Safe{State: SafeStateLocked, Type: SafeTypeElectronic, Keypad: true, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
 }
 
 // ---- services.KeyBound ----
@@ -99,13 +110,22 @@ func (s *Safe) Style(st common.Style) common.Style {
 func (s *Safe) Description() string {
     switch s.State {
     case SafeStateLocked:
+        if s.Keypad {
+            return "a keypad safe (locked)"
+        }
         if s.KeyString != "" {
             return fmt.Sprintf("a locked safe (%s)", s.KeyString)
         }
         return "a locked safe"
     case SafeStateClosed:
+        if s.Keypad {
+            return "a keypad safe (unlocked)"
+        }
         return "an unlocked safe"
     case SafeStateOpen:
+        if s.Keypad {
+            return "a keypad safe (open)"
+        }
         return "an open safe"
     }
     return "a safe"
@@ -114,6 +134,9 @@ func (s *Safe) Description() string {
 // EncodeAsString returns the plain factory name for this safe.
 // Contents and key are written as separate fields by the serialiser.
 func (s *Safe) EncodeAsString() string {
+    if s.Keypad {
+        return "keypad safe"
+    }
     if s.Type == SafeTypeElectronic {
         return "electronic safe (locked)"
     }
@@ -126,7 +149,12 @@ func (s *Safe) ApplyStimulus(_ services.Engine, _ stimuli.Stimulus) {}
 func (s *Safe) IsActionAllowed(_ services.Engine, person *core.Actor) bool {
     switch s.State {
     case SafeStateLocked:
-        return s.isUnlockableWithKeyFrom(person) || s.isUnlockableWithPickFrom(person)
+        if s.Keypad {
+            return true
+        }
+        // Always allow interaction: the player will receive key usage or a
+        // "needs X picks" message inside Action when picks are insufficient.
+        return true
     case SafeStateClosed:
         return true
     case SafeStateOpen:
@@ -143,35 +171,72 @@ func (s *Safe) Action(m services.Engine, person *core.Actor) {
 
     switch {
 
+    // ── Keypad: prompt for code ───────────────────────────────────────────────
+    case s.Keypad && s.State == SafeStateLocked:
+        m.GetUI().ShowTextInput("Enter code: ", "", func(code string) {
+            if code == s.KeyString {
+                s.State = SafeStateOpen
+                s.spawnContents(m)
+            } else {
+                game.PrintMessage("Wrong code.")
+            }
+        }, func() {})
+
     // ── Unlock with a matching physical key ──────────────────────────────────
     case s.State == SafeStateLocked && s.isUnlockableWithKeyFrom(person):
         s.State = SafeStateOpen
         s.spawnContents(m)
 
     // ── Pick the lock — mechanical ───────────────────────────────────────────
-    case s.State == SafeStateLocked &&
-        s.Type == SafeTypeMechanical &&
-        person.HasToolEquipped(core.ItemTypeMechanicalLockpick):
-
-        done := false
-        aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
-        game.IllegalActionAt(person.Pos(), core.ObservationIllegalAction)
-        animator.ActorEngagedAnimation(person, core.GlyphLockpick, s.Pos(), safePickTime, func() {
-            done = true
-            s.State = SafeStateOpen
-            s.spawnContents(m)
-        })
+    case s.State == SafeStateLocked && s.Type == SafeTypeMechanical && !s.isUnlockableWithKeyFrom(person):
+        needed := s.Difficulty.PickCount()
+        hasPicks := person.CountItemTypeInInventory(core.ItemTypeMechanicalLockpick) >= needed
+        hasCrowbar := s.Difficulty != core.LockDifficultyHard && person.CountItemTypeInInventory(core.ItemTypeCrowbar) >= 1
+        if hasPicks {
+            pickTime := s.Difficulty.PickTime()
+            done := false
+            aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
+            game.IllegalActionAt(person.Pos(), core.ObservationIllegalAction)
+            animator.ActorEngagedAnimation(person, core.GlyphLockpick, s.Pos(), pickTime, func() {
+                done = true
+                person.ConsumeItemsFromInventory(core.ItemTypeMechanicalLockpick, needed)
+                s.State = SafeStateOpen
+                s.spawnContents(m)
+            })
+        } else if hasCrowbar {
+            crowbarTime := s.Difficulty.PickTime() * 3
+            game.SoundEventAt(s.Pos(), core.ObservationMeleeNoises, 20)
+            game.IllegalActionAt(person.Pos(), core.ObservationIllegalAction)
+            done := false
+            aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
+            animator.ActorEngagedAnimation(person, core.GlyphCrowbar, s.Pos(), crowbarTime, func() {
+                done = true
+                person.ConsumeItemsFromInventory(core.ItemTypeCrowbar, 1)
+                s.State = SafeStateOpen
+                s.spawnContents(m)
+            })
+        } else {
+            if s.Difficulty == core.LockDifficultyHard {
+                game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s).", s.Difficulty.ToString(), needed))
+            } else {
+                game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s) or a crowbar.", s.Difficulty.ToString(), needed))
+            }
+        }
 
     // ── Pick the lock — electronic ───────────────────────────────────────────
-    case s.State == SafeStateLocked &&
-        s.Type == SafeTypeElectronic &&
-        person.HasToolEquipped(core.ItemTypeElectronicalLockpick):
-
+    case s.State == SafeStateLocked && s.Type == SafeTypeElectronic && !s.isUnlockableWithKeyFrom(person):
+        needed := s.Difficulty.PickCount()
+        if person.CountItemTypeInInventory(core.ItemTypeElectronicalLockpick) < needed {
+            game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s).", s.Difficulty.ToString(), needed))
+            return
+        }
+        pickTime := s.Difficulty.PickTime()
         done := false
         aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
         game.IllegalActionAt(person.Pos(), core.ObservationIllegalAction)
-        animator.ActorEngagedAnimation(person, core.GlyphLockpickElectronic, s.Pos(), safePickTime, func() {
+        animator.ActorEngagedAnimation(person, core.GlyphLockpickElectronic, s.Pos(), pickTime, func() {
             done = true
+            person.ConsumeItemsFromInventory(core.ItemTypeElectronicalLockpick, needed)
             s.State = SafeStateOpen
             s.spawnContents(m)
         })
@@ -179,6 +244,11 @@ func (s *Safe) Action(m services.Engine, person *core.Actor) {
     // ── Already open ─────────────────────────────────────────────────────────
     case s.State == SafeStateOpen:
         game.PrintMessage("The safe is already open.")
+
+    // ── Unlocked but not yet opened ───────────────────────────────────────────
+    case s.State == SafeStateClosed:
+        s.State = SafeStateOpen
+        s.spawnContents(m)
     }
 }
 
@@ -217,14 +287,15 @@ func (s *Safe) isUnlockableWithKeyFrom(person *core.Actor) bool {
 }
 
 func (s *Safe) isUnlockableWithPickFrom(person *core.Actor) bool {
-    if person == nil || person.EquippedItem == nil {
+    if person == nil {
         return false
     }
+    needed := s.Difficulty.PickCount()
     switch s.Type {
     case SafeTypeMechanical:
-        return person.EquippedItem.Type == core.ItemTypeMechanicalLockpick
+        return person.CountItemTypeInInventory(core.ItemTypeMechanicalLockpick) >= needed
     case SafeTypeElectronic:
-        return person.EquippedItem.Type == core.ItemTypeElectronicalLockpick
+        return person.CountItemTypeInInventory(core.ItemTypeElectronicalLockpick) >= needed
     }
     return false
 }

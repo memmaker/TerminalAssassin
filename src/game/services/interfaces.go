@@ -51,6 +51,13 @@ type ContentHolder interface {
     SetContents([]string)
 }
 
+// LockDifficultyHolder is implemented by lockable objects (doors, safes) that
+// carry a per-instance lock difficulty controlling pick count and pick time.
+type LockDifficultyHolder interface {
+    GetLockDifficulty() core.LockDifficulty
+    SetLockDifficulty(core.LockDifficulty)
+}
+
 type Textable interface {
     GetText() string
     SetText(string)
@@ -79,7 +86,7 @@ type UIInterface interface {
     ShowTextInput(prompt string, prefilled string, onClose func(string), onAbort func())
     PopAll()
     ShowPager(title string, lines []core.StyledText, quit func())
-    OpenItemRingMenu(currentItem *core.Item, listOfItems []*core.Item, selectedFunc func(*core.Item), cancelFunc func())
+    OpenItemRingMenu(currentItem *core.Item, listOfItems []*core.Item, selectedFunc func(*core.Item), cancelFunc func(), dropFunc func(*core.Item))
     HideModal()
     ShowModal()
     ShowWidget(widget UIWidget)
@@ -135,6 +142,7 @@ type GameInterface interface {
     MoveActor(person *core.Actor, to geometry.Point)
     MoveItemTo(pos geometry.Point, item *core.Item)
     PickUpItem(person *core.Actor)
+    PickUpItemAt(person *core.Actor, pos geometry.Point)
     DropEquippedItem(player *core.Actor)
 
     ActorEnteredCell(person *core.Actor, oldPosition geometry.Point, newPosition geometry.Point)
@@ -175,6 +183,7 @@ type GameInterface interface {
     IsUnlockedDoorAt(pos geometry.Point) bool
 
     IsDoorAt(pos geometry.Point) bool
+    IsWindowAt(pos geometry.Point) bool
     Destroy(item *core.Item)
     AreAllies(actorOne, actorTwo *core.Actor) bool
     EndMissionWithSuccess()
@@ -198,7 +207,7 @@ type AnimationInterface interface {
     VomitingAnimation(person *core.Actor, actionPosition geometry.Point, finishedCallback func())
     SleepingAnimation(person *core.Actor, finished func())
     SoundPropagationAnimation(sound core.Observation, tiles map[int][]geometry.Point, completed func())
-    TaskAnimation(person *core.Actor, seconds float64, cancelled func(), finished func())
+    TaskAnimation(person *core.Actor, seconds float64, lookDirs []float64, cancelled func(), finished func())
     BlastDistribution(location geometry.Point, source core.EffectSource, applyStim []stimuli.Stimulus, size int, pressure int)
     LiquidDistribution(location geometry.Point, source core.EffectSource, applyStim []stimuli.Stimulus, size int)
     GasDistribution(location geometry.Point, source core.EffectSource, stims []stimuli.Stimulus, radius int, durationSecs int)
@@ -245,8 +254,7 @@ type AIInterface interface {
     SwitchStateBecauseOfNewKnowledge(person *core.Actor)
 
     UpdateVision(person *core.Actor)
-    CalculateAllTaskPaths(actor *core.Actor)
-    AddTask(actor *core.Actor, task core.ScheduledTask)
+    CalculateAllTaskPaths(person *core.Actor)
     TaskCountFor(actor *core.Actor) int
 
     ReportIncident(person *core.Actor, location geometry.Point, incidentType core.Observation) core.IncidentReport
@@ -350,6 +358,13 @@ type Engine interface {
     SubscribeToEvents(subscriber Subscriber)
     // RequestScreenshot queues a screenshot to be saved to the given file path on the next render frame.
     RequestScreenshot(path string)
+
+    // GetTimeFactor returns the current world time scale factor.
+    // 1.0 = normal speed, >1.0 = faster world, <1.0 = slower world, 0 = frozen.
+    // Only affects AI-controlled actors, objects and items — not the player.
+    GetTimeFactor() float64
+    // SetTimeFactor sets the world time scale factor.
+    SetTimeFactor(factor float64)
 }
 type Subscriber interface {
     ReceiveMoreAfter(event GameEvent) bool

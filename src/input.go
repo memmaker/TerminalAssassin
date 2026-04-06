@@ -5,6 +5,7 @@ import (
     "github.com/memmaker/terminal-assassin/game/services"
     rec_files "github.com/memmaker/terminal-assassin/rec-files"
     "log"
+    "math"
     "os"
     "strings"
     "time"
@@ -29,6 +30,7 @@ type InputState struct {
     LastMousePos         geometry.Point
     movementDelayInTicks int
     lastMovementAt       time.Time // used for ms-based sneak-step delay
+    lastStepWasDiagonal  bool      // true when the last pad move was diagonal; used to apply sqrt(2) cool-down
     sneaking             bool      // keyboard sneak state (CapsLock)
     padSneaking          bool      // gamepad sneak state (Circle toggle)
     dpiScale             float64
@@ -194,7 +196,11 @@ func (i *InputState) KeyToKeyCommand(key ebiten.Key, caps bool) core.InputComman
     case ebiten.KeySlash:
         return core.KeyCommand{Key: "/"}
     case ebiten.KeySemicolon:
+        if caps {
+            return core.KeyCommand{Key: ":"}
+        }
         return core.KeyCommand{Key: ";"}
+    // add case for ":"
     case ebiten.KeyApostrophe:
         return core.KeyCommand{Key: "'"}
     case ebiten.KeyLeftBracket:
@@ -221,6 +227,7 @@ func (i *InputState) pollKeyBoardForUI() []core.InputCommand {
 
     // Navigation keys: support held + auto-repeat so the user can scroll menus
     // by holding an arrow key.
+    //fmt.Println("pollKeyBoardForUI")
     i.keyBuffer = i.keyBuffer[:0]
     i.keyBuffer = inpututil.AppendPressedKeys(i.keyBuffer)
     for _, key := range i.keyBuffer {
@@ -314,6 +321,12 @@ func (i *InputState) PollEditorCommands() []core.InputCommand {
     i.inputConsumed = true
     var commands = make([]core.InputCommand, 0)
     commands = append(commands, i.pollPrintables()...)
+    // Continuous scrolling: repeat arrow keys while held (first press already covered by pollPrintables).
+    for _, key := range []ebiten.Key{ebiten.KeyArrowLeft, ebiten.KeyArrowRight, ebiten.KeyArrowUp, ebiten.KeyArrowDown} {
+        if dur := inpututil.KeyPressDuration(key); dur > 1 && dur%i.movementDelayInTicks == 0 {
+            commands = append(commands, i.KeyToKeyCommand(key, false))
+        }
+    }
     commands = append(commands, i.pollMouse()...)
     return commands
 }
@@ -335,34 +348,14 @@ func (i *InputState) pollKeyBoardForGameplay() []core.InputCommand {
     movementDirectionX, movementDirectionY := i.directionFromKeys(i.keyboardMovementKeys)
     playerWantsToMove := movementDirectionX != 0 || movementDirectionY != 0
 
-    actionDirX, actionDirY := 0, 0
-    cardinalAction := false
-
-    if ebiten.IsKeyPressed(ebiten.KeyShift) {
-        actionDirX, actionDirY = movementDirectionX, movementDirectionY
-        cardinalAction = playerWantsToMove
-    } else {
-
-        if !(i.mustWaitForSneakDelay()) && playerWantsToMove {
-            commands = append(commands, core.DirectionalGameCommand{Command: core.MovementDirection, XAxis: float64(movementDirectionX), YAxis: float64(movementDirectionY)})
-            i.lastMovementAt = time.Now()
-        }
-
-        actionDirX, actionDirY = i.directionFromKeys(i.keyboardActionKeys)
-        cardinalAction = actionDirX != 0 || actionDirY != 0
+    if !(i.mustWaitForSneakDelay()) && playerWantsToMove {
+        commands = append(commands, core.DirectionalGameCommand{Command: core.MovementDirection, XAxis: float64(movementDirectionX), YAxis: float64(movementDirectionY)})
+        i.lastMovementAt = time.Now()
     }
 
     peekDirX, peekDirY := i.directionFromKeys(i.keyboardPeekingKeys)
     if peekDirX != 0 || peekDirY != 0 {
         commands = append(commands, core.DirectionalGameCommand{Command: core.PeekingDirection, XAxis: float64(peekDirX), YAxis: float64(peekDirY)})
-    }
-
-    sameTileAction := inpututil.IsKeyJustPressed(i.keyboardSameTileActionKey)
-
-    if cardinalAction {
-        commands = append(commands, core.DirectionalGameCommand{Command: core.ActionDirection, XAxis: float64(actionDirX), YAxis: float64(actionDirY)})
-    } else if sameTileAction {
-        commands = append(commands, core.DirectionalGameCommand{Command: core.ActionDirection, XAxis: 0, YAxis: 0})
     }
 
     if inpututil.IsKeyJustPressed(i.keyboardSneakModeKey) {
@@ -384,7 +377,7 @@ func (i *InputState) pollKeyBoardForGameplay() []core.InputCommand {
     }
 
     if inpututil.IsKeyJustPressed(i.keyboardUseItemKey) {
-        commands = append(commands, core.UseItem)
+        commands = append(commands, core.BeginMouseAiming)
     }
     if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
         commands = append(commands, core.Confirm)
@@ -513,7 +506,7 @@ func (i *InputState) SaveKeyDefs() {
             {Name: "UseItem", Value: i.keyboardUseItemKey.String()},
             {Name: "Inventory", Value: i.keyboardInventoryKey.String()},
             {Name: "DropItem", Value: i.keyboardDropItemKey.String()},
-            {Name: "PutItemAway", Value: i.keyboardPutItemAwayKey.String()},
+            {Name: "HolsterItem", Value: i.keyboardPutItemAwayKey.String()},
             {Name: "SneakMode", Value: i.keyboardSneakModeKey.String()},
         },
     })
@@ -565,7 +558,7 @@ func (i *InputState) LoadKeyDefs() {
             i.keyboardInventoryKey = i.toEbitenKey(field.Value)
         } else if field.Name == "DropItem" {
             i.keyboardDropItemKey = i.toEbitenKey(field.Value)
-        } else if field.Name == "PutItemAway" {
+        } else if field.Name == "HolsterItem" {
             i.keyboardPutItemAwayKey = i.toEbitenKey(field.Value)
         } else if field.Name == "SneakMode" {
             i.keyboardSneakModeKey = i.toEbitenKey(field.Value)
@@ -730,16 +723,33 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
 
     padId := i.getPadID()
     axes := i.axes[padId]
+
     if padId > -1 {
-        if axes[0] > 0.1 || axes[0] < -0.1 || axes[1] > 0.1 || axes[1] < -0.1 {
-            msgs = append(msgs, core.DirectionalGameCommand{Command: core.PeekingDirection, XAxis: axes[0], YAxis: axes[1]})
-        }
-        if axes[rightAnalogStickAxisX] > 0.1 || axes[rightAnalogStickAxisX] < -0.1 || axes[rightAnalogStickAxisY] > 0.1 || axes[rightAnalogStickAxisY] < -0.1 {
-            msgs = append(msgs, core.DirectionalGameCommand{Command: core.AimingDirection, XAxis: axes[rightAnalogStickAxisX], YAxis: axes[rightAnalogStickAxisY]})
+
+        // ── Right analog stick → peek ─────────
+        rightX := axes[rightAnalogStickAxisX]
+        rightY := axes[rightAnalogStickAxisY]
+        const rightDeadzone = 0.2
+        rightStickActive := rightX > rightDeadzone || rightX < -rightDeadzone ||
+            rightY > rightDeadzone || rightY < -rightDeadzone
+
+        // ── D-Pad Left -> Open Inventory ─────────────────────────────────────────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftLeft) {
+            msgs = append(msgs, core.OpenInventory)
         }
 
-        // Circle (RightRight) toggles sneaking on/off.
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightRight) {
+        // ── D-Pad Down -> Drop Item ─────────────────────────────────────────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftBottom) {
+            msgs = append(msgs, core.DropItem)
+        }
+
+        // ── D-Pad Up -> Put Item Away ─────────────────────────────────────────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftTop) {
+            msgs = append(msgs, core.PutItemAway)
+        }
+
+        // ── R3 (RightStick click) → toggle sneaking ──────────────────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightStick) {
             i.padSneaking = !i.padSneaking
             if i.padSneaking {
                 msgs = append(msgs, core.StartSneaking)
@@ -748,93 +758,84 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             }
         }
 
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontBottomRight) {
-            msgs = append(msgs, core.UseEquippedItem)
-        }
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontTopLeft) {
-            msgs = append(msgs, core.NextItem)
-        }
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightBottom) {
+        // ── Triangle (RightTop) → Assassination ─────────────────────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightTop) {
             msgs = append(msgs, core.Assassinate)
         }
 
-        triangleHeld := ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonRightTop)
+        // ── Square (RightLeft) → use item at current peek tile ───────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightLeft) {
+            msgs = append(msgs, core.UseItem)
+        }
 
-        if triangleHeld {
-            // Triangle held + D-Pad → directional context action
-            // Triangle tapped alone (no D-Pad) → same-tile context action
-            actionDirX, actionDirY := 0, 0
-            actionTriggered := false
-            if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftTop) {
-                actionDirY = -1
-                actionTriggered = true
-            } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftBottom) {
-                actionDirY = 1
-                actionTriggered = true
-            } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftLeft) {
-                actionDirX = -1
-                actionTriggered = true
-            } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftRight) {
-                actionDirX = 1
-                actionTriggered = true
-            } else if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightTop) {
-                // Triangle just tapped with no simultaneous D-Pad → same-tile action
-                actionTriggered = true
-            }
-            if actionTriggered {
-                msgs = append(msgs, core.DirectionalGameCommand{Command: core.ActionDirection, XAxis: float64(actionDirX), YAxis: float64(actionDirY)})
-            }
-        } else {
-            // D-Pad controls movement with three explicit speed modes:
-            //   Circle toggled (padSneaking) → sneak  → MovementModeSneaking
-            //   L1 held                      → sprint → MovementModeRunning
-            //   default                      → walk   → MovementModeWalking
-            //
-            // We enforce the delay via lastMovementAt (shared across all directions)
-            // so that neither re-pressing nor changing direction can bypass the delay.
-            l1Held := ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonFrontBottomLeft)
+        // ── Circle (RightBottom) → dive tackle ─────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightRight) {
+            msgs = append(msgs, core.DiveTackle)
+        }
 
-            var stepDelayMs int64
-            switch {
-            case i.padSneaking:
-                stepDelayMs = int64(core.SneakStepDelayMs)
-            case l1Held:
-                stepDelayMs = int64(core.RunningStepDelayMs)
-            default:
-                stepDelayMs = int64(core.WalkStepDelayMs)
+        // ── R1 (FrontTopRight) → interact at current peek tile ──────────────
+        // Dialogue when walking/standing; pickpocket when sneaking; knock when facing a wall.
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontTopRight) {
+            msgs = append(msgs, core.ContextAction)
+        }
+
+        // ── R2 (FrontBottomRight) → fire/throw at aimed position ────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontBottomRight) {
+            msgs = append(msgs, core.UseRangedItem)
+        }
+
+        // -- L1 (FrontTopLeft) held -> Run ─────────────────────────
+        l1Held := ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonFrontTopLeft)
+        var baseStepDelayMs int64
+        switch {
+        case i.padSneaking:
+            baseStepDelayMs = int64(core.SneakStepDelayMs)
+        case l1Held:
+            baseStepDelayMs = int64(core.RunningStepDelayMs)
+        default:
+            baseStepDelayMs = int64(core.WalkStepDelayMs)
+        }
+
+        if rightStickActive {
+            // -- L2 (FrontBottomLeft) held -> Aim instead of peek ─────────────────────────
+            if ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonFrontBottomLeft) {
+                msgs = append(msgs, core.DirectionalGameCommand{Command: core.AimingDirection, XAxis: rightX, YAxis: rightY})
+            } else {
+                msgs = append(msgs, core.DirectionalGameCommand{Command: core.PeekingDirection, XAxis: rightX, YAxis: rightY})
+            }
+        }
+
+        // ── Left analog stick → movement ─────────────────────────────────────
+        effectiveDelay := baseStepDelayMs
+        if i.lastStepWasDiagonal {
+            effectiveDelay = int64(math.Round(float64(baseStepDelayMs) * math.Sqrt2))
+        }
+        readyForNextStep := i.lastMovementAt.IsZero() || time.Since(i.lastMovementAt).Milliseconds() >= effectiveDelay
+        if readyForNextStep {
+            command := core.DirectionalGameCommand{
+                Command: core.MovementDirection,
+            }
+            // ── Left analog stick supplements D-Pad for movement ─────────────────
+            const leftStickDeadzone = 0.1
+
+            if axes[0] > leftStickDeadzone || axes[0] < -leftStickDeadzone {
+                command.XAxis = axes[0]
+            }
+            if axes[1] > leftStickDeadzone || axes[1] < -leftStickDeadzone {
+                command.YAxis = axes[1]
             }
 
-            readyForNextStep := i.lastMovementAt.IsZero() || time.Since(i.lastMovementAt).Milliseconds() >= stepDelayMs
-
-            padCheck := func(button ebiten.StandardGamepadButton) bool {
-                return readyForNextStep && ebiten.IsStandardGamepadButtonPressed(padId, button)
-            }
-
-            movementDirectionX := 0
-            movementDirectionY := 0
-            if padCheck(ebiten.StandardGamepadButtonLeftBottom) {
-                movementDirectionY = 1
-            }
-            if padCheck(ebiten.StandardGamepadButtonLeftTop) {
-                movementDirectionY = -1
-            }
-            if padCheck(ebiten.StandardGamepadButtonLeftLeft) {
-                movementDirectionX = -1
-            }
-            if padCheck(ebiten.StandardGamepadButtonLeftRight) {
-                movementDirectionX = 1
-            }
-            if movementDirectionX != 0 || movementDirectionY != 0 {
-                msgs = append(msgs, core.DirectionalGameCommand{Command: core.MovementDirection, XAxis: float64(movementDirectionX), YAxis: float64(movementDirectionY)})
+            if command.XAxis != 0 || command.YAxis != 0 {
+                // Use the same 0.5 threshold as toIntDirection in gameplay.go.
+                i.lastStepWasDiagonal = math.Abs(command.XAxis) > 0.5 && math.Abs(command.YAxis) > 0.5
+                msgs = append(msgs, command)
                 i.lastMovementAt = time.Now()
             }
         }
 
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftStick) {
-            msgs = append(msgs, core.DropItem)
-        }
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightStick) {
-            msgs = append(msgs, core.PutItemAway)
+        // ── Options (CenterRight) → pause menu ───────────────────────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonCenterRight) {
+            msgs = append(msgs, core.Cancel)
         }
     }
     return msgs

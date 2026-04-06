@@ -1,0 +1,388 @@
+ObjectAt: (10,31)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (10,8)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (13,44)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (13,53)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (15,30)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (17,39)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (18,27)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (18,34)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (19,15)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (19,2)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (20,46)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (21,8)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (22,49)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (22,55)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (23,46)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (24,20)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (24,34)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (24,5)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (24,55)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (26,20)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (26,42)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (26,55)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (28,20)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (28,38)
+Name: electronic safe (locked)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Key: Safe Keycard 1
+Difficulty: easy
+Content: a diamond necklace
+
+ObjectAt: (28,48)
+Name: mechanical safe (locked)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Key: insurance
+Difficulty: easy
+Content: a gold watch
+
+ObjectAt: (29,10)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (29,13)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (29,4)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (29,6)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (29,8)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (35,10)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (35,13)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (35,4)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (35,6)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (35,8)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (37,20)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (37,29)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (38,52)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (39,20)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (40,52)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (41,10)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (41,20)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (41,25)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (41,29)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (42,52)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (43,33)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (44,37)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (44,42)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (45,49)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (46,33)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (48,12)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (48,2)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (48,23)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (48,33)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (48,54)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (49,40)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (5,15)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (5,2)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (50,29)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (50,33)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (51,20)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (51,46)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (51,60)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (52,33)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (52,7)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (53,22)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (53,42)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (55,25)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (55,33)
+Name: light door (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+Difficulty: easy
+
+ObjectAt: (58,20)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
+ObjectAt: (61,27)
+Name: light window (closed)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+

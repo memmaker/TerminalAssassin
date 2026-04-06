@@ -182,6 +182,20 @@ func (f ObjectFactory) SimpleObjects() []services.ObjectCreator {
             },
         },
         {
+            Name: "keypad safe (locked)",
+            Icon: core.GlyphElectronicSafe,
+            Create: func(name string) services.Object {
+                return newKeypadSafe()
+            },
+        },
+        {
+            Name: "keypad door (locked)",
+            Icon: core.GlyphLockedDoorElectronic,
+            Create: func(name string) services.Object {
+                return NewKeypadDoorAt(name, "", 15)
+            },
+        },
+        {
             Name: gravestonePrefix,
             Icon: core.GlyphGravestone,
             Create: func(name string) services.Object {

@@ -193,6 +193,30 @@ func (g *GameStateGameplay) registerPredicateAndAssignmentFunctions(parser Parse
 		stats := g.engine.GetGame().GetStats()
 		return stats.DisguisesWorn.Cardinality() == 0
 	})
+	// PlayerHasLineOfSightToActors(actor1, actor2, ...) — returns true when the
+	// player has direct line of sight to every listed actor AND every actor is
+	// inside the currently rendered viewport.  All actors must satisfy both
+	// conditions simultaneously.
+	parser.RegisterPredicate("PlayerHasLineOfSightToActors", func(args ...any) bool {
+		if len(args) == 0 {
+			return false
+		}
+		player := currentMap.Player
+		if player == nil {
+			return false
+		}
+		game := g.engine.GetGame()
+		for _, arg := range args {
+			actor, ok := arg.(*core.Actor)
+			if !ok || actor == nil {
+				return false
+			}
+			if !player.CanSeeActor(actor) || !game.IsOnScreen(actor.Pos()) {
+				return false
+			}
+		}
+		return true
+	})
 }
 
 func (g *GameStateGameplay) registerActionFunctions(parser ParserLogicRegisterer) {

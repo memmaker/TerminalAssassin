@@ -314,20 +314,20 @@ type ParametrizedStimuliRecord struct {
 }
 
 func NewStimuliFromRecord(record map[string]string) ParametrizedStimuliRecord {
-	result := ParametrizedStimuliRecord{
-		Signature:            record["Signature"],
-		Distribution:         valueOrEmpty(record, "Distribution"),
-		Distance:             valueOrEmpty(record, "Distance"),
-		Pressure:             valueOrEmpty(record, "Pressure"),
-		DestroyOnApplication: valueOrEmpty(record, "DestroyOnApplication") == "true",
-	}
-	delete(record, "Signature")
-	delete(record, "Distribution")
-	delete(record, "Distance")
-	delete(record, "Pressure")
-	delete(record, "DestroyOnApplication")
-	result.StimMap = record
-	return result
+    result := ParametrizedStimuliRecord{
+        Signature:            record["Signature"],
+        Distribution:         valueOrEmpty(record, "Distribution"),
+        Distance:             valueOrEmpty(record, "Distance"),
+        Pressure:             valueOrEmpty(record, "Pressure"),
+        DestroyOnApplication: valueOrEmpty(record, "DestroyOnApplication") == "true",
+    }
+    delete(record, "Signature")
+    delete(record, "Distribution")
+    delete(record, "Distance")
+    delete(record, "Pressure")
+    delete(record, "DestroyOnApplication")
+    result.StimMap = record
+    return result
 }
 
 func NewParametrizedStimuliRecord(signature string, record map[string]string) ParametrizedStimuliRecord {
@@ -557,21 +557,9 @@ func (e *ExternalData) LoadListOfCustomTiles(files DataSource, dataDir string) [
 
 func (e *ExternalData) LoadHardCodedClothing() []*core.Clothing {
     clothes := []*core.Clothing{
-        {
-            Name:    "naked",
-            FgColor: common.RGBAColor{R: 195, G: 149, B: 130, A: 1.0}.ToHSV(),
-            BgColor: common.RGBAColor{R: 240, G: 184, B: 160, A: 1.0}.ToHSV(),
-        },
-        {
-            Name:    "Suit",
-            FgColor: common.NewHSVColor(346/360.0, 0.97, 0.50),
-            BgColor: common.NewHSVColor(0, 0, 0),
-        },
-        {
-            Name:    "a jacket",
-            FgColor: common.NewHSVColor(25/360.0, 0.7, 0.9),
-            BgColor: common.NewHSVColor(0, 0, 0),
-        },
+        {Name: "naked", Color: core.ClothingColorBlack},
+        {Name: "Suit", Color: core.ClothingColorRed},
+        {Name: "a jacket", Color: core.ClothingColorOrange},
     }
     e.noClothing = clothes[0]
     e.defaultPlayerClothing = clothes[1]

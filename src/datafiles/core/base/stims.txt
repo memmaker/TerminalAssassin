@@ -25,10 +25,6 @@ Distribution: liquid
 Distance: 5
 make_burnable: 50
 
-Signature: ExplosionStims($POWER)
-fire: 10
-explosion_damage: $POWER
-
 Signature: ExplosionAreaStims($POWER, $DISTANCE, $PRESSURE)
 Distribution: explode
 Distance: $DISTANCE
@@ -46,14 +42,14 @@ emetic_poison: 100
 Signature: TranquilizerStims($POWER)
 sleep: $POWER
 
-Signature: SleepGasAreaStims($RADIUS, $DURATION)
+Signature: SleepPoisonAreaStims($RADIUS, $DURATION)
 Distribution: gas
 Distance: $RADIUS
 Pressure: $DURATION
 DestroyOnApplication: true
 sleep: 100
 
-Signature: PoisonGasAreaStims($RADIUS, $DURATION)
+Signature: LethalPoisonAreaStims($RADIUS, $DURATION)
 Distribution: gas
 Distance: $RADIUS
 Pressure: $DURATION

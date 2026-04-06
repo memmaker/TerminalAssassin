@@ -81,4 +81,6 @@ const (
     GlyphGravestone           = 'Ʈ'
     GlyphCamera               = 'Ư'
     GlyphShovel               = 'ư'
+    GlyphFlashlight           = 'Ƴ'
+    GlyphCrowbar              = 'ˉ'
 )

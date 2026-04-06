@@ -1,0 +1,12 @@
+Mission_Title: 
+Width: 64
+Height: 64
+Player_Spawn: (33,59)
+Ambient_Light: (1.65, 1.64, 1.62)
+Max_Light_Intensity: 3.00
+Max_Vision_Range: 10
+Time_of_Day: 2026-03-31T12:34:58+02:00
+Ambience_Sound_Cue: 
+Default_FG: (0.00, 0.00, 0.00)
+Default_BG: (0.90, 0.90, 0.90)
+

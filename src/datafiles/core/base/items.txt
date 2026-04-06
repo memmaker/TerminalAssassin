@@ -260,9 +260,30 @@ loot_value: 0
 scope_range: 0
 scope_fov: 0.00
 
+name: Flashlight
+icon: Ƴ
+type: flashlight
+is_big: false
+uses: -1
+melee_attack: melee_attack
+ranged_attack:
+self_use:
+projectile_range: 0
+spread_in_degrees: 0
+projectile_count: 0
+delay_between_shots_in_secs: 0.00
+noise_radius: 0
+audio_cue:
+is_silenced: false
+silenced_cue:
+key_string:
+loot_value: 0
+scope_range: 15
+scope_fov: 60.00
+
 name: an electronic lockpick
-icon: ´
 type: electronical_lockpick
+icon: ´
 is_big: false
 uses: 3
 melee_attack: 
@@ -701,7 +722,7 @@ trigger_effects: ProximityMineTrigger(50, 4, 40)
 
 name: sleep gas grenade
 icon: ˑ
-type: sleep_gas
+type: sleep_poison
 is_big: false
 uses: 1
 melee_attack:
@@ -719,11 +740,11 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-trigger_effects: SleepGasGrenadeTrigger(4, 10)
+trigger_effects: SleepPoisonGrenadeTrigger(4, 10)
 
 name: poison gas grenade
 icon: ː
-type: poison_gas
+type: lethal_poison
 is_big: false
 uses: 1
 melee_attack:
@@ -741,11 +762,11 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-trigger_effects: PoisonGasGrenadeTrigger(4, 10)
+trigger_effects: LethalPoisonGrenadeTrigger(4, 10)
 
 name: sleep gas trip mine
 icon: Ő
-type: sleep_gas
+type: sleep_poison
 is_big: false
 uses: -1
 melee_attack:
@@ -763,11 +784,11 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-trigger_effects: SleepGasTripMineTrigger(3, 10)
+trigger_effects: SleepPoisonTripMineTrigger(3, 10)
 
 name: poison gas trip mine
 icon: Ő
-type: poison_gas
+type: lethal_poison
 is_big: false
 uses: -1
 melee_attack:
@@ -785,7 +806,7 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-trigger_effects: PoisonGasTripMineTrigger(3, 10)
+trigger_effects: LethalPoisonTripMineTrigger(3, 10)
 
 name: Camera
 icon: Ư

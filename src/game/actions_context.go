@@ -19,7 +19,10 @@ type PickupAction struct {
 }
 
 func (p PickupAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
-    return m.GetGame().GetMap().IsItemAt(actionAt)
+    currentMap := m.GetGame().GetMap()
+
+    return currentMap.IsItemAt(actionAt) && !currentMap.ItemAt(actionAt).Buried &&
+        geometry.DistanceManhattan(person.Pos(), actionAt) <= 1
 }
 
 func (p PickupAction) Description(m services.Engine, person *core.Actor, pos geometry.Point) (rune, common.Style) {
@@ -31,7 +34,7 @@ func (p PickupAction) Description(m services.Engine, person *core.Actor, pos geo
 }
 
 func (p PickupAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
-    m.GetGame().PickUpItem(person)
+    m.GetGame().PickUpItemAt(person, position)
 }
 
 type OverflowAction struct{}
@@ -317,6 +320,22 @@ func (k MeleeTakedown) IsActionPossible(m services.Engine, person *core.Actor, a
     }
     isActive := actorAt.IsActive()
     return isActive
+}
+
+type KnockOnWallAction struct{}
+
+func (k KnockOnWallAction) Description(_ services.Engine, _ *core.Actor, _ geometry.Point) (rune, common.Style) {
+    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(common.LegalActionGreen)
+}
+
+func (k KnockOnWallAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
+    m.GetGame().SoundEventAt(person.Pos(), core.ObservationStrangeNoiseHeard, 8)
+}
+
+func (k KnockOnWallAction) IsActionPossible(m services.Engine, _ *core.Actor, actionAt geometry.Point) bool {
+    currentMap := m.GetGame().GetMap()
+    cell := currentMap.CellAt(actionAt)
+    return !cell.TileType.IsWalkable && cell.TileType.Special == gridmap.SpecialTileNone
 }
 
 type DialogueAction struct {

@@ -64,14 +64,14 @@ func (t ItemType) ToString() string {
         return "loot"
     case ItemTypeExplosive:
         return "explosive"
-    case ItemTypeSleepGas:
-        return "sleep_gas"
-    case ItemTypePoisonGas:
-        return "poison_gas"
+    case ItemTypeSleepPoison:
+        return "sleep_poison"
     case ItemTypeCamera:
         return "camera"
     case ItemTypeShovel:
         return "shovel"
+    case ItemTypeFlashlight:
+        return "flashlight"
     default:
         return "unknown"
     }
@@ -128,14 +128,14 @@ func NewItemTypeFromString(text string) ItemType {
         return ItemTypeKnife
     case "explosive":
         return ItemTypeExplosive
-    case "sleep_gas":
-        return ItemTypeSleepGas
-    case "poison_gas":
-        return ItemTypePoisonGas
+    case "sleep_poison":
+        return ItemTypeSleepPoison
     case "camera":
         return ItemTypeCamera
     case "shovel":
         return ItemTypeShovel
+    case "flashlight":
+        return ItemTypeFlashlight
     default:
         return ItemTypeCommon
     }
@@ -153,6 +153,7 @@ const (
     ItemTypeTool
     ItemTypeLethalPoison
     ItemTypeEmeticPoison
+    ItemTypeSleepPoison
     ItemTypeScrewdriver
     ItemTypeWrench
     ItemTypeTaser
@@ -168,11 +169,62 @@ const (
     ItemTypeLoot
     ItemTypeExplosive
     ItemTypeMessage
-    ItemTypeSleepGas
-    ItemTypePoisonGas
     ItemTypeCamera
     ItemTypeShovel
+    ItemTypeFlashlight
 )
+
+// LockDifficulty controls how many lockpicks a door/safe consumes and how long
+// the picking animation takes (Deus-Ex-style consumable picks).
+type LockDifficulty int
+
+const (
+    LockDifficultyEasy   LockDifficulty = iota // 1 pick, 2 s
+    LockDifficultyMedium                       // 2 picks, 3 s
+    LockDifficultyHard                         // 4 picks, 4 s
+)
+
+// PickCount returns the number of lockpicks that must be in the inventory.
+func (d LockDifficulty) PickCount() int {
+    switch d {
+    case LockDifficultyMedium:
+        return 2
+    case LockDifficultyHard:
+        return 4
+    }
+    return 1
+}
+
+// PickTime returns the animation duration in seconds.
+func (d LockDifficulty) PickTime() float64 {
+    switch d {
+    case LockDifficultyMedium:
+        return 3.0
+    case LockDifficultyHard:
+        return 4.0
+    }
+    return 2.0
+}
+
+func (d LockDifficulty) ToString() string {
+    switch d {
+    case LockDifficultyMedium:
+        return "medium"
+    case LockDifficultyHard:
+        return "hard"
+    }
+    return "easy"
+}
+
+func NewLockDifficultyFromString(s string) LockDifficulty {
+    switch s {
+    case "medium":
+        return LockDifficultyMedium
+    case "hard":
+        return LockDifficultyHard
+    }
+    return LockDifficultyEasy
+}
 
 type ItemEffectTrigger uint16
 
@@ -292,10 +344,8 @@ func (i *Item) Style(st common.Style) common.Style {
         itemStyle = itemStyle.WithFg(ColorFromCode(ColorEmetic))
     case ItemTypeLethalPoison:
         itemStyle = itemStyle.WithFg(ColorFromCode(ColorLethal))
-    case ItemTypeSleepGas:
+    case ItemTypeSleepPoison:
         itemStyle = itemStyle.WithFg(ColorFromCode(ColorSleep))
-    case ItemTypePoisonGas:
-        itemStyle = itemStyle.WithFg(ColorFromCode(ColorLethal))
     }
     return itemStyle
 }

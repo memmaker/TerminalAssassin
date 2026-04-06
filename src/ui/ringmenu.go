@@ -14,6 +14,7 @@ type RingMenu struct {
 	listOfItems       []*core.Item
 	currentIndex      int
 	selected          func(*core.Item)
+	drop              func(*core.Item)
 	ringSlotCount     int
 	isDirty           bool
 	itemLabel         core.StyledText
@@ -22,10 +23,29 @@ type RingMenu struct {
 	squareOuterBounds geometry.Rect
 	colorShades       []common.RGBAColor
 	cancel            func()
+	maxLabelChars     int // maximum half-width chars that fit in the label row
 }
 
-func NewRingMenu(currentItem *core.Item, listOfItems []*core.Item, onSelected func(*core.Item), onCancel func(), yOffset, gridWidth int) *RingMenu {
+func NewRingMenu(currentItem *core.Item, listOfItems []*core.Item, onSelected func(*core.Item), onCancel func(), dropFunc func(*core.Item), yOffset, gridWidth int) *RingMenu {
+	// Compute a border distance that guarantees the arrows (at ±(loopRange+1)*3
+	// from centre) stay inside the box.  Fall back to gridWidth/4 when there is
+	// plenty of room.
+	slotCount := SlotCountFromList(listOfItems)
+	loopRange := (slotCount - 1) / 2
+	arrowHalfSpan := (loopRange + 1) * 3
 	borderDist := gridWidth / 4
+	if maxSafe := gridWidth/2 - arrowHalfSpan - 2; borderDist > maxSafe {
+		borderDist = maxSafe
+	}
+	if borderDist < 1 {
+		borderDist = 1
+	}
+
+	// Label box (half-width) width = (boxWidth - 2) * 2 half-cells.
+	// AlignCenter shifts by ((w-tw)/2)+1, so effective max text = w-2.
+	boxWidth := gridWidth - 2*borderDist
+	maxLabelChars := (boxWidth-2)*2 - 2
+
 	itemName := ""
 	if currentItem != nil {
 		itemName = currentItem.Name
@@ -44,14 +64,16 @@ func NewRingMenu(currentItem *core.Item, listOfItems []*core.Item, onSelected fu
 		listOfItems:       listOfItems,
 		currentIndex:      RingIndexOf(currentItem, listOfItems),
 		selected:          onSelected,
+		drop:              dropFunc,
 		cancel:            onCancel,
-		ringSlotCount:     SlotCountFromList(listOfItems),
+		ringSlotCount:     slotCount,
 		itemLabel:         core.NewStyledText(itemName, common.DefaultStyle),
 		ringYOffset:       yOffset - 1,
 		boxDef:            outerBox,
 		squareOuterBounds: bbox,
 		isDirty:           true,
 		colorShades:       shades,
+		maxLabelChars:     maxLabelChars,
 	}
 	r.UpdateLabel()
 	return r
@@ -96,6 +118,10 @@ func (r *RingMenu) handleGameCommand(cmd core.GameCommand) {
 		r.UpdateLabel()
 	case core.MenuConfirm:
 		r.selected(r.listOfItems[r.currentIndex])
+	case core.MenuDown:
+		if r.drop != nil {
+			r.drop(r.listOfItems[r.currentIndex])
+		}
 	case core.MenuCancel:
 		if r.cancel != nil {
 			r.cancel()
@@ -108,6 +134,14 @@ func (r *RingMenu) UpdateLabel() {
 	newText := item.Name
 	if item.Uses >= 0 {
 		newText = fmt.Sprintf("%s (%d)", item.Name, item.Uses)
+	}
+	// Truncate to the label box capacity so the text never overflows the border.
+	if r.maxLabelChars > 0 {
+		runes := []rune(newText)
+		if len(runes) > r.maxLabelChars {
+			runes = runes[:r.maxLabelChars-1]
+			newText = string(runes) + "…"
+		}
 	}
 	r.itemLabel = r.itemLabel.WithText(newText)
 	r.isDirty = true

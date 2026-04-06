@@ -1,0 +1,3 @@
+ForActorWithName: Shop Guard 1
+StartSchedule: shop1-guard
+

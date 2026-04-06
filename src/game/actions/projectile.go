@@ -108,6 +108,7 @@ func (p *Projectile) onHitWithItem(pos geometry.Point) {
         }
         game.Apply(pos, core.NewEffectSourceUsedItem(p.User, p.WrappedItem), effects)
     }
+
     p.die(pos)
 }
 func (p *Projectile) onTravel(pos geometry.Point) {

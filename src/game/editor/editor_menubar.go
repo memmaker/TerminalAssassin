@@ -45,16 +45,10 @@ func (g *GameStateEditor) createMenuBar(gridWidth int, gridHeight int) {
 			QuickKey:  "F4",
 		},
 		{
-			Label: "Schedule",
-			Handler: func() {
-				if g.SelectedActor == nil {
-					g.PrintAsMessage("ERR: select an Actor first")
-					return
-				}
-				g.changeUIStateTo(editTaskUI)
-			},
+			Label:     "Schedule",
+			Handler:   g.openScheduleLibraryMenu,
 			Icon:      'S',
-			Highlight: g.isState(editTaskUI),
+			Highlight: g.isState(editScheduleUI),
 			QuickKey:  "F5",
 		},
 		{
@@ -106,18 +100,10 @@ func (g *GameStateEditor) createMenuBar(gridWidth int, gridHeight int) {
 			QuickKey: "F11",
 		},
 		{
-			Label: "Tile Background Color",
-			Handler: func() {
-				g.changeBackgroundColor()
-			},
-			Icon: core.GlyphPalette,
-		},
-		{
-			Label: "Tile Foreground Color",
-			Handler: func() {
-				g.changeForegroundColor()
-			},
-			Icon: core.GlyphPalette,
+			Label:    "Color",
+			Handler:  g.openColorMenu,
+			Icon:     core.GlyphPalette,
+			QuickKey: "F12",
 		},
 		{
 			Label: "Eye dropper (tiles/color)",

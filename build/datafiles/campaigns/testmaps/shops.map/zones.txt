@@ -1,0 +1,32 @@
+Name: private_01
+Type: Private
+Ambience_Cue: 
+
+Name: private_02
+Type: Private
+Ambience_Cue: 
+
+Name: private_03
+Type: Private
+Ambience_Cue: 
+
+Name: private_04
+Type: Private
+Ambience_Cue: 
+
+Name: private_05
+Type: Private
+Ambience_Cue: 
+
+Name: private_06
+Type: Private
+Ambience_Cue: 
+
+Name: private_07
+Type: Private
+Ambience_Cue: 
+
+Name: private_08
+Type: Private
+Ambience_Cue: 
+

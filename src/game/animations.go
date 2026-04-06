@@ -142,7 +142,7 @@ func (a *Animator) ActorEngagedAnimation(person *core.Actor, r rune, actionPosit
 func (a *Animator) PlayerChangeClothesAnimation(actionPosition geometry.Point, otherClothes core.Clothing, finishedCallback, cancelCallback func()) {
     missionMap := a.engine.GetGame().GetMap()
     player := missionMap.Player
-    otherClothesColor := otherClothes.FgColor
+    otherClothesColor := otherClothes.FgColor()
     onFinish := func() {
         stats := a.engine.GetGame().GetStats()
         stats.DisguisesWorn.Add(otherClothes.Name)
@@ -263,7 +263,7 @@ func (a *Animator) FallingAnimation(actionPosition geometry.Point, completed fun
     }
     a.addAnimation(animation)
 }
-func (a *Animator) TaskAnimation(person *core.Actor, timeInSeconds float64, cancelCallback func(), finishedCallback func()) {
+func (a *Animator) TaskAnimation(person *core.Actor, timeInSeconds float64, lookDirs []float64, cancelCallback func(), finishedCallback func()) {
     updateFunc := func(frameIndex int) {
         a.engine.GetAI().UpdateVision(person)
     }
@@ -300,6 +300,87 @@ func (a *Animator) TaskAnimation(person *core.Actor, timeInSeconds float64, canc
         CancelCallback:   cancelCallback,
     }
     a.addAnimation(animation)
+
+    if len(lookDirs) > 0 {
+        a.addAnimation(a.addLookDirectionsSweepAnimation(person, lookDirs, timeInSeconds))
+    }
+}
+
+// addLookDirectionsSweepAnimation builds a rotation animation that sweeps the
+// actor through every direction in lookDirs (in order) and then back to the
+// initial look direction, all within timeInSeconds.
+//
+// With N directions the animation has N+1 equal segments:
+//
+//	startDir → lookDirs[0] → lookDirs[1] → … → lookDirs[N-1] → startDir
+func (a *Animator) addLookDirectionsSweepAnimation(person *core.Actor, lookDirs []float64, timeInSeconds float64) *ActiveAnimation {
+    startDir := person.LookDirection
+
+    // Build the waypoint sequence.
+    waypoints := make([]float64, 0, len(lookDirs)+2)
+    waypoints = append(waypoints, startDir)
+    waypoints = append(waypoints, lookDirs...)
+    waypoints = append(waypoints, startDir)
+
+    // Pre-compute the shortest-arc signed delta for every consecutive pair.
+    deltas := make([]float64, len(waypoints)-1)
+    for i := range deltas {
+        d := waypoints[i+1] - waypoints[i]
+        for d > 180 {
+            d -= 360
+        }
+        for d <= -180 {
+            d += 360
+        }
+        deltas[i] = d
+    }
+
+    normAngle := func(angle float64) float64 {
+        for angle < 0 {
+            angle += 360
+        }
+        for angle >= 360 {
+            angle -= 360
+        }
+        return angle
+    }
+
+    totalFrames := utils.SecondsToTicks(timeInSeconds)
+    segCount := len(deltas) // = len(lookDirs) + 1
+
+    rotUpdate := func(frame int) {
+        if totalFrames <= 0 || segCount <= 0 {
+            return
+        }
+        // Map frame → segment using uniform integer division so every segment
+        // gets its fair share even when totalFrames % segCount != 0.
+        seg := frame * segCount / totalFrames
+        if seg >= segCount {
+            seg = segCount - 1
+        }
+        segStart := seg * totalFrames / segCount
+        segEnd := (seg + 1) * totalFrames / segCount
+        if segEnd > totalFrames {
+            segEnd = totalFrames
+        }
+        var t float64
+        if segLen := segEnd - segStart; segLen > 0 {
+            t = float64(frame-segStart) / float64(segLen)
+        }
+        person.LookDirection = normAngle(waypoints[seg] + deltas[seg]*t)
+        a.engine.GetAI().UpdateVision(person)
+    }
+
+    restore := func() { person.LookDirection = startDir }
+
+    return &ActiveAnimation{
+        Update:           rotUpdate,
+        nextFrame:        func(_ int, ticksAlive uint64) bool { return ticksAlive >= 1 },
+        frameCount:       totalFrames,
+        FinishedCallback: restore,
+        CancelCondition:  ActorMovedOrStateChanged(person),
+        CancelCallback:   restore,
+    }
 }
 
 func (a *Animator) VomitingAnimation(person *core.Actor, actionPosition geometry.Point, completed func()) {

@@ -171,6 +171,12 @@ func (r *ColorPicker) Draw(con console.CellInterface) {
 	if !r.isDirty {
 		return
 	}
+	// The half-width overlay layer is drawn on top of the square layer.
+	// Any opaque half-width cells in our bounding box (e.g. left over from
+	// the bottom-message label that occupies the same row) would completely
+	// hide the coloured square cells we are about to draw.  Clear the
+	// half-width area to transparent so the square layer is visible.
+	con.HalfWidthFill(r.boundingBox.ToHalfWidth(), common.TransparentCell)
 	maxX := r.boundingBox.Max.X - 4
 	for yCoord := r.boundingBox.Min.Y; yCoord < r.boundingBox.Max.Y; yCoord++ {
 		for xCoord := r.boundingBox.Min.X; xCoord < maxX; xCoord++ {

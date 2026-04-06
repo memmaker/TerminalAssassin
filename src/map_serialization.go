@@ -163,6 +163,9 @@ func (g *MapSerializer) SaveObjects(currentMap *gridmap.GridMap[*core.Actor, *co
         if keyboundObject, ok := objectAt.(services.KeyBound); ok && keyboundObject.GetKey() != "" {
             record = append(record, rec_files.Field{Name: "Key", Value: keyboundObject.GetKey()})
         }
+        if diffHolder, ok := objectAt.(services.LockDifficultyHolder); ok {
+            record = append(record, rec_files.Field{Name: "Difficulty", Value: diffHolder.GetLockDifficulty().ToString()})
+        }
         if contentHolder, ok := objectAt.(services.ContentHolder); ok {
             for _, itemName := range contentHolder.GetContents() {
                 record = append(record, rec_files.Field{Name: "Content", Value: itemName})
@@ -190,6 +193,7 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
         var fgColor, bgColor common.Color
         var key string
         var contents []string
+        var difficulty string
         for _, field := range record {
             switch field.Name {
             case "ObjectAt":
@@ -202,6 +206,8 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
                 bgColor = common.NewColorFromString(field.Value)
             case "Key":
                 key = field.Value
+            case "Difficulty":
+                difficulty = field.Value
             case "Content":
                 contents = append(contents, field.Value)
             }
@@ -214,6 +220,9 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
         object.SetStyle(common.Style{Foreground: fgColor, Background: bgColor})
         if keyboundObject, ok := object.(services.KeyBound); ok && key != "" {
             keyboundObject.SetKey(key)
+        }
+        if diffHolder, ok := object.(services.LockDifficultyHolder); ok && difficulty != "" {
+            diffHolder.SetLockDifficulty(core.NewLockDifficultyFromString(difficulty))
         }
         if contentHolder, ok := object.(services.ContentHolder); ok && len(contents) > 0 {
             contentHolder.SetContents(contents)
@@ -279,50 +288,79 @@ func (g *MapSerializer) LoadActors(files *Files, loadedMap *gridmap.GridMap[*cor
     return nil
 }
 
-func (g *MapSerializer) SaveActorSchedules(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {
-    file, err := os.Create(filename)
+func (g *MapSerializer) SaveSchedules(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], mapFolder string) error {
+    schedulesFile, err := os.Create(path.Join(mapFolder, "schedules.txt"))
     if err != nil {
         return err
     }
-    defer file.Close()
-    listOfSchedules := make([]rec_files.Record, 0)
-    for _, actorAt := range currentMap.Actors() {
-        scheduleAsRecord := actorAt.AI.Schedule.ToRecord(actorAt.Name)
-        if len(scheduleAsRecord) == 0 {
-            continue
-        }
-        listOfSchedules = append(listOfSchedules, scheduleAsRecord)
+    defer schedulesFile.Close()
+
+    actorLinksFile, err := os.Create(path.Join(mapFolder, "actor_schedules.txt"))
+    if err != nil {
+        return err
     }
-    sort.SliceStable(listOfSchedules, func(i, j int) bool {
-        return listOfSchedules[i][0].Value < listOfSchedules[j][0].Value
-    })
-    return rec_files.Write(file, listOfSchedules)
+    defer actorLinksFile.Close()
+
+    var schedulesAsRecords []rec_files.Record
+    var links []rec_files.Record
+    actors := currentMap.Actors()
+    sort.SliceStable(actors, func(i, j int) bool { return actors[i].Name < actors[j].Name })
+
+    for _, actor := range actors {
+        if actor.AI.Schedule != "" {
+            links = append(links, []rec_files.Field{
+                {Name: "ForActorWithName", Value: actor.Name},
+                {Name: "StartSchedule", Value: actor.AI.Schedule},
+            })
+        }
+    }
+
+    for _, sched := range g.engine.GetGame().GetMap().ListOfSchedules() {
+        schedulesAsRecords = append(schedulesAsRecords, sched.ToRecords()...)
+    }
+
+    if err := rec_files.Write(schedulesFile, schedulesAsRecords); err != nil {
+        return err
+    }
+    return rec_files.Write(actorLinksFile, links)
 }
 
-func (g *MapSerializer) LoadActorSchedules(files *Files, loadedMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {
-    file, err := files.Open(filename)
+func (g *MapSerializer) LoadActorSchedules(files *Files, loadedMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], mapFolder string) error {
+    // --- Load schedule definitions ---
+    schedulesFilename := path.Join(mapFolder, "schedules.txt")
+    schedulesFile, err := files.Open(schedulesFilename)
     if err != nil {
         return err
     }
-    defer file.Close()
-    records := rec_files.Read(file)
+    defer schedulesFile.Close()
+
+    for _, sched := range gridmap.SchedulesFromTaskRecords(rec_files.Read(schedulesFile)) {
+        loadedMap.AddSchedule(sched)
+    }
+
+    // --- Load actor→schedule links ---
+    linksFilename := path.Join(mapFolder, "actor_schedules.txt")
+    linksFile, err := files.Open(linksFilename)
+    if err != nil {
+        return err
+    }
+    defer linksFile.Close()
+
+    actorsByName := make(map[string]*core.Actor)
+    for _, a := range loadedMap.Actors() {
+        actorsByName[a.Name] = a
+    }
+
     scheduleCounter := 0
-    for _, record := range records {
-        schedule := core.ScheduleFromRecord(record)
-        actorName := record.ToMap()["ForActorWithName"]
-        var foundActor *core.Actor
-        for _, a := range loadedMap.Actors() {
-            if a.Name == actorName {
-                foundActor = a
-                break
-            }
-        }
-        if foundActor != nil {
-            foundActor.AI.Schedule = *schedule
-            scheduleCounter++
-        } else {
+    for _, record := range rec_files.Read(linksFile) {
+        actorName, scheduleName := gridmap.ActorScheduleLinkFromRecord(record)
+        actor, hasActor := actorsByName[actorName]
+        if !hasActor {
             println("Error loading actor schedule: no actor named '" + actorName + "'")
+            continue
         }
+        actor.AI.Schedule = scheduleName
+        scheduleCounter++
     }
 
     println(fmt.Sprintf("Loaded %d actor schedules", scheduleCounter))
@@ -442,6 +480,12 @@ func (g *MapSerializer) ApplyGlobalMapData(loadedMap *gridmap.GridMap[*core.Acto
     loadedMap.MetaData.MissionTitle = globalData.MissionTitle
     loadedMap.TimeOfDay = globalData.TimeOfDay
     loadedMap.AmbienceSoundCue = globalData.AmbienceSoundCue
+    // Older maps lack Default_FG/Default_BG; fall back to the global default.
+    if globalData.DefaultStyle.Foreground == nil {
+        loadedMap.DefaultStyle = common.MapDefaultStyle
+    } else {
+        loadedMap.DefaultStyle = globalData.DefaultStyle
+    }
 }
 
 func (g *MapSerializer) SaveBakedLights(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {
@@ -747,6 +791,7 @@ func NewGlobalDataFromMap(currentMap *gridmap.GridMap[*core.Actor, *core.Item, s
         MissionTitle:      currentMap.MetaData.MissionTitle,
         TimeOfDay:         currentMap.TimeOfDay,
         AmbienceSoundCue:  currentMap.AmbienceSoundCue,
+        DefaultStyle:      currentMap.DefaultStyle,
     }
 }
 
@@ -783,7 +828,7 @@ func (g *ConsoleEngine) SaveMap(currentMap *gridmap.GridMap[*core.Actor, *core.I
         return actorErr
     }
 
-    scheduleErr := serializer.SaveActorSchedules(currentMap, path.Join(mapFolder, "actor_schedules.txt"))
+    scheduleErr := serializer.SaveSchedules(currentMap, mapFolder)
     if scheduleErr != nil {
         return scheduleErr
     }
@@ -865,7 +910,7 @@ func (g *ConsoleEngine) LoadMap(mapFolder string) (*gridmap.GridMap[*core.Actor,
         println("Error loading actors: " + actorErr.Error())
     }
 
-    scheduleErr := serializer.LoadActorSchedules(files, loadedMap, path.Join(mapFolder, "actor_schedules.txt"))
+    scheduleErr := serializer.LoadActorSchedules(files, loadedMap, mapFolder)
     if scheduleErr != nil {
         println("Error loading actor schedules: " + scheduleErr.Error())
     }
