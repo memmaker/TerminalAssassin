@@ -31,8 +31,8 @@ func (f ItemFactory) CreateRemoteDetonator(source *core.Actor, item *core.Item) 
 }
 
 func (f ItemFactory) CreateEmptyPieceOfPaper() *core.Item {
-    pieceOfPaperItem := &core.Item{
-        Name:         "piece of paper",
+	pieceOfPaperItem := &core.Item{
+		Name:         "Note",
         Type:         core.ItemTypeMessage,
         DefinedIcon:  core.GlyphFilledSquare,
         DefinedStyle: common.DefaultStyle.Reversed(),
@@ -69,7 +69,7 @@ func (f ItemFactory) ItemFromNameAndKey(name string, key string) *core.Item {
         return &result
     }
     if key != "" {
-        if name == "piece of paper" {
+		if name == "Note" {
             return f.CreatePieceOfPaper(name, key)
         } else if name == "Key card" {
             return core.NewKeyCard(key)

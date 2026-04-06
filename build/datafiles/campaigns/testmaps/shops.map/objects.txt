@@ -131,7 +131,7 @@ FgColor: (0.00, 0.00, 0.00)
 BgColor: (0.90, 0.90, 0.90)
 Key: Safe Keycard 1
 Difficulty: easy
-Content: a diamond necklace
+Content: Diamond Necklace
 
 ObjectAt: (28,48)
 Name: mechanical safe (locked)
@@ -139,7 +139,7 @@ FgColor: (0.00, 0.00, 0.00)
 BgColor: (0.90, 0.90, 0.90)
 Key: insurance
 Difficulty: easy
-Content: a gold watch
+Content: Gold Watch
 
 ObjectAt: (29,10)
 Name: light window (closed)

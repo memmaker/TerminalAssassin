@@ -1,4 +1,4 @@
-name: AMT 1911 'Hardballer'
+name: Pistol
 icon: ٤
 type: pistol
 is_big: false
@@ -20,7 +20,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BulletTrigger(35)
 
-name: a coin
+name: Coin
 icon: ·
 type: common
 is_big: false
@@ -41,7 +41,7 @@ loot_value: 0
 scope_range: 0
 scope_fov: 0.00
 
-name: AMT 1911 'Hardballer' (silenced)
+name: Pistol (silenced)
 icon: ٤
 type: pistol
 is_big: false
@@ -63,7 +63,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BulletTrigger(35)
 
-name: Heckler & Koch MP5
+name: Submachine Gun
 icon: ٣
 type: submachine_gun
 is_big: false
@@ -85,7 +85,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BulletTrigger(35)
 
-name: Kalashnikov AK47
+name: Assault Rifle
 icon: ٯ
 type: assault_rifle
 is_big: true
@@ -107,7 +107,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BulletTrigger(35)
 
-name: Franchi PA3/215
+name: Shotgun
 icon: ٥
 type: shotgun
 is_big: true
@@ -129,7 +129,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BulletTrigger(35)
 
-name: Blaser Jagdwaffen R93 Sniper
+name: Sniper Rifle
 icon: ٢
 type: sniper_rifle
 is_big: true
@@ -151,7 +151,7 @@ scope_range: 40
 scope_fov: 20.00
 trigger_effects: BulletTrigger(80)
 
-name: Sieger 300 Ghost
+name: Sniper Rifle (silenced)
 icon: ٢
 type: sniper_rifle
 is_big: true
@@ -173,7 +173,7 @@ scope_range: 50
 scope_fov: 25.00
 trigger_effects: BulletTrigger(100)
 
-name: Even Calmer 2
+name: Dart Gun (sleep)
 icon: ١
 type: taser
 is_big: false
@@ -193,9 +193,9 @@ key_string:
 loot_value: 0
 scope_range: 0
 scope_fov: 0.00
-trigger_effects: TranquilizerTrigger(50)
+trigger_effects: SleepDartTrigger(50)
 
-name: Emetic Dart Pistol
+name: Dart Gun (emetic)
 icon: ١
 type: taser
 is_big: false
@@ -217,7 +217,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: EmeticDartTrigger
 
-name: a taser
+name: Taser
 icon: ١
 type: taser
 is_big: false
@@ -239,7 +239,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: TaserTrigger(50)
 
-name: a lockpick
+name: Lockpick
 icon: ¸
 type: mechanical_lockpick
 is_big: false
@@ -281,7 +281,7 @@ loot_value: 0
 scope_range: 15
 scope_fov: 60.00
 
-name: an electronic lockpick
+name: Lockpick (electronic)
 type: electronical_lockpick
 icon: ´
 is_big: false
@@ -302,7 +302,7 @@ loot_value: 0
 scope_range: 0
 scope_fov: 0.00
 
-name: a knife
+name: Knife
 icon: ¹
 type: knife
 is_big: false
@@ -324,7 +324,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: PiercingTrigger(50)
 
-name: scissors
+name: Scissors
 icon: ʵ
 type: melee_sharp
 is_big: false
@@ -346,7 +346,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: PiercingTrigger(35)
 
-name: a screwdriver
+name: Screwdriver
 icon: ˈ
 type: screwdriver
 is_big: false
@@ -390,7 +390,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: PianoWireTrigger
 
-name: a baseball bat
+name: Baseball Bat
 icon: º
 type: melee_blunt
 is_big: false
@@ -412,7 +412,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BluntTrigger(80)
 
-name: a crowbar
+name: Crowbar
 icon: ˉ
 type: crowbar
 is_big: false
@@ -434,7 +434,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BluntTrigger(80)
 
-name: a wrench
+name: Wrench
 icon: ˊ
 type: wrench
 is_big: false
@@ -456,7 +456,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BluntTrigger(80)
 
-name: a soda can
+name: Soda Can
 icon: ʲ
 type: melee_blunt
 is_big: false
@@ -478,7 +478,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: BluntTrigger(20)
 
-name: a cigarette
+name: Cigarette
 icon: ˵
 type: common
 is_big: false
@@ -500,7 +500,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: FireStarterTrigger(15)
 
-name: a fragmentation grenade
+name: Grenade (fragmentation)
 icon: ː
 type: explosive
 is_big: false
@@ -522,7 +522,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: ImpactExplosionTrigger(50, 3, 3)
 
-name: remote bomb
+name: Bomb (remote)
 icon: ˺
 type: explosive
 is_big: false
@@ -544,7 +544,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: RemoteExplosionTrigger(10, 3, 3)
 
-name: remote taser
+name: Taser (remote)
 icon: ˮ
 type: taser
 is_big: false
@@ -566,7 +566,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: RemoteTaserTrigger(10)
 
-name: lethal poison
+name: Poison (lethal)
 icon: ¶
 type: lethal_poison
 is_big: false
@@ -588,7 +588,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: LethalPoisonTrigger
 
-name: emetic poison
+name: Poison (emetic)
 icon: ¶
 type: emetic_poison
 is_big: false
@@ -610,7 +610,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: EmeticPoisonTrigger
 
-name: a piece of cloth
+name: Cloth
 icon: ˴
 type: cleaner
 is_big: false
@@ -631,7 +631,7 @@ loot_value: 0
 scope_range: 0
 scope_fov: 0.00
 
-name: a can of gasoline
+name: Gasoline Can
 icon: ˓
 type: common
 is_big: false
@@ -654,7 +654,7 @@ scope_fov: 0.00
 trigger_effects: GasolineTrigger
 reaction_effects: CanOfGasolineReaction
 
-name: a gas canister
+name: Gas Canister
 icon: ٧
 type: common
 is_big: false
@@ -677,7 +677,7 @@ scope_fov: 0.00
 trigger_effects: BluntTrigger(35)
 reaction_effects: GasCanisterReaction
 
-name: a goldpiece
+name: Gold Piece
 icon: ·
 type: loot
 is_big: false
@@ -698,7 +698,7 @@ loot_value: 100
 scope_range: 0
 scope_fov: 0.00
 
-name: proximity mine
+name: Mine (proximity)
 icon: Ő
 type: explosive
 is_big: false
@@ -720,7 +720,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: ProximityMineTrigger(50, 4, 40)
 
-name: sleep gas grenade
+name: Grenade (sleep poison)
 icon: ˑ
 type: sleep_poison
 is_big: false
@@ -742,7 +742,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: SleepPoisonGrenadeTrigger(4, 10)
 
-name: poison gas grenade
+name: Grenade (lethal poison)
 icon: ː
 type: lethal_poison
 is_big: false
@@ -764,7 +764,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: LethalPoisonGrenadeTrigger(4, 10)
 
-name: sleep gas trip mine
+name: Trip Mine (sleep poison)
 icon: Ő
 type: sleep_poison
 is_big: false
@@ -786,7 +786,7 @@ scope_range: 0
 scope_fov: 0.00
 trigger_effects: SleepPoisonTripMineTrigger(3, 10)
 
-name: poison gas trip mine
+name: Trip Mine (lethal poison)
 icon: Ő
 type: lethal_poison
 is_big: false
@@ -850,7 +850,7 @@ loot_value: 0
 scope_range: 0
 scope_fov: 0.00
 
-name: a diamond necklace
+name: Diamond Necklace
 icon: Ʋ
 type: loot
 is_big: false
@@ -871,7 +871,7 @@ loot_value: 500
 scope_range: 0
 scope_fov: 0.00
 
-name: a gold watch
+name: Gold Watch
 icon: ·
 type: loot
 is_big: false

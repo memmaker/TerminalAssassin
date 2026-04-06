@@ -463,13 +463,13 @@ func (e *ExternalData) LoadListOfCustomItems(files DataSource, dataDir string) [
         definedItems = append(definedItems, item)
     }
     /* TODO: Reaction Effects
-       {Name: "a can of gasoline", DefinedIcon: GlyphGasCan, RangedAttack: ActionTypeThrow, Type: ItemTypeCommon, MeleeAttack: ActionTypeMeleeAttack, Uses: UnlimitedUses, TriggerEffects: gasolineEffect,
+       {Name: "Gasoline Can", DefinedIcon: GlyphGasCan, RangedAttack: ActionTypeThrow, Type: ItemTypeCommon, MeleeAttack: ActionTypeMeleeAttack, Uses: UnlimitedUses, TriggerEffects: gasolineEffect,
        	ReactionEffects: map[stimuli.StimulusType]StimReaction{
        		stimuli.StimulusFire:           {ForceThreshold: 30, EffectOnReaction: stimuli.EffectExplosion(30, 10, 2)},
        		stimuli.StimulusPiercingDamage: {EffectOnReaction: stimuli.EffectLeak(stimuli.StimulusBurnableLiquid, 10, 4)},
        	},
        },
-       {Name: "a gas canister", DefinedIcon: GlyphGasCanister, RangedAttack: ActionTypeThrow, Type: ItemTypeCommon, MeleeAttack: ActionTypeMeleeAttack, Uses: UnlimitedUses, TriggerEffects: bluntEffects(35),
+       {Name: "Gas Canister", DefinedIcon: GlyphGasCanister, RangedAttack: ActionTypeThrow, Type: ItemTypeCommon, MeleeAttack: ActionTypeMeleeAttack, Uses: UnlimitedUses, TriggerEffects: bluntEffects(35),
        	ReactionEffects: map[stimuli.StimulusType]StimReaction{
        		stimuli.StimulusFire:           {ForceThreshold: 30, EffectOnReaction: stimuli.EffectExplosion(30, 30, 4)},
        		stimuli.StimulusPiercingDamage: {ForceThreshold: 30, EffectOnReaction: stimuli.EffectExplosion(30, 30, 4)},

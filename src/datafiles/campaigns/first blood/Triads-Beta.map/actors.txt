@@ -26,8 +26,8 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: AMT 1911 'Hardballer'
-Inventory: a cigarette
-Inventory: a knife
+Inventory: Cigarette
+Inventory: Knife
 
 Name: actor #21
 ActorType: civilian
@@ -75,7 +75,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: AMT 1911 'Hardballer'
-Inventory: a cigarette
+Inventory: Cigarette
 
 Name: Red Dragon Leader
 ActorType: target
@@ -105,7 +105,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: AMT 1911 'Hardballer'
-Inventory: a soda can
+Inventory: Soda Can
 
 Name: Red Dragon Guard 1
 ActorType: guard

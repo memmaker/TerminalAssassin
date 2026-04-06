@@ -7,7 +7,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: AMT 1911 'Hardballer'
-Inventory: a soda can
+Inventory: Soda Can
 
 Name: Blue Lotus Guard 2
 ActorType: guard
@@ -18,7 +18,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: AMT 1911 'Hardballer'
-Inventory: a cigarette
+Inventory: Cigarette
 
 Name: Blue Lotus Leader
 ActorType: enforcer
@@ -29,8 +29,8 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: AMT 1911 'Hardballer'
-Inventory: a cigarette
-Inventory: a knife
+Inventory: Cigarette
+Inventory: Knife
 
 Name: Bouncer 1
 ActorType: guard

@@ -354,8 +354,8 @@ Name: mechanical safe (locked)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
 Key: triads safe
-Content: a diamond necklace
-Content: a gold watch
+Content: Diamond Necklace
+Content: Gold Watch
 
 ObjectAt: (53,93)
 Name: locker (container)
