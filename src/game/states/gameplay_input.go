@@ -90,7 +90,7 @@ func (g *GameStateGameplay) BeginMouseAiming() {
         player.EquippedItem.InsteadOfUse()
         return
     }
-    if player.EquippedItem.RangedAttack == core.NoAction && player.EquippedItem.MeleeAttack == core.NoAction &&
+    if !player.EquippedItem.Type.HasRangedAction() && !player.EquippedItem.Type.HasMeleeAction() &&
         player.EquippedItem.Type != core.ItemTypeFlashlight {
         return
     }
@@ -100,12 +100,12 @@ func (g *GameStateGameplay) BeginMouseAiming() {
         return
     }
     g.Ui = aimingUIState
-    if player.EquippedItem.Scope.FoVinDegrees > 0 {
-        player.FovMode = gridmap.FoVModeScoped
-        currentMap.UpdateFieldOfView(player)
-    }
-    g.AdjustPlayerAimFromMouse()
-    return
+	if player.EquippedItem.Type.HasScope() {
+		player.FovMode = gridmap.FoVModeScoped
+		currentMap.UpdateFieldOfView(player)
+	}
+	g.AdjustPlayerAimFromMouse()
+	return
 }
 
 func (g *GameStateGameplay) BeginExamine() {
@@ -225,7 +225,7 @@ func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64)
     player := currentMap.Player
 
     // Only activate ranged aiming when the player actually has a ranged/throwable item or a flashlight.
-    if player.EquippedItem == nil || (player.EquippedItem.RangedAttack == core.NoAction &&
+    if player.EquippedItem == nil || (!player.EquippedItem.Type.HasRangedAction() && !player.EquippedItem.Type.HasMeleeAction() &&
         player.EquippedItem.Type != core.ItemTypeFlashlight) {
         return
     }
@@ -235,8 +235,8 @@ func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64)
         g.Ui = aimingUIState
         g.padAimActive = true
         g.padAimPos = player.FoVSource().ToPointF()
-        if player.EquippedItem != nil && player.EquippedItem.Scope.FoVinDegrees > 0 {
-            player.FovMode = gridmap.FoVModeScoped
+		if player.EquippedItem != nil && player.EquippedItem.Type.HasScope() {
+			player.FovMode = gridmap.FoVModeScoped
             currentMap.UpdateFieldOfView(player)
         }
     }
@@ -422,15 +422,15 @@ func (g *GameStateGameplay) UseRangedItemInLoS() {
         return
     }
 
-    if isSelfApplied && player.EquippedItem.SelfUse != core.NoAction {
+    if isSelfApplied && player.EquippedItem.Type.CanSelfActivate() {
         player.EquippedItem.DecreaseUsesLeft()
         actions.UseEquippedItemOnSelf(player)
-    } else if isMeleeRange && player.EquippedItem.MeleeAttack != core.NoAction {
-        if player.EquippedItem.MeleeAttack != core.ActionTypeMeleeAttack {
+    } else if isMeleeRange && player.EquippedItem.Type.HasMeleeAction() {
+        if player.EquippedItem.Type.MeleeDecreaseUses() {
             player.EquippedItem.DecreaseUsesLeft()
         }
         actions.UseEquippedItemForMelee(player, aimPoint)
-    } else if isRanged && player.EquippedItem.RangedAttack != core.NoAction {
+    } else if isRanged && player.EquippedItem.Type.HasRangedAction() {
         player.EquippedItem.DecreaseUsesLeft()
         actions.UseEquippedItemAtRange(player, aimPoint)
     }

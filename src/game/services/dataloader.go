@@ -462,27 +462,10 @@ func (e *ExternalData) LoadListOfCustomItems(files DataSource, dataDir string) [
         item := NewItemFromRecord(record.ToMap(), evalContext)
         definedItems = append(definedItems, item)
     }
-    /* TODO: Reaction Effects
-       {Name: "Gasoline Can", DefinedIcon: GlyphGasCan, RangedAttack: ActionTypeThrow, Type: ItemTypeCommon, MeleeAttack: ActionTypeMeleeAttack, Uses: UnlimitedUses, TriggerEffects: gasolineEffect,
-       	ReactionEffects: map[stimuli.StimulusType]StimReaction{
-       		stimuli.StimulusFire:           {ForceThreshold: 30, EffectOnReaction: stimuli.EffectExplosion(30, 10, 2)},
-       		stimuli.StimulusPiercingDamage: {EffectOnReaction: stimuli.EffectLeak(stimuli.StimulusBurnableLiquid, 10, 4)},
-       	},
-       },
-       {Name: "Gas Canister", DefinedIcon: GlyphGasCanister, RangedAttack: ActionTypeThrow, Type: ItemTypeCommon, MeleeAttack: ActionTypeMeleeAttack, Uses: UnlimitedUses, TriggerEffects: bluntEffects(35),
-       	ReactionEffects: map[stimuli.StimulusType]StimReaction{
-       		stimuli.StimulusFire:           {ForceThreshold: 30, EffectOnReaction: stimuli.EffectExplosion(30, 30, 4)},
-       		stimuli.StimulusPiercingDamage: {ForceThreshold: 30, EffectOnReaction: stimuli.EffectExplosion(30, 30, 4)},
-       	},
-       },
-    */
     // sanity check
     for i := 0; i < len(definedItems); i++ {
         definedItems[i] = e.SanitizeItem(definedItems[i])
-        //		records[i] = itemList[i].ToRecord()
-
     }
-    //	rec_files.Write(file, records)
     println(fmt.Sprintf("Loaded %d custom items from %s", len(definedItems), itemFileName))
 
     return definedItems
@@ -597,9 +580,6 @@ func (e *ExternalData) HasItemUnlock(command string) bool {
 }
 
 func (e *ExternalData) SanitizeItem(item *core.Item) *core.Item {
-    if item.DelayBetweenShotsInSecs < 0.067 {
-        item.DelayBetweenShotsInSecs = 0.067
-    }
     item.DefinedStyle = common.Style{Foreground: common.HSVColor{
         H: 242.0 / 360.0,
         S: 0.07,
@@ -712,28 +692,20 @@ func EncodeItems(inventory *core.InventoryComponent) []string {
 }
 
 func NewItemFromRecord(record map[string]string, context *EvalContext) *core.Item {
-    item := &core.Item{}
+    item := &core.Item{Uses: core.UnlimitedUses}
     item.Name = record["name"]
     runes := []rune(record["icon"])
     item.DefinedIcon = runes[0]
     item.Type = core.NewItemTypeFromString(record["type"])
     item.IsBig = record["is_big"] == "true"
-    item.Uses, _ = strconv.Atoi(record["uses"])
-    item.MeleeAttack = core.NewItemActionTypeFromString(record["melee_attack"])
-    item.RangedAttack = core.NewItemActionTypeFromString(record["ranged_attack"])
-    item.SelfUse = core.NewItemActionTypeFromString(record["self_use"])
+    if usesStr := record["uses"]; usesStr != "" {
+        item.Uses, _ = strconv.Atoi(usesStr)
+    }
     item.ProjectileRange, _ = strconv.Atoi(record["projectile_range"])
-    item.SpreadInDegrees, _ = strconv.Atoi(record["spread_in_degrees"])
-    item.ProjectileCount = uint8(core.MustParseInt(record["projectile_count"]))
-    item.DelayBetweenShotsInSecs, _ = strconv.ParseFloat(record["delay_between_shots_in_secs"], 64)
     item.NoiseRadius, _ = strconv.Atoi(record["noise_radius"])
     item.AudioCue = record["audio_cue"]
-    item.IsSilenced = record["is_silenced"] == "true"
-    item.SilencedCue = record["silenced_cue"]
     item.KeyString = record["key_string"]
     item.LootValue, _ = strconv.Atoi(record["loot_value"])
-    item.Scope.Range, _ = strconv.Atoi(record["scope_range"])
-    item.Scope.FoVinDegrees, _ = strconv.ParseFloat(record["scope_fov"], 64)
 
     // Evaluate TriggerEffects
     name, callArgs := core.GetNameAndArgs(record["trigger_effects"])

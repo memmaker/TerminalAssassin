@@ -29,6 +29,9 @@ on_tool_usage: EmeticPoisonStims
 Signature: LethalPoisonTrigger
 on_tool_usage: LethalPoisonStims
 
+Signature: SleepPoisonTrigger
+on_tool_usage: TranquilizerStims(100)
+
 Signature: GasolineTrigger
 on_sneaking_with_item: OilSpillStims
 on_item_dropped: OilSpillAreaStims

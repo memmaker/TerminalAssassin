@@ -1,132 +1,52 @@
-name: Pistol
-icon: ٤
-type: pistol
-is_big: false
-uses: 7
-melee_attack: melee_attack
-ranged_attack: shot
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.30
-noise_radius: 15
-audio_cue: pistol_shot
-is_silenced: false
-silenced_cue: silenced_pistol
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
-trigger_effects: BulletTrigger(35)
-
 name: Coin
 icon: ·
 type: common
-is_big: false
-uses: -1
-melee_attack:
-ranged_attack: throw
-self_use:
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 10
+
+name: Pistol
+icon: ٤
+type: pistol
+uses: 7
+projectile_range: 12
+noise_radius: 15
+audio_cue: pistol_shot
+trigger_effects: BulletTrigger(35)
 
 name: Pistol (silenced)
 icon: ٤
 type: pistol
-is_big: false
 uses: 7
-melee_attack: melee_attack
-ranged_attack: shot
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.30
-noise_radius: 0
-audio_cue: pistol_shot
-is_silenced: true
-silenced_cue: silenced_pistol
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 12
+audio_cue: silenced_pistol
 trigger_effects: BulletTrigger(35)
 
 name: Submachine Gun
 icon: ٣
 type: submachine_gun
-is_big: false
-uses: 300
-melee_attack: melee_attack
-ranged_attack: shot
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.10
+uses: 20
+projectile_range: 12
 noise_radius: 17
 audio_cue: smg_shot
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
-trigger_effects: BulletTrigger(35)
+trigger_effects: BulletTrigger(40)
 
 name: Assault Rifle
 icon: ٯ
 type: assault_rifle
 is_big: true
-uses: 40
-melee_attack: melee_attack
-ranged_attack: shot
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.20
+uses: 25
+projectile_range: 18
 noise_radius: 23
 audio_cue: ak47_shot
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
-trigger_effects: BulletTrigger(35)
+trigger_effects: BulletTrigger(50)
 
 name: Shotgun
 icon: ٥
 type: shotgun
 is_big: true
-uses: 500
-melee_attack: melee_attack
-ranged_attack: spread_shot
-self_use: 
+uses: 8
 projectile_range: 15
-spread_in_degrees: 44
-projectile_count: 5
-delay_between_shots_in_secs: 1.50
 noise_radius: 23
 audio_cue: shotgun_shot
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 trigger_effects: BulletTrigger(35)
 
 name: Sniper Rifle
@@ -134,761 +54,219 @@ icon: ٢
 type: sniper_rifle
 is_big: true
 uses: 3
-melee_attack: melee_attack
-ranged_attack: shot
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 2.00
-noise_radius: 40
+projectile_range: 50
+noise_radius: 30
 audio_cue: sniper_shot
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 40
-scope_fov: 20.00
-trigger_effects: BulletTrigger(80)
+trigger_effects: BulletTrigger(100)
 
 name: Sniper Rifle (silenced)
 icon: ٢
 type: sniper_rifle
 is_big: true
 uses: 3
-melee_attack: melee_attack
-ranged_attack: shot
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 2.00
-noise_radius: 2
+projectile_range: 40
+noise_radius: 4
 audio_cue: silenced_rifle
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 50
-scope_fov: 25.00
-trigger_effects: BulletTrigger(100)
+trigger_effects: BulletTrigger(80)
 
 name: Dart Gun (sleep)
 icon: ١
-type: taser
-is_big: false
+type: dart_gun
 uses: 2
-melee_attack: 
-ranged_attack: shot
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 2.00
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 10
 trigger_effects: SleepDartTrigger(50)
 
 name: Dart Gun (emetic)
 icon: ١
-type: taser
-is_big: false
+type: dart_gun
 uses: 3
-melee_attack:
-ranged_attack: shot
-self_use:
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 2.00
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 10
 trigger_effects: EmeticDartTrigger
 
 name: Taser
 icon: ١
 type: taser
-is_big: false
 uses: 3
-melee_attack: melee_use
-ranged_attack: 
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.20
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 trigger_effects: TaserTrigger(50)
 
 name: Lockpick
 icon: ¸
 type: mechanical_lockpick
-is_big: false
-uses: -1
-melee_attack: 
-ranged_attack: 
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 
 name: Flashlight
 icon: Ƴ
 type: flashlight
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack:
-self_use:
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.00
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 15
-scope_fov: 60.00
+projectile_range: 15
 
 name: Lockpick (electronic)
 type: electronical_lockpick
 icon: ´
-is_big: false
-uses: 3
-melee_attack: 
-ranged_attack: 
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 
 name: Knife
 icon: ¹
 type: knife
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 8
 trigger_effects: PiercingTrigger(50)
 
 name: Scissors
 icon: ʵ
 type: melee_sharp
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 7
 trigger_effects: PiercingTrigger(35)
 
 name: Screwdriver
 icon: ˈ
 type: screwdriver
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 6
 trigger_effects: PiercingTrigger(35)
 
 name: Fiber Wire
 icon: µ
 type: piano_wire
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: 
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 trigger_effects: PianoWireTrigger
 
 name: Baseball Bat
 icon: º
 type: melee_blunt
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 5
 trigger_effects: BluntTrigger(80)
 
 name: Crowbar
 icon: ˉ
 type: crowbar
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 5
 trigger_effects: BluntTrigger(80)
 
 name: Wrench
 icon: ˊ
 type: wrench
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 6
 trigger_effects: BluntTrigger(80)
 
 name: Soda Can
 icon: ʲ
-type: melee_blunt
-is_big: false
-uses: -1
-melee_attack: 
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+type: common
+projectile_range: 9
 trigger_effects: BluntTrigger(20)
 
 name: Cigarette
 icon: ˵
 type: common
-is_big: false
-uses: -1
-melee_attack: 
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 10
 trigger_effects: FireStarterTrigger(15)
 
 name: Grenade (fragmentation)
 icon: ː
 type: explosive
-is_big: false
 uses: 1
-melee_attack: 
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 7
 trigger_effects: ImpactExplosionTrigger(50, 3, 3)
 
 name: Bomb (remote)
 icon: ˺
-type: explosive
-is_big: false
+type: remote_explosive
 uses: 1
-melee_attack: 
-ranged_attack: throw_remote
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 7
 trigger_effects: RemoteExplosionTrigger(10, 3, 3)
 
 name: Taser (remote)
 icon: ˮ
-type: taser
-is_big: false
+type: remote_taser
 uses: 1
-melee_attack: 
-ranged_attack: throw_remote
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 7
 trigger_effects: RemoteTaserTrigger(10)
 
 name: Poison (lethal)
 icon: ¶
 type: lethal_poison
-is_big: false
 uses: 1
-melee_attack: tool
-ranged_attack: 
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 trigger_effects: LethalPoisonTrigger
 
 name: Poison (emetic)
 icon: ¶
 type: emetic_poison
-is_big: false
 uses: 1
-melee_attack: tool
-ranged_attack: 
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 trigger_effects: EmeticPoisonTrigger
+
+name: Poison (sleep)
+icon: ¶
+type: sleep_poison
+uses: 1
+trigger_effects: SleepPoisonTrigger
 
 name: Cloth
 icon: ˴
 type: cleaner
-is_big: false
-uses: -1
-melee_attack: tool
-ranged_attack: 
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 
 name: Gasoline Can
 icon: ˓
-type: common
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+type: melee_blunt
+projectile_range: 6
 trigger_effects: GasolineTrigger
 reaction_effects: CanOfGasolineReaction
 
 name: Gas Canister
 icon: ٧
-type: common
-is_big: false
-uses: -1
-melee_attack: melee_attack
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+type: melee_blunt
+projectile_range: 5
 trigger_effects: BluntTrigger(35)
 reaction_effects: GasCanisterReaction
 
 name: Gold Piece
 icon: ·
 type: loot
-is_big: false
-uses: -1
-melee_attack: 
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
+projectile_range: 10
 loot_value: 100
-scope_range: 0
-scope_fov: 0.00
 
 name: Mine (proximity)
 icon: Ő
-type: explosive
-is_big: false
-uses: -1
-melee_attack:
-ranged_attack: throw
-self_use: tool
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+type: proximity_mine
+projectile_range: 5
 trigger_effects: ProximityMineTrigger(50, 4, 40)
 
 name: Grenade (sleep poison)
 icon: ˑ
-type: sleep_poison
-is_big: false
+type: sleep_poison_grenade
 uses: 1
-melee_attack:
-ranged_attack: throw
-self_use:
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 7
 trigger_effects: SleepPoisonGrenadeTrigger(4, 10)
 
 name: Grenade (lethal poison)
 icon: ː
-type: lethal_poison
-is_big: false
+type: lethal_poison_grenade
 uses: 1
-melee_attack:
-ranged_attack: throw
-self_use:
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+projectile_range: 7
 trigger_effects: LethalPoisonGrenadeTrigger(4, 10)
 
 name: Trip Mine (sleep poison)
 icon: Ő
-type: sleep_poison
-is_big: false
-uses: -1
-melee_attack:
-ranged_attack: throw
-self_use: tool
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+type: sleep_poison_mine
+projectile_range: 5
 trigger_effects: SleepPoisonTripMineTrigger(3, 10)
 
 name: Trip Mine (lethal poison)
 icon: Ő
-type: lethal_poison
-is_big: false
-uses: -1
-melee_attack:
-ranged_attack: throw
-self_use: tool
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
+type: lethal_poison_mine
+projectile_range: 5
 trigger_effects: LethalPoisonTripMineTrigger(3, 10)
 
 name: Camera
 icon: Ư
 type: camera
-is_big: false
 uses: 5
-melee_attack:
-ranged_attack:
-self_use:
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.00
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 
 name: Shovel
 icon: ư
 type: shovel
-is_big: false
-uses: -1
-melee_attack:
-ranged_attack:
-self_use:
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.00
-noise_radius: 0
-audio_cue:
-is_silenced: false
-silenced_cue:
-key_string:
-loot_value: 0
-scope_range: 0
-scope_fov: 0.00
 
 name: Diamond Necklace
 icon: Ʋ
 type: loot
-is_big: false
-uses: -1
-melee_attack: 
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
+projectile_range: 10
 loot_value: 500
-scope_range: 0
-scope_fov: 0.00
 
 name: Gold Watch
 icon: ·
 type: loot
-is_big: false
-uses: -1
-melee_attack: 
-ranged_attack: throw
-self_use: 
-projectile_range: 0
-spread_in_degrees: 0
-projectile_count: 0
-delay_between_shots_in_secs: 0.07
-noise_radius: 0
-audio_cue: 
-is_silenced: false
-silenced_cue: 
-key_string: 
+projectile_range: 10
 loot_value: 250
-scope_range: 0
-scope_fov: 0.00
-

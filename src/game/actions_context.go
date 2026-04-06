@@ -104,32 +104,41 @@ type PoisonAction struct {
 }
 
 func (a PoisonAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
-    if !a.hasPoison(m) {
-        return
-    }
-    currentMap := m.GetGame().GetMap()
-    poisonItem := currentMap.Player.EquippedItem
-    currentMap.Player.EquippedItem = nil
-    currentMap.Player.Inventory.RemoveItem(poisonItem)
+	if !a.hasPoison(person) {
+		return
+	}
+	currentMap := m.GetGame().GetMap()
+	poisonItem := person.EquippedItem
+	person.EquippedItem = nil
+	person.Inventory.RemoveItem(poisonItem)
     switch poisonItem.Type {
     case core.ItemTypeEmeticPoison:
         currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusEmeticPoison, StimForce: 10})
+        m.GetGame().PrintMessage("You lace the food with emetic poison.")
     case core.ItemTypeLethalPoison:
         currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusLethalPoison, StimForce: 10})
+        m.GetGame().PrintMessage("You lace the food with lethal poison.")
+    case core.ItemTypeSleepPoison:
+        currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusInducedSleep, StimForce: 10})
+        m.GetGame().PrintMessage("You lace the food with sleeping poison.")
     }
     m.GetGame().IllegalActionAt(position, core.ObservationIllegalAction)
 }
 
 func (a PoisonAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
-    return a.hasPoison(m) &&
-        !m.GetGame().GetMap().IsStimulusOnTile(actionAt, stimuli.StimulusLethalPoison) &&
-        !m.GetGame().GetMap().IsStimulusOnTile(actionAt, stimuli.StimulusEmeticPoison)
+	currentMap := m.GetGame().GetMap()
+	isFoodOrDrinkTile := currentMap.IsTileWithSpecialAt(actionAt, gridmap.SpecialTileTypeFood)
+	return a.hasPoison(person) &&
+		isFoodOrDrinkTile &&
+		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusLethalPoison) &&
+		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusEmeticPoison) &&
+		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusInducedSleep)
 }
 
-func (a PoisonAction) hasPoison(m services.Engine) bool {
-    poisonItem := m.GetGame().GetMap().Player.EquippedItem
-    hasPoison := poisonItem != nil && (poisonItem.Type == core.ItemTypeEmeticPoison || poisonItem.Type == core.ItemTypeLethalPoison)
-    return hasPoison
+func (a PoisonAction) hasPoison(actor *core.Actor) bool {
+	poisonItem := actor.EquippedItem
+	hasPoison := poisonItem != nil && (poisonItem.Type == core.ItemTypeEmeticPoison || poisonItem.Type == core.ItemTypeLethalPoison || poisonItem.Type == core.ItemTypeSleepPoison)
+	return hasPoison
 }
 
 func (a PoisonAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
