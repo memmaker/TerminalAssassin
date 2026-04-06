@@ -33,7 +33,7 @@ func NewEmptyCareer(data *services.ExternalData) *services.CareerData {
     unlockedItems := mapset.NewSet[string]()
     unlockedItems.Add(defaultWeapon.Name)
     unlockedItems.Add(defaultItem.Name)
-    unlockedItems.Add("proximity mine")
+	unlockedItems.Add("Mine (proximity)")
     return &services.CareerData{
         ExperiencePoints: 0,
         MapStatistics:    make(map[string]*services.MapStatistics),

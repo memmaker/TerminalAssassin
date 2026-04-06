@@ -8,7 +8,7 @@ Completion_Percent: 60
 Start: The park
 
 Completion_Percent: 80
-Item: a lockpick
+Item: Lockpick
 
 Completion_Percent: 100
 Start: The warehouse

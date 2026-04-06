@@ -38,7 +38,7 @@ after_item_impact: OilSpillAreaStims
 Signature: PianoWireTrigger
 on_melee_attack: ChokeStims
 
-Signature: TranquilizerTrigger($POWER)
+Signature: SleepDartTrigger($POWER)
 on_ranged_shot_hit: TranquilizerStims($POWER)
 
 Signature: EmeticDartTrigger

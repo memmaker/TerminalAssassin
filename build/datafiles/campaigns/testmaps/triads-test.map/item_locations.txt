@@ -1,87 +1,87 @@
 ItemAt: (12,81)
-Name: a soda can
+Name: Soda Can
 
 ItemAt: (13,63)
-Name: lethal poison
+Name: Poison (lethal)
 
 ItemAt: (14,83)
-Name: a crowbar
+Name: Crowbar
 
 ItemAt: (14,92)
-Name: a coin
+Name: Coin
 
 ItemAt: (16,39)
-Name: a soda can
+Name: Soda Can
 
 ItemAt: (16,65)
-Name: a piece of cloth
+Name: Cloth
 
 ItemAt: (16,70)
-Name: a screwdriver
+Name: Screwdriver
 
 ItemAt: (25,47)
 Name: Key
 Key: triads safe
 
 ItemAt: (27,90)
-Name: a soda can
+Name: Soda Can
 
 ItemAt: (32,86)
-Name: a baseball bat
+Name: Baseball Bat
 
 ItemAt: (34,84)
-Name: a soda can
+Name: Soda Can
 
 ItemAt: (36,86)
-Name: a soda can
+Name: Soda Can
 
 ItemAt: (38,64)
-Name: Blaser Jagdwaffen R93 Sniper
+Name: Sniper Rifle
 
 ItemAt: (39,93)
-Name: a soda can
+Name: Soda Can
 
 ItemAt: (42,34)
-Name: a piece of cloth
+Name: Cloth
 
 ItemAt: (42,40)
-Name: a piece of cloth
+Name: Cloth
 
 ItemAt: (42,46)
-Name: a piece of cloth
+Name: Cloth
 
 ItemAt: (42,72)
-Name: a wrench
+Name: Wrench
 
 ItemAt: (45,44)
-Name: scissors
+Name: Scissors
 
 ItemAt: (45,89)
-Name: a piece of cloth
+Name: Cloth
 
 ItemAt: (47,84)
-Name: a baseball bat
+Name: Baseball Bat
 
 ItemAt: (48,34)
-Name: a coin
+Name: Coin
 
 ItemAt: (48,40)
-Name: a crowbar
+Name: Crowbar
 
 ItemAt: (48,46)
-Name: a coin
+Name: Coin
 
 ItemAt: (50,43)
-Name: a cigarette
+Name: Cigarette
 
 ItemAt: (55,92)
-Name: a soda can
+Name: Soda Can
 
 ItemAt: (56,38)
-Name: an electronic lockpick
+Name: Lockpick (electronic)
 
 ItemAt: (56,46)
-Name: a lockpick
+Name: Lockpick
 
 ItemAt: (56,67)
 Name: Fiber Wire
@@ -94,59 +94,59 @@ Name: Key card
 Key: Security Night Club
 
 ItemAt: (62,51)
-Name: a soda can
+Name: Soda Can
 
 ItemAt: (63,42)
-Name: lethal poison
+Name: Poison (lethal)
 
 ItemAt: (64,42)
-Name: emetic poison
+Name: Poison (emetic)
 
 ItemAt: (64,86)
-Name: a cigarette
+Name: Cigarette
 
 ItemAt: (65,28)
-Name: a gas canister
+Name: Gas Canister
 
 ItemAt: (65,30)
-Name: piece of paper
+Name: Note
 Key: dreams
 
 ItemAt: (65,38)
-Name: a can of gasoline
+Name: Gasoline Can
 
 ItemAt: (66,28)
-Name: a gas canister
+Name: Gas Canister
 
 ItemAt: (67,36)
-Name: poison gas grenade
+Name: Grenade (lethal poison)
 
 ItemAt: (67,37)
-Name: sleep gas grenade
+Name: Grenade (sleep poison)
 Buried: true
 
 ItemAt: (67,38)
-Name: a fragmentation grenade
+Name: Grenade (fragmentation)
 
 ItemAt: (67,40)
-Name: proximity mine
+Name: Mine (proximity)
 
 ItemAt: (68,28)
-Name: a gas canister
+Name: Gas Canister
 
 ItemAt: (69,28)
-Name: a gas canister
+Name: Gas Canister
 Buried: true
 
 ItemAt: (69,32)
-Name: piece of paper
+Name: Note
 Key: dreams
 
 ItemAt: (70,71)
-Name: a knife
+Name: Knife
 
 ItemAt: (71,38)
-Name: sleep gas trip mine
+Name: Trip Mine (sleep poison)
 
 ItemAt: (72,31)
 Name: Shovel
@@ -155,17 +155,17 @@ ItemAt: (72,48)
 Name: Flashlight
 
 ItemAt: (73,38)
-Name: poison gas trip mine
+Name: Trip Mine (lethal poison)
 
 ItemAt: (74,31)
-Name: Even Calmer 2
+Name: Pistol (silenced)
 
 ItemAt: (74,34)
-Name: Emetic Dart Pistol
+Name: Dart Gun (emetic)
 
 ItemAt: (74,75)
-Name: emetic poison
+Name: Poison (emetic)
 
 ItemAt: (76,33)
-Name: a taser
+Name: Taser
 

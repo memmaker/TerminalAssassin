@@ -6,7 +6,7 @@ Clothing: a jacket
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: a coin
+Inventory: Coin
 Inventory: AMT 1911 'Hardballer'
 
 Name: actor #10
@@ -99,7 +99,7 @@ Clothing: a jacket
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: a coin
+Inventory: Coin
 Inventory: AMT 1911 'Hardballer'
 
 Name: actor #3
