@@ -613,6 +613,12 @@ func (st Style) Darken(f float64) Style {
 
 var DefaultStyle = Style{Foreground: White, Background: Black}
 
+var OffWhite = RGBAColor{R: 0.9, G: 0.9, B: 0.9, A: 1.0}
+
+// MapDefaultStyle is the default palette for new maps: dark ink on light paper.
+// Wall tiles use MapDefaultStyle.Reversed().
+var MapDefaultStyle = Style{Foreground: Black, Background: OffWhite}
+
 var TerminalStyle = Style{Foreground: TerminalColor, Background: TerminalColorBackground}
 
 func GetAmbientLightFromDayTime(timeOfDay time.Time) Color {

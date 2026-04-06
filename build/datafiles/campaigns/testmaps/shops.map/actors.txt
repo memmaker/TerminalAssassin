@@ -1,0 +1,11 @@
+Name: Shop Guard 1
+ActorType: guard
+Position: (31,11)
+LookDirection: 26.57
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 12
+Inventory: Flashlight
+Inventory: AMT 1911 'Hardballer'
+

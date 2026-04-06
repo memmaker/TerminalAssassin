@@ -53,15 +53,15 @@ on_remote_control: ElectricStims($POWER)
 Signature: ProximityMineTrigger($POWER, $DISTANCE, $PRESSURE)
 on_actor_contact: ExplosionAreaStims($POWER, $DISTANCE, $PRESSURE)
 
-Signature: SleepGasGrenadeTrigger($RADIUS, $DURATION)
-on_item_impact: SleepGasAreaStims($RADIUS, $DURATION)
+Signature: SleepPoisonGrenadeTrigger($RADIUS, $DURATION)
+on_item_impact: SleepPoisonAreaStims($RADIUS, $DURATION)
 
-Signature: PoisonGasGrenadeTrigger($RADIUS, $DURATION)
-on_item_impact: PoisonGasAreaStims($RADIUS, $DURATION)
+Signature: LethalPoisonGrenadeTrigger($RADIUS, $DURATION)
+on_item_impact: LethalPoisonAreaStims($RADIUS, $DURATION)
 
-Signature: SleepGasTripMineTrigger($RADIUS, $DURATION)
-on_actor_contact: SleepGasAreaStims($RADIUS, $DURATION)
+Signature: SleepPoisonTripMineTrigger($RADIUS, $DURATION)
+on_actor_contact: SleepPoisonAreaStims($RADIUS, $DURATION)
 
-Signature: PoisonGasTripMineTrigger($RADIUS, $DURATION)
-on_actor_contact: PoisonGasAreaStims($RADIUS, $DURATION)
+Signature: LethalPoisonTripMineTrigger($RADIUS, $DURATION)
+on_actor_contact: LethalPoisonAreaStims($RADIUS, $DURATION)
 

@@ -23,7 +23,7 @@ func (g *GameStateEditor) openClothesMenu() {
 		menuItems[index+1] = services.MenuItem{
 			Label:               item.Name,
 			Icon:                core.GlyphClothing,
-			IconForegroundColor: item.FgColor,
+            IconForegroundColor: item.FgColor(),
 			Handler:             g.setBrushHandler(addClothesUI, core.GlyphClothing, func(pos geometry.Point) { g.placeClothesAt(*item, pos) }),
 		}
 	}

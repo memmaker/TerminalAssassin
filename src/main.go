@@ -3,6 +3,7 @@ package main
 import (
     "embed"
     "encoding/gob"
+    "errors"
     "image"
     "image/png"
     "math"
@@ -62,6 +63,10 @@ type ConsoleEngine struct {
     scheduledCalls              map[uint64][]func()
     scheduledCallsWithCondition []ScheduledCallWithCondition
     subscribers                 []services.Subscriber
+
+    // TimeFactor scales world time for all AI-controlled actors and objects.
+    // 1.0 = normal, >1.0 = faster, <1.0 = slower, 0 = frozen.
+    TimeFactor float64
 
     pendingScreenshotPath string
 }
@@ -154,6 +159,17 @@ func (g *ConsoleEngine) RequestScreenshot(filePath string) {
     g.pendingScreenshotPath = filePath
 }
 
+func (g *ConsoleEngine) GetTimeFactor() float64 {
+    return g.TimeFactor
+}
+
+func (g *ConsoleEngine) SetTimeFactor(factor float64) {
+    if factor < 0 {
+        factor = 0
+    }
+    g.TimeFactor = factor
+}
+
 // saveEbitenImageAsPNG reads pixel data from an ebiten image and writes it
 // to disk as a PNG file.
 func saveEbitenImageAsPNG(img *ebiten.Image, filePath string) {
@@ -222,6 +238,7 @@ func main() {
         ExternalData:   externalData,
         Career:         game.NewCareerFromFile(externalData),
         scheduledCalls: map[uint64][]func(){},
+        TimeFactor:     1.0,
     }
     ebiten.SetWindowTitle(gameTitle)
     ebiten.SetWindowSize(graphicsConfig.WindowedWidth, graphicsConfig.WindowedHeight)
@@ -232,7 +249,7 @@ func main() {
     consoleGame.Init()
     if err := ebiten.RunGameWithOptions(consoleGame, &ebiten.RunGameOptions{
         GraphicsLibrary: ebiten.GraphicsLibraryOpenGL,
-    }); err != nil && err != ebiten.Termination {
+    }); err != nil && !errors.Is(err, ebiten.Termination) {
         log.Fatal(err)
     }
 }

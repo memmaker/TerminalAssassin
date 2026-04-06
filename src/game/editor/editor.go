@@ -33,6 +33,7 @@ type GameStateEditor struct {
     SelectedActor         *core.Actor
     SelectedLightSource   *gridmap.LightSource
     SelectedZone          *gridmap.ZoneInfo
+    SelectedSchedule      *gridmap.Schedule
     selectedItem          *core.Item
     selectedObject        services.Object
     selectedNamedLocation string
@@ -45,7 +46,9 @@ type GameStateEditor struct {
     boxEnd                geometry.Point
     MousePositionOnScreen geometry.Point
     MousePositionInWorld  geometry.Point
-    currentPrefab         *gridmap.Prefab[*core.Actor, *core.Item, services.Object]
+    currentPrefab              *gridmap.Prefab[*core.Actor, *core.Item, services.Object]
+    taskPreviewFov             *geometry.FOV
+    pendingLookDir             float64
 }
 
 func (g *GameStateEditor) ClearOverlay() {
@@ -66,7 +69,7 @@ func (h UIHandler) WithTextHandler(textReceivedHandler func(text string)) UIHand
     return h
 }
 
-var placePrefabUI, setColorUI, createPrefabUI, editLightsUI, editNamedLocationUI, addObjectsUI, quickAddActorsUI, editMapUI, addStimuliUI, addZonesUI, addTasksUI, addActorsUI, editActorUI, editTaskUI, addClothesUI, addItemsUI UIHandler
+var placePrefabUI, setColorUI, createPrefabUI, editLightsUI, editNamedLocationUI, addObjectsUI, quickAddActorsUI, editMapUI, addStimuliUI, addZonesUI, addTasksUI, addActorsUI, editActorUI, editTaskUI, editScheduleUI, addClothesUI, addItemsUI UIHandler
 
 var globalKeyPresses map[core.Key]func()
 
@@ -74,10 +77,19 @@ func (g *GameStateEditor) ResizeAndClearMap(newWidth, newHeight int) {
     game := g.engine.GetGame()
     game.ClearMap(newWidth, newHeight)
     currentMap := game.GetMap()
+    defaultStyle := currentMap.DefaultStyle
     currentMap.Apply(func(cell gridmap.MapCell[*core.Actor, *core.Item, services.Object]) gridmap.MapCell[*core.Actor, *core.Item, services.Object] {
         cell.IsExplored = true
+        if cell.TileType.IsWalkable {
+            cell.TileType = cell.TileType.WithBGColor(defaultStyle.Background).WithFGColor(defaultStyle.Foreground)
+        } else {
+            wallStyle := defaultStyle.Reversed()
+            cell.TileType = cell.TileType.WithBGColor(wallStyle.Background).WithFGColor(wallStyle.Foreground)
+        }
         return cell
     })
+    g.currentForegroundColor = defaultStyle.Foreground
+    g.currentBackgroundColor = defaultStyle.Background
     currentMap.ApplyAmbientLight()
     currentMap.UpdateBakedLights()
     currentMap.UpdateDynamicLights()
@@ -87,11 +99,9 @@ func (g *GameStateEditor) ResizeAndClearMap(newWidth, newHeight int) {
 }
 func (g *GameStateEditor) Init(engine services.Engine) {
     g.engine = engine
-    g.currentBackgroundColor = common.Black
-    g.currentForegroundColor = common.White
-    //game := g.engine.GetGame()
-    //game.ClearMap(g.engine.MapWindowWidth(), g.engine.MapWindowWidth())
-    //currentMap := game.GetMap()
+    g.pendingLookDir = -1
+    // currentForegroundColor / currentBackgroundColor are initialised from the
+    // map's DefaultStyle inside ResizeAndClearMap (called at the end of Init).
     editMapUI = UIHandler{
         Name: "edit map",
         KeyPressed: map[core.Key]func(){
@@ -224,8 +234,56 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 QuickKey: "k",
             },
             {
+                Label:    "Add Look Direction",
+                Handler:  g.addLookDirection,
+                Icon:     'l',
+                QuickKey: "l",
+            },
+            {
+                Label:    "Remove Look Direction",
+                Handler:  g.removeLookDirection,
+                Icon:     'L',
+                QuickKey: "L",
+            },
+            {
                 Label:    "Delete Task",
                 Handler:  g.deleteTask,
+                Icon:     'x',
+                QuickKey: core.KeyBackspace,
+            },
+            {
+                Label:    "Back to Schedule",
+                Handler:  g.changeUIStateFunc(editScheduleUI),
+                Icon:     'b',
+                QuickKey: "b",
+            },
+        },
+        CellsSelected: g.selectAtMousePos,
+    }
+    editScheduleUI = UIHandler{
+        Name: "edit schedule",
+        ContextMenu: []services.MenuItem{
+            {
+                Label:    "Add Task",
+                Handler:  g.changeUIStateFunc(addTasksUI),
+                Icon:     'a',
+                QuickKey: "a",
+            },
+            {
+                Label:    "Rename Schedule",
+                Handler:  g.renameSelectedSchedule,
+                Icon:     'r',
+                QuickKey: "r",
+            },
+            {
+                Label:    "Assign to Selected Actor",
+                Handler:  g.assignScheduleToCurrentActor,
+                Icon:     'o',
+                QuickKey: "o",
+            },
+            {
+                Label:    "Delete Schedule",
+                Handler:  g.deleteSelectedSchedule,
                 Icon:     'x',
                 QuickKey: core.KeyBackspace,
             },
@@ -295,6 +353,12 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 QuickKey: "i",
             },
             {
+                Label:    "Assign Schedule",
+                Handler:  g.assignScheduleFromLibraryToSelectedActor,
+                Icon:     'S',
+                QuickKey: "s",
+            },
+            {
                 Label:    "Adjust Look Direction",
                 Handler:  g.adjustLookDirectionForSelectedActor,
                 Icon:     'd',
@@ -349,6 +413,31 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 Handler:  g.setKeyOfSelectedObject,
                 Icon:     'k',
                 QuickKey: "k",
+            },
+            {
+                Label:    "Set Lock Difficulty",
+                Handler:  g.setDifficultyOfSelectedObject,
+                Icon:     'd',
+                QuickKey: "d",
+                Condition: func() bool {
+                    if g.selectedObject == nil {
+                        return false
+                    }
+                    _, ok := g.selectedObject.(services.LockDifficultyHolder)
+                    return ok
+                },
+            },
+            {
+                Label:   "Edit contents",
+                Handler: g.editContentsOfSelectedObject,
+                Icon:    core.GlyphWrench,
+                Condition: func() bool {
+                    if g.selectedObject == nil {
+                        return false
+                    }
+                    _, ok := g.selectedObject.(services.ContentHolder)
+                    return ok
+                },
             },
             {
                 Label:    "Delete Object",
@@ -407,6 +496,8 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 g.engine.GetGame().GetMap().ShiftMapBy(geometry.Point{X: -1, Y: 0})
             } else if ebiten.IsKeyPressed(ebiten.KeyShift) {
                 g.engine.GetGame().GetMap().Resize(g.engine.GetGame().GetMap().MapWidth-1, g.engine.GetGame().GetMap().MapHeight, emptyTile)
+                m := g.engine.GetGame().GetMap()
+                g.PrintAsMessage(fmt.Sprintf("Map size: %d x %d", m.MapWidth, m.MapHeight))
             } else {
                 g.moveCameraOnMap(geometry.Point{X: -1, Y: 0})
             }
@@ -417,6 +508,8 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 g.engine.GetGame().GetMap().ShiftMapBy(geometry.Point{X: 1, Y: 0})
             } else if ebiten.IsKeyPressed(ebiten.KeyShift) {
                 g.engine.GetGame().GetMap().Resize(g.engine.GetGame().GetMap().MapWidth+1, g.engine.GetGame().GetMap().MapHeight, emptyTile)
+                m := g.engine.GetGame().GetMap()
+                g.PrintAsMessage(fmt.Sprintf("Map size: %d x %d", m.MapWidth, m.MapHeight))
             } else {
                 g.moveCameraOnMap(geometry.Point{X: 1, Y: 0})
             }
@@ -427,6 +520,8 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 g.engine.GetGame().GetMap().ShiftMapBy(geometry.Point{X: 0, Y: -1})
             } else if ebiten.IsKeyPressed(ebiten.KeyShift) {
                 g.engine.GetGame().GetMap().Resize(g.engine.GetGame().GetMap().MapWidth, g.engine.GetGame().GetMap().MapHeight-1, emptyTile)
+                m := g.engine.GetGame().GetMap()
+                g.PrintAsMessage(fmt.Sprintf("Map size: %d x %d", m.MapWidth, m.MapHeight))
             } else {
                 g.moveCameraOnMap(geometry.Point{X: 0, Y: -1})
             }
@@ -437,6 +532,8 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 g.engine.GetGame().GetMap().ShiftMapBy(geometry.Point{X: 0, Y: 1})
             } else if ebiten.IsKeyPressed(ebiten.KeyShift) {
                 g.engine.GetGame().GetMap().Resize(g.engine.GetGame().GetMap().MapWidth, g.engine.GetGame().GetMap().MapHeight+1, emptyTile)
+                m := g.engine.GetGame().GetMap()
+                g.PrintAsMessage(fmt.Sprintf("Map size: %d x %d", m.MapWidth, m.MapHeight))
             } else {
                 g.moveCameraOnMap(geometry.Point{X: 0, Y: 1})
             }
@@ -510,13 +607,13 @@ func (g *GameStateEditor) setKeyOfSelectedObject() {
     if _, isKeyed := g.selectedObject.(services.KeyBound); !isKeyed || g.selectedObject == nil {
         return
     }
+    keyedObj, _ := g.selectedObject.(services.KeyBound)
     g.changeUIStateTo(addObjectsUI.WithTextHandler(func(text string) {
-        keyedObj, _ := g.selectedObject.(services.KeyBound)
         keyedObj.SetKey(text)
         g.PrintAsMessage(fmt.Sprintf("Key of %s set to %s", g.selectedObject.Description(), text))
         g.SetDirty()
     }))
-    g.showTextInput("Set Object Key: ", "")
+    g.showTextInput("Set Object Key: ", keyedObj.GetKey())
 }
 
 func (g *GameStateEditor) setKeyOfSelectedItem() {
@@ -541,5 +638,6 @@ func (g *GameStateEditor) resetSelectionAndSwitchToDefaultState() {
     g.SelectedActor = nil
     g.SelectedLightSource = nil
     g.SelectedTaskIndex = 0
+    g.SelectedSchedule = nil
     g.changeUIStateTo(editMapUI)
 }

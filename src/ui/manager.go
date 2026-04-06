@@ -93,9 +93,20 @@ func (m *Manager) ShowTooltipAt(screenPos geometry.Point, infoString core.Styled
 
 func (m *Manager) BoundsForWorldLabel(worldPos geometry.Point, stringLength int) geometry.Rect {
     camera := m.engine.GetGame().GetCamera()
-    screenPos := camera.WorldToScreen(worldPos)                    // translate world position to screen position
-    labelPos := m.CalculateLabelPlacement(screenPos, stringLength) // reposition the screen position for the label and convert to half position
-    return NewBoundsForText(labelPos, stringLength)                // return the bounds for the label (on the halfwidth grid)
+    screenPos := camera.WorldToScreen(worldPos)
+    mapHeight := m.engine.MapWindowHeight()
+    // Don't place a label for an actor whose position projects outside the map window.
+    if screenPos.Y < 0 || screenPos.Y >= mapHeight {
+        return geometry.Rect{}
+    }
+    labelPos := m.CalculateLabelPlacement(screenPos, stringLength)
+    // Clamp the label row so it never overlaps the status bar.
+    if labelPos.Y < 0 {
+        labelPos.Y = 0
+    } else if labelPos.Y >= mapHeight {
+        labelPos.Y = mapHeight - 1
+    }
+    return NewBoundsForText(labelPos, stringLength)
 }
 
 func NewBoundsForText(fromPos geometry.Point, stringLength int) geometry.Rect {
@@ -240,7 +251,16 @@ func (m *Manager) OpenXOffsetAutoCloseMenuWithCallback(xOffset int, items []serv
         yStart = 0
     }
     width := (widthFromItems(items) / 2) + 4
-    bbox := geometry.NewRect(xOffset, yStart, xOffset+width, yEnd)
+    xStart := xOffset
+    // DrawBox draws the right border at bbox.Max.X inclusive, so it must be
+    // strictly less than GridWidth (which uses an exclusive upper bound).
+    if xStart+width >= m.engine.ScreenGridWidth() {
+        xStart = m.engine.ScreenGridWidth() - width - 1
+    }
+    if xStart < 0 {
+        xStart = 0
+    }
+    bbox := geometry.NewRect(xStart, yStart, xStart+width, yEnd)
     m.pushModal(NewMenu("", items, bbox, func() {
         m.PopModal()
         if onClose != nil {
@@ -272,8 +292,8 @@ func (m *Manager) OpenAtPosAutoCloseMenuWithCallback(pos geometry.Point, items [
     }
 
     xStart := pos.X
-    if xStart+width > screenW {
-        xStart = screenW - width
+    if xStart+width >= screenW {
+        xStart = screenW - width - 1
     }
     if xStart < 0 {
         xStart = 0
@@ -325,23 +345,26 @@ func (m *Manager) OpenFixedWidthStackedMenu(title string, items []services.MenuI
 }
 
 func (m *Manager) HalfWidthRect(itemCount int) geometry.Rect {
-    yStart := 3
-    yEnd := yStart + itemCount + 1
-    xStart := m.engine.ScreenGridWidth() / 4
-    xEnd := m.engine.ScreenGridWidth() - xStart
-    bbox := geometry.NewRect(xStart, yStart, xEnd, yEnd)
-    return bbox
+	yStart := 3
+	yEnd := yStart + itemCount + 1
+	// Cap yEnd so the menu never overlaps the bottom menu bar (3 rows).
+	maxYEnd := m.engine.ScreenGridHeight() - 4
+	if yEnd > maxYEnd {
+		yEnd = maxYEnd
+	}
+	xStart := m.engine.ScreenGridWidth() / 4
+	xEnd := m.engine.ScreenGridWidth() - xStart
+	bbox := geometry.NewRect(xStart, yStart, xEnd, yEnd)
+	return bbox
 }
 
 func (m *Manager) OpenFancyMenu(menuItems []services.MenuItem) {
-    itemCount := ConditionalCount(menuItems)
-    bbox := m.HalfWidthRect(itemCount)
-    //
-    //bbox = bbox.Shift(0, 11, 0, 11) // 32 -> 21, 16 -> 11
-    m.RenderRevealAnimation(common.White.ToHSV(), common.RGBAColor{R: 0.2, G: 0.2, B: 0.6, A: 1.0}.ToHSV(), bbox, func() {
-        menu := NewMenu("", menuItems, bbox, nil, nil)
-        m.pushModal(menu)
-    })
+	itemCount := ConditionalCount(menuItems)
+	bbox := m.HalfWidthRect(itemCount)
+	m.RenderRevealAnimation(common.White.ToHSV(), common.RGBAColor{R: 0.2, G: 0.2, B: 0.6, A: 1.0}.ToHSV(), bbox, func() {
+		menu := NewMenu("", menuItems, bbox, nil, nil)
+		m.pushModal(menu)
+	})
 }
 
 func (m *Manager) RenderRevealAnimation(fgColor common.HSVColor, bgColor common.HSVColor, box geometry.Rect, onFinished func()) {
@@ -427,6 +450,7 @@ func (m *Manager) ShowTextInputAt(pos geometry.Point, width int, prompt string, 
     cursorPos := pos.Add(geometry.Point{X: len(prompt) + len(prefill)})
     cursor := &CursorParticle{
         Pos:             cursorPos,
+        OldPos:          cursorPos,
         Color:           common.TerminalColor.ToHSV(),
         DelayAppearance: 35,
     }
@@ -457,6 +481,7 @@ func (m *Manager) ShowNoAbortTextInputAt(pos geometry.Point, width int, prompt s
     cursorPos := pos.Add(geometry.Point{X: len(prompt) + len(prefill)})
     cursor := &CursorParticle{
         Pos:             cursorPos,
+        OldPos:          cursorPos,
         Color:           common.TerminalColor.ToHSV(),
         DelayAppearance: 35,
     }
@@ -479,19 +504,40 @@ func (m *Manager) ShowNoAbortTextInputAt(pos geometry.Point, width int, prompt s
 }
 
 func (m *Manager) ShowTextInput(prompt string, prefill string, onComplete func(userInput string), onAbort func()) {
-    m.pushModal(NewTextInputAt(
-        geometry.Point{Y: -1},
-        m.engine.ScreenGridWidth(),
-        prompt,
-        prefill,
-        func(userInput string) {
-            m.PopModal()
-            onComplete(userInput)
-        },
-        func() {
-            m.PopModal()
-            onAbort()
-        }))
+	// The text input renders at Y:-1 which TextInput.Draw resolves to the last
+	// grid row.  Resolve it here too so the cursor particle lands on the same row.
+	lastRow := m.engine.ScreenGridHeight() - 1
+	animator := m.engine.GetAnimator()
+	cursorPos := geometry.Point{X: len(prompt) + len(prefill), Y: lastRow}
+	cursor := &CursorParticle{
+		Pos:             cursorPos,
+		OldPos:          cursorPos,
+		Color:           common.TerminalColor.ToHSV(),
+		DelayAppearance: 35,
+	}
+	animator.AddParticle(cursor)
+	changeCursorPos := func(newPos geometry.Point) {
+		if newPos.Y < 0 {
+			newPos.Y = lastRow
+		}
+		cursor.Pos = newPos
+	}
+	m.pushModal(NewTextInputAt(
+		geometry.Point{Y: -1},
+		m.engine.ScreenGridWidth(),
+		prompt,
+		prefill,
+		func(userInput string) {
+			m.PopModal()
+			cursor.Kill()
+			onComplete(userInput)
+		},
+		func() {
+			m.PopModal()
+			cursor.Kill()
+			onAbort()
+		}))
+	m.currentModal().(*TextInput).OnCursorMove = changeCursorPos
 }
 
 func (m *Manager) ShowPager(title string, lines []core.StyledText, onQuit func()) {
@@ -505,7 +551,7 @@ func (m *Manager) ShowPager(title string, lines []core.StyledText, onQuit func()
     m.pushModal(pager)
 }
 
-func (m *Manager) OpenItemRingMenu(currentItem *core.Item, listOfItems []*core.Item, selectedFunc func(*core.Item), cancelFunc func()) {
+func (m *Manager) OpenItemRingMenu(currentItem *core.Item, listOfItems []*core.Item, selectedFunc func(*core.Item), cancelFunc func(), dropFunc func(*core.Item)) {
     if listOfItems == nil || len(listOfItems) == 0 {
         return
     }
@@ -521,9 +567,15 @@ func (m *Manager) OpenItemRingMenu(currentItem *core.Item, listOfItems []*core.I
             cancelFunc()
         }
     }
+    onDrop := func(item *core.Item) {
+        m.PopModal()
+        if dropFunc != nil && item != nil {
+            dropFunc(item)
+        }
+    }
     gridWidth := m.engine.ScreenGridWidth()
     labelYOffset := m.engine.ScreenGridHeight() / 2
-    ringMenu := NewRingMenu(currentItem, listOfItems, onSelection, onCancel, labelYOffset, gridWidth)
+    ringMenu := NewRingMenu(currentItem, listOfItems, onSelection, onCancel, onDrop, labelYOffset, gridWidth)
     m.pushModal(ringMenu)
 }
 

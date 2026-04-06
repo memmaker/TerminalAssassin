@@ -42,7 +42,7 @@ const (
     NextItem
     PreviousItem
     OpenInventory
-    UseEquippedItem
+    UseRangedItem
     UseItem
     Confirm
     Cancel
@@ -52,13 +52,16 @@ const (
     MenuRight
     MenuConfirm
     MenuCancel
+
+    ContextAction // Cross → context-action / dialogue / pickpocket at peek tile
+    BeginMouseAiming
     Assassinate
+    DiveTackle // Circle + active right stick → dive/tackle in peek direction
 )
 
 const (
     MovementDirection GameDirectionalCommand = iota
     PeekingDirection
-    ActionDirection
     AimingDirection
 )
 

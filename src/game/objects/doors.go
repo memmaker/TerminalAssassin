@@ -21,6 +21,10 @@ func NewLockedElectronicDoorAt(name string, key string, damageThreshold int) *Do
     return &Door{uniqueName: name, KeyString: key, State: DoorStateLocked, Type: DoorTypeElectronic, DamageThreshold: damageThreshold, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
 }
 
+func NewKeypadDoorAt(name string, code string, damageThreshold int) *Door {
+    return &Door{uniqueName: name, KeyString: code, State: DoorStateLocked, Type: DoorTypeElectronic, Keypad: true, DamageThreshold: damageThreshold, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
+}
+
 func NewOpenDoorAt(name string, damageThreshold int) *Door {
     return &Door{uniqueName: name, State: DoorStateOpen, DamageThreshold: damageThreshold, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
 }
@@ -70,10 +74,17 @@ type Door struct {
     position        geometry.Point
     IsBurnable      bool
     Type            DoorType
+    Keypad          bool
     DamageThreshold int
+    Difficulty      core.LockDifficulty
     uniqueName      string
     definedStyle    common.Style
 }
+
+// ---- services.LockDifficultyHolder ----
+
+func (d *Door) GetLockDifficulty() core.LockDifficulty     { return d.Difficulty }
+func (d *Door) SetLockDifficulty(diff core.LockDifficulty) { d.Difficulty = diff }
 
 func (d *Door) GetKey() string {
     return d.KeyString
@@ -102,6 +113,9 @@ func (d *Door) Description() string {
     case DoorStateOpen:
         return "an open door"
     case DoorStateLocked:
+        if d.Keypad {
+            return "a keypad door (locked)"
+        }
         if d.KeyString != "" {
             return fmt.Sprintf("a locked door (%s)", d.KeyString)
         }
@@ -147,37 +161,75 @@ func (d *Door) ActionDescription() string {
 }
 
 func (d *Door) Action(m services.Engine, person *core.Actor) {
-    InteractionTime := 4.0
     animator := m.GetAnimator()
     game := m.GetGame()
     aic := m.GetAI()
     switch {
+    case d.State == DoorStateLocked && d.Keypad:
+        m.GetUI().ShowTextInput("Enter code: ", "", func(code string) {
+            if code == d.KeyString {
+                d.State = DoorStateClosed
+            } else {
+                game.PrintMessage("Wrong code.")
+            }
+        }, func() {})
     case d.State == DoorStateLocked && person.HasKeyInInventory(d.KeyString) && d.Type == DoorTypeMechanic:
         d.State = DoorStateClosed
     case d.State == DoorStateLocked && person.HasKeyCardInInventory(d.KeyString) && d.Type == DoorTypeElectronic:
         d.State = DoorStateClosed
-    case d.State == DoorStateLocked && person.HasToolEquipped(core.ItemTypeMechanicalLockpick) && d.Type == DoorTypeMechanic:
-        animationCompleted := false
-        until := func() bool {
-            return animationCompleted
+    case d.State == DoorStateLocked && d.Type == DoorTypeMechanic:
+        needed := d.Difficulty.PickCount()
+        hasPicks := person.CountItemTypeInInventory(core.ItemTypeMechanicalLockpick) >= needed
+        hasCrowbar := d.Difficulty != core.LockDifficultyHard && person.CountItemTypeInInventory(core.ItemTypeCrowbar) >= 1
+        if hasPicks {
+            pickTime := d.Difficulty.PickTime()
+            animationCompleted := false
+            until := func() bool { return animationCompleted }
+            onLockPicked := func() {
+                animationCompleted = true
+                person.ConsumeItemsFromInventory(core.ItemTypeMechanicalLockpick, needed)
+                d.State = DoorStateClosed
+            }
+            aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
+            game.IllegalActionAt(d.Pos(), core.ObservationIllegalAction)
+            animator.ActorEngagedAnimation(person, core.GlyphLockpick, d.Pos(), pickTime, onLockPicked)
+        } else if hasCrowbar {
+            crowbarTime := d.Difficulty.PickTime() * 3
+            game.SoundEventAt(d.Pos(), core.ObservationMeleeNoises, 20)
+            game.IllegalActionAt(d.Pos(), core.ObservationIllegalAction)
+            animationCompleted := false
+            until := func() bool { return animationCompleted }
+            onPried := func() {
+                animationCompleted = true
+                person.ConsumeItemsFromInventory(core.ItemTypeCrowbar, 1)
+                d.State = DoorStateClosed
+                game.UpdateAllFoVsFrom(d.Pos())
+            }
+            aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
+            animator.ActorEngagedAnimation(person, core.GlyphCrowbar, d.Pos(), crowbarTime, onPried)
+        } else {
+            if d.Difficulty == core.LockDifficultyHard {
+                game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s).", d.Difficulty.ToString(), needed))
+            } else {
+                game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s) or a crowbar.", d.Difficulty.ToString(), needed))
+            }
         }
+    case d.State == DoorStateLocked && d.Type == DoorTypeElectronic:
+        needed := d.Difficulty.PickCount()
+        if person.CountItemTypeInInventory(core.ItemTypeElectronicalLockpick) < needed {
+            game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s).", d.Difficulty.ToString(), needed))
+            return
+        }
+        pickTime := d.Difficulty.PickTime()
+        animationCompleted := false
+        until := func() bool { return animationCompleted }
         onLockPicked := func() {
             animationCompleted = true
+            person.ConsumeItemsFromInventory(core.ItemTypeElectronicalLockpick, needed)
             d.State = DoorStateClosed
         }
         aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
-        animator.ActorEngagedAnimation(person, core.GlyphLockpick, d.Pos(), InteractionTime, onLockPicked)
-    case d.State == DoorStateLocked && person.HasToolEquipped(core.ItemTypeElectronicalLockpick) && d.Type == DoorTypeElectronic:
-        animationCompleted := false
-        until := func() bool {
-            return animationCompleted
-        }
-        onLockPicked := func() {
-            animationCompleted = true
-            d.State = DoorStateClosed
-        }
-        aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
-        animator.ActorEngagedAnimation(person, core.GlyphLockpickElectronic, d.Pos(), InteractionTime, onLockPicked)
+        animator.ActorEngagedAnimation(person, core.GlyphLockpickElectronic, d.Pos(), pickTime, onLockPicked)
     case d.State == DoorStateOpen:
         d.State = DoorStateClosed
         game.UpdateAllFoVsFrom(d.Pos())
@@ -189,9 +241,6 @@ func (d *Door) Action(m services.Engine, person *core.Actor) {
 }
 
 func (d *Door) IsActionAllowed(m services.Engine, person *core.Actor) bool {
-    if d.State == DoorStateLocked && !d.IsUnlockableWithKeyFrom(person) && !d.IsUnlockableWithPickFrom(person) {
-        return false
-    }
     return true
 }
 
@@ -226,137 +275,14 @@ func (d *Door) IsUnlockableWithKeyFrom(person *core.Actor) bool {
 }
 
 func (d *Door) IsUnlockableWithPickFrom(person *core.Actor) bool {
-    equippedItem := person.EquippedItem
+    needed := d.Difficulty.PickCount()
     switch {
-    case person == nil || equippedItem == nil:
+    case person == nil:
         return false
-    case d.Type == DoorTypeMechanic && equippedItem.Type == core.ItemTypeMechanicalLockpick:
-        return true
-    case d.Type == DoorTypeElectronic && equippedItem.Type == core.ItemTypeElectronicalLockpick:
-        return true
+    case d.Type == DoorTypeMechanic:
+        return person.CountItemTypeInInventory(core.ItemTypeMechanicalLockpick) >= needed
+    case d.Type == DoorTypeElectronic:
+        return person.CountItemTypeInInventory(core.ItemTypeElectronicalLockpick) >= needed
     }
     return false
-}
-
-type WindowState uint8
-
-const (
-    WindowStateClosed WindowState = iota
-    WindowStateOpen
-    WindowStateBroken
-)
-
-type Window struct {
-    State            WindowState
-    position         geometry.Point
-    OutsideOffset    geometry.Point // offset from the window to the outside
-    DamageThreshold  int
-    uniqueIdentifier string
-    definedStyle     common.Style
-}
-
-func (w *Window) GetStyle() common.Style {
-    return w.definedStyle
-}
-
-func (w *Window) SetStyle(style common.Style) {
-    w.definedStyle = style
-}
-
-func (w *Window) Description() string {
-    switch w.State {
-    case WindowStateOpen:
-        return "an open window"
-    case WindowStateClosed:
-        return "a closed window"
-    case WindowStateBroken:
-        return "a broken window"
-    }
-    return "a window"
-}
-
-func (w *Window) ApplyStimulus(m services.Engine, stim stimuli.Stimulus) {
-    isRelevantDamageType := stim.Type() == stimuli.StimulusPiercingDamage || stim.Type() == stimuli.StimulusBluntDamage || stim.Type() == stimuli.StimulusExplosionDamage || stim.Type() == stimuli.StimulusFire
-
-    isClosed := w.State == WindowStateClosed
-    if isRelevantDamageType && isClosed && stim.Force() > w.DamageThreshold {
-        w.State = WindowStateBroken
-    }
-    return
-}
-
-func (w *Window) Pos() geometry.Point {
-    return w.position
-}
-
-func (w *Window) SetPos(pos geometry.Point) {
-    w.position = pos
-}
-
-func (w *Window) Icon() rune {
-    switch w.State {
-    case WindowStateOpen:
-        return core.GlyphOpenWindow
-    case WindowStateBroken:
-        return core.GlyphBrokenWindow
-    default:
-        return core.GlyphClosedWindow
-    }
-}
-
-func (w *Window) Style(st common.Style) common.Style {
-    return w.definedStyle
-}
-
-func (w *Window) Action(m services.Engine, person *core.Actor) {
-    switch w.State {
-    case WindowStateOpen:
-        w.State = WindowStateClosed
-    case WindowStateClosed:
-        w.State = WindowStateOpen
-    }
-    return
-}
-
-func (w *Window) IsActionAllowed(m services.Engine, person *core.Actor) bool {
-    if w.State == WindowStateBroken || w.IsPersonOutside(m, person) {
-        return false
-    }
-    return true
-}
-
-func (w *Window) ActionDescription() string {
-    if w.State == WindowStateOpen {
-        return string(core.GlyphClosedWindow)
-    }
-    return string(core.GlyphOpenWindow)
-}
-
-func (w *Window) IsWalkable(*core.Actor) bool {
-    return w.State != WindowStateClosed
-}
-
-func (w *Window) IsTransparent() bool {
-    return true
-}
-func (w *Window) IsPassableForProjectile() bool {
-    return true
-}
-func (w *Window) EncodeAsString() string {
-    return w.uniqueIdentifier
-}
-func (w *Window) IsPersonOutside(m services.Engine, person *core.Actor) bool {
-    return person.Pos() == w.Pos().Add(w.OutsideOffset)
-}
-
-func NewClosedWindowAt(identifier string, damageThreshold int) *Window {
-    return &Window{State: WindowStateClosed, DamageThreshold: damageThreshold, uniqueIdentifier: identifier, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
-}
-
-func NewOpenWindowAt(identifier string, damageThreshold int) *Window {
-    return &Window{State: WindowStateOpen, DamageThreshold: damageThreshold, uniqueIdentifier: identifier, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
-}
-
-func NewBrokenWindowAt(identifier string) *Window {
-    return &Window{State: WindowStateBroken, uniqueIdentifier: identifier, definedStyle: common.DefaultStyle.WithBg(common.Transparent)}
 }

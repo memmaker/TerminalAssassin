@@ -121,9 +121,10 @@ func (m *Model) DrawVisionCone(con console.CellInterface, actor *core.Actor) {
         println("Suspicion level out of range")
         return
     }
+    mapHeight := m.GetMap().MapHeight
     actor.VisionCone(func(worldPos geometry.Point) {
         screenPos := m.GetCamera().WorldToScreen(worldPos)
-        if !con.Contains(screenPos) || !player.CanSee(worldPos) {
+        if !con.Contains(screenPos) || screenPos.Y >= mapHeight || !player.CanSee(worldPos) {
             return
         }
         cellAt := con.AtSquare(screenPos)
@@ -867,9 +868,25 @@ func (m *Model) IsDoorAt(p geometry.Point) bool {
     }
     return false
 }
+
+func (m *Model) IsWindowAt(p geometry.Point) bool {
+    currentMap := m.GetMap()
+    if !currentMap.Contains(p) {
+        return false
+    }
+    if obj, ok := currentMap.TryGetObjectAt(p); ok {
+        _, isWindow := obj.(*objects.Window)
+        return isWindow
+    }
+    return false
+}
+
 func (m *Model) PickUpItem(person *core.Actor) {
-    actorWantsToPickupAt := person.Pos().Add(person.FovShiftForPeeking)
-    itemHere := m.GetMap().ItemAt(actorWantsToPickupAt)
+    m.PickUpItemAt(person, person.FoVSource())
+}
+
+func (m *Model) PickUpItemAt(person *core.Actor, pos geometry.Point) {
+    itemHere := m.GetMap().ItemAt(pos)
     if itemHere == nil || itemHere.Buried {
         return
     }
@@ -889,7 +906,7 @@ func (m *Model) PickUpItem(person *core.Actor) {
     equippedItem := person.EquippedItem
     bigItemInHands := equippedItem != nil && equippedItem.IsBig
     if itemHere.IsBig && bigItemInHands {
-        defer m.forceDropInventoryItem(person, equippedItem, actorWantsToPickupAt)
+        defer m.forceDropInventoryItem(person, equippedItem, pos)
     }
 
     m.GetMap().RemoveItem(itemHere)
@@ -906,7 +923,7 @@ func (m *Model) PickUpItem(person *core.Actor) {
 func (m *Model) InsteadOfPickingUpClothes(actor *core.Actor, item *core.Item) {
     animator := m.engine.GetAnimator()
 
-    clothesFromItem := core.Clothing{Name: item.Name, FgColor: item.DefinedStyle.Foreground.ToHSV(), BgColor: item.DefinedStyle.Background.ToHSV()}
+    clothesFromItem := m.engine.GetData().NameToClothing(item.Name)
     aic := m.engine.GetAI()
     animationCompleted := false
     until := func() bool {
@@ -915,13 +932,12 @@ func (m *Model) InsteadOfPickingUpClothes(actor *core.Actor, item *core.Item) {
     aic.SetEngaged(actor, core.ActorStatusEngaged, until)
     completed := func() {
         animationCompleted = true
-        clothesForItem := actor.Clothes.Name
-        fgForItem := actor.Clothes.FgColor
-        bgForItem := actor.Clothes.BgColor
+        oldClothesFg := actor.Clothes.FgColor()
+        oldClothesName := actor.Clothes.Name
         actor.Clothes = clothesFromItem
 
-        item.Name = clothesForItem
-        item.DefinedStyle = common.Style{Foreground: fgForItem, Background: bgForItem}
+        item.Name = oldClothesName
+        item.DefinedStyle = common.Style{Foreground: oldClothesFg, Background: common.Black}
         m.UpdateHUD()
     }
     cancelled := func() {
@@ -931,7 +947,7 @@ func (m *Model) InsteadOfPickingUpClothes(actor *core.Actor, item *core.Item) {
     return
 }
 func (m *Model) DropEquippedItem(person *core.Actor) {
-    m.dropInventoryItemAt(person, person.EquippedItem, person.Pos().Add(person.FovShiftForPeeking))
+    m.dropInventoryItemAt(person, person.EquippedItem, person.Pos().Add(person.FoVShift))
     person.EquippedItem = nil
 }
 
@@ -1066,7 +1082,7 @@ func (m *Model) SwitchClothesWith(taker *core.Actor, provider *core.Actor) {
 }
 
 func (m *Model) SpawnClothingItem(pos geometry.Point, clothing core.Clothing) {
-    newClothes := &core.Item{Name: clothing.Name, DefinedIcon: core.GlyphClothing, Type: core.ItemTypeClothing, DefinedStyle: common.Style{Foreground: clothing.FgColor, Background: clothing.BgColor}}
+    newClothes := &core.Item{Name: clothing.Name, DefinedIcon: core.GlyphClothing, Type: core.ItemTypeClothing, DefinedStyle: common.Style{Foreground: clothing.FgColor()}}
     spawnPos := m.GetValidItemPlacementPosition(pos, newClothes)
     m.forceDropItemAt(newClothes, spawnPos)
 }
@@ -1113,6 +1129,15 @@ func (m *Model) GetContextActionAt(position geometry.Point) services.ContextActi
             }
         }
     }
+
+    // for items
+    if currentMap.IsItemAt(position) {
+        itemAt := currentMap.ItemAt(position)
+        if !itemAt.Buried {
+            return &PickupAction{item: itemAt}
+        }
+    }
+
     // for objects, we just wrap them in an action
     if currentMap.IsObjectAt(position) {
         objectAt := currentMap.ObjectAt(position)
@@ -1120,11 +1145,18 @@ func (m *Model) GetContextActionAt(position geometry.Point) services.ContextActi
             return objects.NewAction(objectAt)
         }
     }
+
     // for tiles, we check the pre-defined standard actions
     if tileAction, ok := tileActions[cellAt.TileType.Special]; ok {
         if tileAction.IsActionPossible(m.engine, player, position) {
             return tileAction
         }
+    }
+
+    // for solid walls (non-walkable, no special type), allow knocking to attract enemies
+    knockAction := KnockOnWallAction{}
+    if knockAction.IsActionPossible(m.engine, player, position) {
+        return knockAction
     }
 
     return action
@@ -1270,7 +1302,7 @@ func (m *Model) InitActor(a *core.Actor) {
         a.AI.StartPosition = a.Pos()
         a.AI.StartLookDirection = a.LookDirection
         a.AI.Movement = &actions.Movement{Person: a, Engine: m.engine}
-        if a.AI.HasTasks() {
+        if a.AI.HasSchedule() {
             a.AI.SetState(&ai.ScheduledMovement{AIContext: ai.AIContext{Engine: m.engine, Person: a}})
         } else if !a.IsFollowing() {
             a.AI.SetState(&ai.GuardMovement{AIContext: ai.AIContext{Engine: m.engine, Person: a}})

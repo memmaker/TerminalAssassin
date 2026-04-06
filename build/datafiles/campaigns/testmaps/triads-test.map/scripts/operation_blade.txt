@@ -113,6 +113,7 @@ SetPreferredLocation($VICTIM, $START_VICTIM)
 
 IsAtLocation($RAQUEL, $START_RAQUEL)
 IsAtLocation($VICTIM, $START_VICTIM)
+PlayerHasLineOfSightToActors($RAQUEL, $VICTIM)
 
 ## ACTIONS
 

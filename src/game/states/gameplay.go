@@ -3,6 +3,8 @@ package states
 import (
     "fmt"
     "github.com/memmaker/terminal-assassin/utils"
+    "math"
+    "math/rand"
     "path"
     "strings"
     "time"
@@ -33,9 +35,10 @@ type GameStateGameplay struct {
     FocusedActor          *core.Actor
     targetMovePath        []geometry.Point
     ActionMap             map[geometry.Point]services.ContextAction
-    contextActionsHelp    string
-    lastPlayerMovementAt  time.Time
-    MoveTimer             *time.Timer
+	contextActionsHelp   string
+	lastPlayerMovementAt time.Time
+
+	MoveTimer *time.Timer
 
     initActors              bool
     DebugModeActive         bool
@@ -49,8 +52,15 @@ type GameStateGameplay struct {
     runningScripts []*director.Script
     mapDialogues   map[string]*director.DialogueInfo
 
+    flashlightLight *gridmap.LightSource // dynamic light that tracks the flashlight aim point
+
     padAimPos    geometry.PointF // accumulated gamepad aim cursor position
     padAimActive bool            // true while aiming via gamepad (suppresses mouse-based scope scroll)
+
+    // timeAccumulator counts Update ticks since the last in-game minute was
+    // advanced.  At 60 TPS one real second equals one in-game minute, so a full
+    // day/night cycle takes 24 real minutes.
+    timeAccumulator int
 
     assassinationTargets map[*core.Actor]struct{} // NPCs highlighted for assassination
 }
@@ -81,7 +91,8 @@ func (g *GameStateGameplay) ToNormalUIState() {
     currentMap := g.engine.GetGame().GetMap()
     currentMap.Player.Status = core.ActorStatusOnSchedule
     currentMap.Player.FovMode = gridmap.FoVModeNormal
-    currentMap.Player.FovShiftForPeeking = geometry.PointZero
+    currentMap.Player.FoVShift = geometry.PointZero
+    currentMap.Player.InteractionShift = geometry.PointZero
     g.Ui = defaultUIState
     currentMap.UpdateFieldOfView(currentMap.Player)
 }
@@ -105,19 +116,19 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
 
     aimingUIState = GameplayUIState{
         ID:        1,
-        LeftClick: g.AimedItemUse,
+        LeftClick: g.UseRangedItemInLoS,
         LeftDrag: func() {
             if !currentMap.Player.HasBurstWeaponEquipped() {
                 return
             }
             g.AdjustPlayerAimFromMouse()
-            g.AimedItemUse()
+            g.UseRangedItemInLoS()
         },
         LeftHeld: func() {
             if !currentMap.Player.HasBurstWeaponEquipped() {
                 return
             }
-            g.AimedItemUse()
+            g.UseRangedItemInLoS()
         },
         MouseMove: g.AdjustPlayerAimFromMouse,
         Draw:      g.drawTargetPath,
@@ -136,6 +147,11 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
     g.Pager = nil
     g.ActionMap = make(map[geometry.Point]services.ContextAction)
     g.dialogueLabels = make(map[*core.Actor]*ui.MovableLabel)
+    g.flashlightLight = &gridmap.LightSource{
+        Radius:       10,
+        Color:        common.RGBAColor{R: 1.5, G: 1.5, B: 1.2, A: 1.0},
+        MaxIntensity: 15,
+    }
     g.SpawnPlayer()
     g.initCamera()
 
@@ -194,7 +210,11 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
     userInterface.InitTooltip(toolTipFunc)
 
     g.engine.SubscribeToEvents(services.NewFilter(func(t services.ItemPickedUpEvent) bool {
-        g.Print(fmt.Sprintf("%s: picked up %s.", t.Actor.Name, t.Item.Name))
+        if t.Actor != g.engine.GetGame().GetMap().Player {
+            g.Print(fmt.Sprintf("%s picked up %s.", t.Actor.Name, t.Item.Name))
+        } else {
+            g.Print(fmt.Sprintf("Picked up %s.", t.Item.Name))
+        }
         return true
     }))
 
@@ -322,6 +342,11 @@ func (g *GameStateGameplay) SpawnPlayer() {
 }
 func (g *GameStateGameplay) drawTargetPath(con console.CellInterface) {
     cam := g.engine.GetGame().GetCamera()
+    player := g.engine.GetGame().GetMap().Player
+    pathColor := common.IllegalActionRed
+    if player.EquippedItem != nil && player.EquippedItem.Type == core.ItemTypeFlashlight {
+        return
+    }
     //g.ensureWorldPosInView(g.MousePositionOnScreen, 4)
     mapWidth, mapHeight := g.engine.MapWindowWidth(), g.engine.MapWindowHeight()
     for _, p := range g.TargetLoS {
@@ -330,7 +355,7 @@ func (g *GameStateGameplay) drawTargetPath(con console.CellInterface) {
             continue
         }
         c := con.AtSquare(screenPos)
-        con.SetSquare(screenPos, c.WithStyle(c.Style.WithBg(common.IllegalActionRed)))
+        con.SetSquare(screenPos, c.WithStyle(c.Style.WithBg(pathColor)))
     }
 }
 
@@ -345,6 +370,11 @@ func (g *GameStateGameplay) drawMousePos(con console.CellInterface) {
 }
 
 func (g *GameStateGameplay) UpdateHUD() {
+    g.updateContextActions()
+    g.UpdateStatusLine()
+}
+
+func (g *GameStateGameplay) updateContextActions() {
     game := g.engine.GetGame()
     currentMap := game.GetMap()
     player := currentMap.Player
@@ -352,8 +382,6 @@ func (g *GameStateGameplay) UpdateHUD() {
     if player == nil {
         return
     }
-
-    defer g.UpdateStatusLine()
 
     neighbors := currentMap.GetAllCardinalNeighbors(player.Pos())
     neighbors = append(neighbors, player.Pos())
@@ -367,15 +395,6 @@ func (g *GameStateGameplay) UpdateHUD() {
             delete(g.ActionMap, relativeNeighborPos)
         } else {
             g.ActionMap[relativeNeighborPos] = contextAction
-        }
-    }
-
-    // shifted pickups (pickup has highest priority)
-    shiftedPlayerPos := player.Pos().Add(player.FovShiftForPeeking)
-    if currentMap.IsItemAt(shiftedPlayerPos) {
-        itemAt := currentMap.ItemAt(shiftedPlayerPos)
-        if !itemAt.Buried {
-            g.ActionMap[geometry.PointZero] = game.CreatePickupAction(itemAt)
         }
     }
 
@@ -452,7 +471,8 @@ func (g *GameStateGameplay) ensureWorldPosInView(worldPosition geometry.Point, b
 func (g *GameStateGameplay) resetPlayerState() {
     player := g.engine.GetGame().GetMap().Player
     player.FovMode = gridmap.FoVModeNormal
-    player.FovShiftForPeeking = geometry.PointZero
+    player.FoVShift = geometry.PointZero
+    player.InteractionShift = geometry.PointZero
     g.Ui = defaultUIState
     g.padAimActive = false
 }
@@ -525,6 +545,7 @@ func (g *GameStateGameplay) Update(input services.InputInterface) {
     g.scrollCameraForScope()
     g.updateScripts()
     g.updateDialogue()
+    g.updateFlashlight()
     actions := game.GetActions()
     actions.Update()
 
@@ -533,6 +554,13 @@ func (g *GameStateGameplay) Update(input services.InputInterface) {
     currentMap := game.GetMap()
     if currentMap.DynamicLightsChanged && game.GetConfig().LightSources {
         currentMap.UpdateDynamicLights()
+    }
+
+    // Advance in-game time: one real second = one in-game minute.
+    g.timeAccumulator++
+    if g.timeAccumulator >= utils.SecondsToTicks(1) {
+        g.timeAccumulator = 0
+        g.tickTimeProgression()
     }
 }
 
@@ -546,7 +574,36 @@ func (g *GameStateGameplay) handleKeyCommands(command core.KeyCommand) {
     case "F3":
         //alertContextAction(g.engine)
         training.alertContextAction()
+    case "F4":
+        g.adjustTimeOfDay(-30 * time.Minute)
+    case "F5":
+        g.adjustTimeOfDay(30 * time.Minute)
+    case "t":
+        g.openWaitMenu()
     }
+}
+
+// adjustTimeOfDay shifts the map's time of day by delta, then immediately
+// recalculates ambient and baked lighting so the change is visible in-game.
+func (g *GameStateGameplay) adjustTimeOfDay(delta time.Duration) {
+    currentMap := g.engine.GetGame().GetMap()
+    currentMap.TimeOfDay = currentMap.TimeOfDay.Add(delta)
+    currentMap.SetAmbientLight(common.GetAmbientLightFromDayTime(currentMap.TimeOfDay).ToRGB())
+    currentMap.UpdateBakedLights()
+    currentMap.UpdateDynamicLights()
+    g.isDirty = true
+    g.Print(fmt.Sprintf("[debug] Time of day: %s", currentMap.TimeOfDay.Format("15:04")))
+}
+
+// tickTimeProgression is called once per real second from Update.
+// It advances the in-game clock by one minute and updates ambient lighting so
+// the environment gradually changes as the day/night cycle progresses.
+func (g *GameStateGameplay) tickTimeProgression() {
+    currentMap := g.engine.GetGame().GetMap()
+    currentMap.TimeOfDay = currentMap.TimeOfDay.Add(time.Minute)
+    currentMap.SetAmbientLight(common.GetAmbientLightFromDayTime(currentMap.TimeOfDay).ToRGB())
+    g.isDirty = true
+    g.UpdateStatusLine()
 }
 
 func (g *GameStateGameplay) clearTooltip() {
@@ -624,7 +681,7 @@ func (g *GameStateGameplay) handleMovementInput(inputKey core.Key) {
     case NorthInput:
         pdelta = pdelta.Shift(0, -1)
     }
-    playerMovementFromInput(g, pdelta)
+    g.playerMovementFromInput(pdelta)
 
     pdelta = geometry.Point{}
     switch inputKey {
@@ -637,42 +694,42 @@ func (g *GameStateGameplay) handleMovementInput(inputKey core.Key) {
     case "t":
         pdelta = pdelta.Shift(0, -1)
     }
-    playerPeekingFromInput(g, pdelta)
+    g.playerPeekingFromInput(pdelta)
 }
 
-func playerPeekingFromInput(g *GameStateGameplay, pdelta geometry.Point) {
+func (g *GameStateGameplay) playerPeekingFromInput(pdelta geometry.Point) {
     game := g.engine.GetGame()
     currentMap := game.GetMap()
     player := currentMap.Player
+    player.InteractionShift = pdelta
     if (pdelta.X != 0 || pdelta.Y != 0) && player.CanMove() && g.canPeekFrom(player.Pos().Add(pdelta)) {
-        player.FovShiftForPeeking = pdelta
-
+        player.FoVShift = pdelta
     } else {
-        player.FovShiftForPeeking = geometry.PointZero
+        player.FoVShift = geometry.PointZero
     }
     currentMap.UpdateFieldOfView(player)
-    g.AdjustPlayerAimFromMouse()
     g.UpdateHUD()
 }
 
 func (g *GameStateGameplay) canPeekFrom(worldPos geometry.Point) bool {
     game := g.engine.GetGame()
     currentMap := game.GetMap()
-    return currentMap.IsCurrentlyPassable(worldPos) || game.IsDoorAt(worldPos)
+    return currentMap.IsTileWalkable(worldPos)
 }
 
-func playerMovementFromInput(g *GameStateGameplay, pdelta geometry.Point) {
+func (g *GameStateGameplay) playerMovementFromInput(pdelta geometry.Point) {
     m := g.engine.GetGame()
     currentMap := m.GetMap()
     player := currentMap.Player
     if (pdelta.X != 0 || pdelta.Y != 0) && player.CanMove() {
         oldPos := player.Pos()
-        np := player.Pos().Add(pdelta)
-        if np != player.Pos() && currentMap.CurrentlyPassableForActor(player)(np) {
+        np := oldPos.Add(pdelta)
+        if currentMap.CurrentlyPassableForActor(player)(np) {
             player.LookDirection = geometry.DirectionVectorToAngleInDegrees(pdelta)
             g.resetPlayerState()
             m.MoveActor(player, np)
             g.playerMoved(oldPos, np)
+            g.aimInLookDirection()
         }
     }
     return
@@ -726,9 +783,9 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
                 style = m.ApplyLighting(p, c, style)      // TODO: this should be precaclulated..
             } else {
                 icon, style = m.DrawMapAtPosition(p, c)
+                style = m.ApplyLighting(p, c, style)
                 style = style.Desaturate()
-                style = style.Darken(0.2)
-                //style = style.Darken(ambientLightness)
+                style = style.Darken(0.5)
             }
             posRelativeToPlayer := p.Sub(player.Pos())
             if action, isActionAtPos := g.ActionMap[posRelativeToPlayer]; isActionAtPos {
@@ -746,8 +803,8 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
     })
 
     emptyPoint := geometry.Point{}
-    if m.GetMap().Player.FovShiftForPeeking != emptyPoint {
-        fovSourcePos := m.GetMap().Player.Pos().Add(m.GetMap().Player.FovShiftForPeeking)
+    if m.GetMap().Player.FoVShift != emptyPoint {
+        fovSourcePos := m.GetMap().Player.Pos().Add(m.GetMap().Player.FoVShift)
         screenFovSource := m.GetCamera().WorldToScreen(fovSourcePos)
         currentCell := con.AtSquare(screenFovSource)
         con.SetSquare(screenFovSource, currentCell.WithStyle(currentCell.Style.WithBg(core.ColorFromCode(core.ColorFoVSource))))
@@ -807,7 +864,7 @@ func (g *GameStateGameplay) UpdateStatusLine() {
         hpStyle = hpStyle.WithFg(core.ColorFromCode(core.ColorGood))
     }
 
-    clothingStyle = clothingStyle.WithFg(player.Clothes.FgColor) //.WithBg(player.Clothes.Color)
+    clothingStyle = clothingStyle.WithFg(player.Clothes.FgColor()) //.WithBg(player.Clothes.Color)
 
     healthString := createHealthBar(player.Health)
 
@@ -853,7 +910,8 @@ func (g *GameStateGameplay) UpdateStatusLine() {
 
     redStyle := common.DefaultStyle.WithBg(core.ColorFromCode(core.ColorBlood))
     greenStyle := common.DefaultStyle.WithBg(core.ColorFromCode(core.ColorGood))
-    g.topLabel.SetStyledText(core.Text(fmt.Sprintf("@c%s@N | @h%s@N | %s | @i%s@N | @d%s@N | %s", player.Clothes.Name, healthString, string(player.MovementMode), itemSymbol, zoneInformation, challengeInformation)).
+    //g.topLabel.SetStyledText(core.Text(fmt.Sprintf("@c%s@N | @h%s@N | %s | @i%s@N | @d%s@N | %s", player.Clothes.Name, healthString, string(player.MovementMode), itemSymbol, zoneInformation, challengeInformation)).
+    g.topLabel.SetStyledText(core.Text(fmt.Sprintf("@c%s@N %s@i%s@N | @h%s@N | @d%s@N | %s | %s", player.Clothes.Name, string(player.MovementMode), itemSymbol, healthString, zoneInformation, challengeInformation, currentMap.TimeOfDay.Format("15:04"))).
         WithStyle(common.DefaultStyle).
         WithMarkup('c', clothingStyle).
         WithMarkup('i', itemStyle).
@@ -951,20 +1009,34 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
     case core.NextItem:
         g.EquipNextInventoryItem(player)
     case core.OpenInventory:
-        userInterface.OpenItemRingMenu(player.EquippedItem, player.Inventory.Items, func(item *core.Item) {
-            //player := m.engine.GetGame().GetMap().Player
-            if player.EquippedItem != nil && player.EquippedItem != item && player.EquippedItem.IsBig {
-                g.engine.GetGame().DropEquippedItem(player)
-            }
-            player.EquippedItem = item
-            g.UpdateHUD()
-            g.midLabel.SetText("")
-            g.midLabel.SetDirty()
-        }, func() {
-            g.UpdateHUD()
-            g.midLabel.SetText("")
-            g.midLabel.SetDirty()
-        })
+        var openInventory func()
+        openInventory = func() {
+            userInterface.OpenItemRingMenu(player.EquippedItem, player.Inventory.Items, func(item *core.Item) {
+                if player.EquippedItem != nil && player.EquippedItem != item && player.EquippedItem.IsBig {
+                    g.engine.GetGame().DropEquippedItem(player)
+                }
+                player.EquippedItem = item
+                g.UpdateHUD()
+                g.midLabel.SetText("")
+                g.midLabel.SetDirty()
+            }, func() {
+                g.UpdateHUD()
+                g.midLabel.SetText("")
+                g.midLabel.SetDirty()
+            }, func(itemToDrop *core.Item) {
+                if player.EquippedItem == itemToDrop {
+                    player.EquippedItem = nil
+                }
+                model.DropFromInventory(player, []*core.Item{itemToDrop})
+                g.UpdateHUD()
+                g.midLabel.SetText("")
+                g.midLabel.SetDirty()
+                if len(player.Inventory.Items) > 0 {
+                    openInventory()
+                }
+            })
+        }
+        openInventory()
     case core.DropItem:
         model.DropEquippedItem(player)
         g.UpdateHUD()
@@ -972,15 +1044,25 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
         model.PickUpItem(player)
         g.UpdateHUD()
     case core.PutItemAway:
-        player.PutItemAway()
+        player.HolsterItem()
         g.UpdateHUD()
-    case core.UseEquippedItem:
-        g.AimedItemUse()
+    case core.UseRangedItem:
+        if len(g.TargetLoS) == 0 {
+            g.aimInLookDirection()
+        }
+        g.UseRangedItemInLoS()
         g.UpdateHUD()
-    case core.UseItem:
-        g.BeginAimOrUseItem()
+    case core.BeginMouseAiming:
+        g.BeginMouseAiming()
     case core.Assassinate:
         g.executeAssassination()
+    // ── Gamepad plain commands – use current peek tile as direction ──────────
+    case core.DiveTackle:
+        g.playerDiveTackle()
+    case core.UseItem:
+        g.playerUseItem()
+    case core.ContextAction:
+        g.contextAction()
     case core.Cancel:
         g.OpenPauseMenu()
     }
@@ -1043,13 +1125,13 @@ func (g *GameStateGameplay) executeAssassination() {
 }
 
 func (g *GameStateGameplay) handleDirectionalInput(directionalCommand core.DirectionalGameCommand) {
+    intDirection := toIntDirection(directionalCommand.XAxis, directionalCommand.YAxis)
     switch directionalCommand.Command {
     case core.MovementDirection:
-        playerMovementFromInput(g, toIntDirection(directionalCommand.XAxis, directionalCommand.YAxis))
+        g.playerMovementFromInput(toIntDirection(directionalCommand.XAxis, directionalCommand.YAxis))
     case core.PeekingDirection:
-        playerPeekingFromInput(g, toIntDirection(directionalCommand.XAxis, directionalCommand.YAxis))
-    case core.ActionDirection:
-        g.playerDirectionalActionFromInput(toIntDirection(directionalCommand.XAxis, directionalCommand.YAxis))
+        g.playerPeekingFromInput(intDirection)
+        g.setAimFromPeekDirection(intDirection)
     case core.AimingDirection:
         g.AdjustPlayerAimFromPad(directionalCommand.XAxis, directionalCommand.YAxis)
     }
@@ -1092,17 +1174,227 @@ func (m MapLighter) MaxCost(src geometry.Point) int {
     return light.Radius
 }
 
-func (g *GameStateGameplay) playerDirectionalActionFromInput(direction geometry.Point) {
-    player := g.engine.GetGame().GetMap().Player
+func (g *GameStateGameplay) contextAction() {
+    game := g.engine.GetGame()
+    currentMap := game.GetMap()
+    player := currentMap.Player
+
     if !player.CanUseActions() {
         return
     }
+
+    targetPos := player.InteractSource()
+    direction := player.InteractionShift
+
+    if player.MovementMode == core.MovementModeSneaking && targetPos != player.Pos() && currentMap.IsActorAt(targetPos) {
+        g.tryPickpocket(currentMap.ActorAt(targetPos))
+        return
+    }
+
     if directionalAction, valid := g.ActionMap[direction]; valid {
         directionalAction.Action(g.engine, player, player.Pos().Add(direction))
         g.UpdateHUD()
+        return
     }
-    return
+
+    // Optimisation: when exactly one context action exists in the surroundings
+    // and no explicit direction has been selected (or the selected direction has
+    // no action), execute that single action immediately.
+    if len(g.ActionMap) == 1 {
+        for dir, action := range g.ActionMap {
+            action.Action(g.engine, player, player.Pos().Add(dir))
+            g.UpdateHUD()
+        }
+    }
 }
+
+// playerDiveTackle performs the Dive & Tackle action in the given direction.
+//
+// • Both tiles clear → player jumps/dives two tiles instantly.
+// • NPC(s) on either tile → they are prodded in the direction (tackle);
+//   player moves to the first terrain-passable tile.
+func (g *GameStateGameplay) playerDiveTackle() {
+    game := g.engine.GetGame()
+    currentMap := game.GetMap()
+    player := currentMap.Player
+
+    direction := player.FoVShift
+    if direction.X == 0 && direction.Y == 0 {
+        return
+    }
+
+    if !player.CanMove() {
+        return
+    }
+
+    tile1 := player.Pos().Add(direction)
+    tile2 := tile1.Add(direction)
+
+    if !currentMap.Contains(tile1) {
+        return
+    }
+
+    tile1HasNPC := currentMap.IsActorAt(tile1)
+    tile2HasNPC := currentMap.Contains(tile2) && currentMap.IsActorAt(tile2)
+
+    // Prod any NPCs in the direction first (tackle).
+    if tile1HasNPC {
+        game.TryPushActorInDirection(currentMap.ActorAt(tile1), direction)
+    }
+    if tile2HasNPC {
+        game.TryPushActorInDirection(currentMap.ActorAt(tile2), direction)
+    }
+
+    // Determine how far the player can travel.
+    passable := currentMap.CurrentlyPassableForActor(player)
+    tile1Clear := passable(tile1) && !currentMap.IsActorAt(tile1)
+    tile2Clear := currentMap.Contains(tile2) && passable(tile2) && !currentMap.IsActorAt(tile2)
+
+    var diveTarget geometry.Point
+    switch {
+    case tile1Clear && tile2Clear:
+        diveTarget = tile2 // Full two-tile dive
+    case tile1Clear:
+        diveTarget = tile1 // One-tile dive / tackle-step
+    default:
+        return // Completely blocked
+    }
+
+    oldPos := player.Pos()
+    player.LookDirection = geometry.DirectionVectorToAngleInDegrees(direction)
+    player.MovementMode = core.MovementModeRunning
+    g.resetPlayerState()
+    game.MoveActor(player, diveTarget)
+    g.playerMoved(oldPos, diveTarget)
+}
+
+// playerUseItem handles the Square button:
+// use equipped item (or bare-hand melee) at the tile pointed to by the
+// right-analog stick.  Zero direction → self-apply.
+func (g *GameStateGameplay) playerUseItem() {
+    game := g.engine.GetGame()
+    currentMap := game.GetMap()
+    player := currentMap.Player
+    direction := player.FoVShift
+    actions := game.GetActions()
+
+    if !player.CanUseActions() {
+        return
+    }
+
+    targetPos := player.Pos()
+    if direction.X != 0 || direction.Y != 0 {
+        targetPos = player.Pos().Add(direction)
+    }
+
+    dist := geometry.DistanceManhattan(player.Pos(), targetPos)
+    isSelf := dist == 0
+    isMelee := dist == 1
+
+    if player.EquippedItem == nil {
+        if isMelee && currentMap.IsActorAt(targetPos) {
+            g.contextAction()
+        }
+        return
+    }
+
+    if player.EquippedItem.OnCooldown ||
+        !player.EquippedItem.HasUsesLeft() ||
+        !player.CanUseItems() {
+        return
+    }
+
+    if player.EquippedItem.InsteadOfUse != nil {
+        player.EquippedItem.DecreaseUsesLeft()
+        player.EquippedItem.InsteadOfUse()
+        return
+    }
+
+    if isSelf && player.EquippedItem.SelfUse != core.NoAction {
+        player.EquippedItem.DecreaseUsesLeft()
+        actions.UseEquippedItemOnSelf(player)
+    } else if isMelee && player.EquippedItem.MeleeAttack != core.NoAction {
+        if player.EquippedItem.MeleeAttack != core.ActionTypeMeleeAttack {
+            player.EquippedItem.DecreaseUsesLeft()
+        }
+        actions.UseEquippedItemForMelee(player, targetPos)
+    }
+
+    if player.EquippedItem == nil {
+        g.resetPlayerState()
+    }
+    g.UpdateHUD()
+}
+
+// tryPickpocket attempts to steal one random item from the target NPC.
+//
+// Conditions (all must be true):
+//  1. Player is exactly in the tile directly behind the NPC (opposite of NPC's look direction).
+//  2. NPC is alive and in an unaware state (not combat, not investigating, not searching, not snitching).
+//  3. NPC has at least one non-equipped item in their inventory.
+func (g *GameStateGameplay) tryPickpocket(target *core.Actor) {
+    game := g.engine.GetGame()
+    currentMap := game.GetMap()
+    player := currentMap.Player
+
+    // Guard: target must be unaware.
+
+    if target.IsInCombat() || target.IsInvestigating() ||
+        target.Status == core.ActorStatusSearching ||
+        target.Status == core.ActorStatusSnitching ||
+        target.Status == core.ActorStatusPanic {
+        g.Print("Target is too alert to pickpocket.")
+        return
+    }
+
+    // Guard: player must be directly behind the NPC — unless the target is
+    // unconscious, in which case any adjacent position works.
+    if !target.IsDowned() {
+        // "Behind" = the tile in the OPPOSITE direction of the NPC's look direction.
+        npcLookVec := geometry.Point{
+            X: int(math.Round(math.Cos(target.LookDirection * math.Pi / 180))),
+            Y: int(math.Round(math.Sin(target.LookDirection * math.Pi / 180))),
+        }
+        // Clamp to -1/0/1 to get the dominant 8-directional vector.
+        clamp := func(v int) int {
+            if v > 0 {
+                return 1
+            }
+            if v < 0 {
+                return -1
+            }
+            return 0
+        }
+        npcFacing := geometry.Point{X: clamp(npcLookVec.X), Y: clamp(npcLookVec.Y)}
+        behindNPC := target.Pos().Sub(npcFacing) // tile directly behind NPC = NPC pos - facing
+
+        if player.Pos() != behindNPC {
+            g.Print("Must be directly behind the target to pickpocket.")
+            return
+        }
+    }
+
+    // Collect pickpocketable items (inventory minus equipped item).
+    stealable := make([]*core.Item, 0, len(target.Inventory.Items))
+    for _, item := range target.Inventory.Items {
+        if item != target.EquippedItem {
+            stealable = append(stealable, item)
+        }
+    }
+    if len(stealable) == 0 {
+        g.Print("Target has nothing to steal.")
+        return
+    }
+
+    // Pick a random item.
+    chosen := stealable[rand.Intn(len(stealable))]
+    target.Inventory.RemoveItem(chosen)
+    chosen.HeldBy = player
+    player.Inventory.AddItem(chosen)
+    g.Print(fmt.Sprintf("Pickpocketed: %s", chosen.Name))
+    g.UpdateHUD()
+}
+
 func (g *GameStateGameplay) printTileContentsMessage(position geometry.Point) {
     eng := g.engine
     m := eng.GetGame()
@@ -1258,6 +1550,44 @@ func (g *GameStateGameplay) showNextUtteranceFor(actor *core.Actor) {
     }
 
     actor.Dialogue.DidSpeak(actor, g.engine.CurrentTick())
+}
+
+func (g *GameStateGameplay) updateFlashlight() {
+    game := g.engine.GetGame()
+    if !game.GetConfig().LightSources {
+        return
+    }
+    currentMap := game.GetMap()
+    player := currentMap.Player
+
+    flashlightActive := player.EquippedItem != nil &&
+        player.EquippedItem.Type == core.ItemTypeFlashlight &&
+        player.FovMode == gridmap.FoVModeScoped
+
+    if !flashlightActive {
+        // Remove the light if it was previously placed.
+        if currentMap.IsDynamicLightSource(g.flashlightLight.Pos) {
+            currentMap.RemoveDynamicLightAt(g.flashlightLight.Pos)
+        }
+        return
+    }
+
+    if len(g.TargetLoS) == 0 {
+        return
+    }
+
+    // Reuse TargetLoS from AdjustPlayerAim – same path the sniper scope uses.
+    aimPoint := g.TargetLoS[len(g.TargetLoS)-1]
+
+    if currentMap.IsDynamicLightSource(g.flashlightLight.Pos) {
+        if aimPoint != g.flashlightLight.Pos {
+            currentMap.MoveLightSource(g.flashlightLight, aimPoint)
+        }
+    } else {
+        g.flashlightLight.Pos = aimPoint
+        currentMap.AddDynamicLightSource(aimPoint, g.flashlightLight)
+        currentMap.UpdateDynamicLights()
+    }
 }
 
 func (g *GameStateGameplay) updateScripts() {

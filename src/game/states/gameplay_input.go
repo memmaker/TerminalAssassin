@@ -3,8 +3,11 @@ package states
 import (
     "fmt"
     "math"
+    "sort"
     "strconv"
+    "time"
 
+    "github.com/memmaker/terminal-assassin/common"
     "github.com/memmaker/terminal-assassin/game/core"
     "github.com/memmaker/terminal-assassin/game/services"
     "github.com/memmaker/terminal-assassin/geometry"
@@ -23,6 +26,10 @@ func (g *GameStateGameplay) OpenPauseMenu() {
     menuItems := []services.MenuItem{
         {
             Label: "Resume mission",
+        },
+        {
+            Label:   "Wait...",
+            Handler: g.openWaitMenu,
         },
         {
             Label:   "Abort mission",
@@ -70,7 +77,7 @@ func (g *GameStateGameplay) quitToMainMenu() {
     g.engine.Reset()
 }
 
-func (g *GameStateGameplay) BeginAimOrUseItem() {
+func (g *GameStateGameplay) BeginMouseAiming() {
     currentMap := g.engine.GetGame().GetMap()
     player := currentMap.Player
     if player.EquippedItem == nil {
@@ -83,7 +90,8 @@ func (g *GameStateGameplay) BeginAimOrUseItem() {
         player.EquippedItem.InsteadOfUse()
         return
     }
-    if player.EquippedItem.RangedAttack == core.NoAction && player.EquippedItem.MeleeAttack == core.NoAction {
+    if player.EquippedItem.RangedAttack == core.NoAction && player.EquippedItem.MeleeAttack == core.NoAction &&
+        player.EquippedItem.Type != core.ItemTypeFlashlight {
         return
     }
     if player.FovMode == gridmap.FoVModeScoped {
@@ -216,8 +224,14 @@ func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64)
     currentMap := game.GetMap()
     player := currentMap.Player
 
+    // Only activate ranged aiming when the player actually has a ranged/throwable item or a flashlight.
+    if player.EquippedItem == nil || (player.EquippedItem.RangedAttack == core.NoAction &&
+        player.EquippedItem.Type != core.ItemTypeFlashlight) {
+        return
+    }
+
     if g.Ui.ID != aimingUIState.ID {
-        // Entering aim mode: mirror what BeginAimOrUseItem does for keyboard/mouse.
+        // Entering aim mode: mirror what BeginMouseAiming does for keyboard/mouse.
         g.Ui = aimingUIState
         g.padAimActive = true
         g.padAimPos = player.FoVSource().ToPointF()
@@ -260,7 +274,9 @@ func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64)
     }
 }
 
-// assassinationTargets returns adjacent active NPCs that can be assassinated.
+// assassinationTargets returns adjacent active NPCs that can be assassinated,
+// ordered by angular proximity to the player's current look direction so the
+// most "aimed-at" actor is always preferred.
 // Single assassination: 1 piercing weapon + 1 adjacent NPC (no skill required).
 // Double assassination: DoubleAssassination skill + 2 piercing weapons + 2 adjacent NPCs.
 // Returns nil if no valid targets exist.
@@ -283,21 +299,38 @@ func assassinationTargets(engine services.Engine) map[*core.Actor]struct{} {
     }
 
     currentMap := engine.GetGame().GetMap()
-    targets := make(map[*core.Actor]struct{})
+
+    type candidate struct {
+        actor      *core.Actor
+        angleDelta float64
+    }
+    var candidates []candidate
     for _, pos := range currentMap.NeighborsAll(player.Pos(), func(p geometry.Point) bool {
-        return currentMap.IsActorAt(p)
-    }) {
-        if actor := currentMap.ActorAt(pos); actor.IsActive() {
-            targets[actor] = struct{}{}
-            if len(targets) == maxTargets {
-                return targets
-            }
+        if !currentMap.Contains(p) || !player.CanSee(p) || !currentMap.IsActorAt(p) {
+            return false
         }
+        actor := currentMap.ActorAt(p)
+        return actor.IsActive()
+    }) {
+        actor := currentMap.ActorAt(pos)
+        bearing := geometry.DirectionVectorToAngleInDegrees(pos.Sub(player.Pos()))
+        delta := geometry.AngleDeltaDegrees(player.LookDirection, bearing)
+        candidates = append(candidates, candidate{actor: actor, angleDelta: delta})
     }
-    if len(targets) > 0 {
-        return targets
+    if len(candidates) == 0 {
+        return nil
     }
-    return nil
+
+    // Prefer the actor whose bearing is closest to the player's look direction.
+    sort.Slice(candidates, func(i, j int) bool {
+        return candidates[i].angleDelta < candidates[j].angleDelta
+    })
+
+    targets := make(map[*core.Actor]struct{})
+    for i := 0; i < maxTargets && i < len(candidates); i++ {
+        targets[candidates[i].actor] = struct{}{}
+    }
+    return targets
 }
 
 func (g *GameStateGameplay) AdjustPlayerAimFromMouse() {
@@ -316,6 +349,23 @@ func (g *GameStateGameplay) AdjustPlayerAim(aimPosInWorld geometry.Point) {
         return geometry.DistanceSquared(p, a.FoVSource()) < aimDistanceSquared
     })
     return
+}
+
+// aimInLookDirection sets TargetLoS to the line extending from the player's
+// FoV source in the current LookDirection, up to AimDistance. Used so that
+// R2 always fires even when no explicit aim has been set.
+func (g *GameStateGameplay) aimInLookDirection() {
+    player := g.engine.GetGame().GetMap().Player
+    radians := player.LookDirection * math.Pi / 180.0
+    dx := math.Cos(radians)
+    dy := math.Sin(radians)
+    target := geometry.VectorInDirectionWithLength(player.FoVSource(), dx, dy, player.AimDistance())
+    g.AdjustPlayerAim(target)
+}
+
+func (g *GameStateGameplay) setAimFromPeekDirection(direction geometry.Point) {
+    player := g.engine.GetGame().GetMap().Player
+    g.AdjustPlayerAim(player.Pos().Add(direction.Mul(player.AimDistance())))
 }
 
 func (g *GameStateGameplay) ToggleShowCompleteMap() {
@@ -339,7 +389,7 @@ func (g *GameStateGameplay) SetFocusedActor(actorToFocus *core.Actor) {
     g.FocusedActor.EnableDebugTrace()
     println(fmt.Sprintf("Focused on %s", g.FocusedActor.DebugDisplayName()))
 }
-func (g *GameStateGameplay) AimedItemUse() {
+func (g *GameStateGameplay) UseRangedItemInLoS() {
     m := g.engine.GetGame()
     currentMap := m.GetMap()
     actions := m.GetActions()
@@ -387,4 +437,79 @@ func (g *GameStateGameplay) AimedItemUse() {
     if player.EquippedItem == nil {
         g.resetPlayerState()
     }
+}
+
+// openWaitMenu presents the player with a list of preset times and a custom
+// input option.  Selecting an entry instantly advances the in-game clock to
+// the chosen time and updates the environment lighting accordingly.
+func (g *GameStateGameplay) openWaitMenu() {
+    currentMap := g.engine.GetGame().GetMap()
+    now := currentMap.TimeOfDay.Format("15:04")
+    ui := g.engine.GetUI()
+    menuItems := []services.MenuItem{
+        {
+            Label:   "Until Dawn  (06:00)",
+            Handler: func() { g.waitUntilHour(6, 0) },
+            Icon:    core.GlyphStreetLight,
+        },
+        {
+            Label:   "Until Noon  (12:00)",
+            Handler: func() { g.waitUntilHour(12, 0) },
+            Icon:    core.GlyphStreetLight,
+        },
+        {
+            Label:   "Until Dusk  (18:00)",
+            Handler: func() { g.waitUntilHour(18, 0) },
+            Icon:    core.GlyphFog,
+        },
+        {
+            Label:   "Until Night (22:00)",
+            Handler: func() { g.waitUntilHour(22, 0) },
+            Icon:    core.GlyphFog,
+        },
+        {
+            Label:   "Custom time (HH:MM)...",
+            Handler: g.waitUntilCustomTime,
+            Icon:    core.GlyphSmartphone,
+        },
+    }
+    ui.OpenFixedWidthAutoCloseMenu(fmt.Sprintf("Wait (%s)", now), menuItems)
+}
+
+// waitUntilHour instantly advances the in-game clock to the next occurrence
+// of the given hour:minute and updates the ambient lighting.
+func (g *GameStateGameplay) waitUntilHour(hour, minute int) {
+    currentMap := g.engine.GetGame().GetMap()
+    current := currentMap.TimeOfDay
+
+    targetMins := hour*60 + minute
+    currentMins := current.Hour()*60 + current.Minute()
+    diff := targetMins - currentMins
+    if diff <= 0 {
+        diff += 24 * 60 // target is tomorrow
+    }
+
+    currentMap.TimeOfDay = current.Add(time.Duration(diff) * time.Minute)
+    currentMap.SetAmbientLight(common.GetAmbientLightFromDayTime(currentMap.TimeOfDay).ToRGB())
+    g.timeAccumulator = 0
+    g.isDirty = true
+    g.Print(fmt.Sprintf("Time passed. It is now %s.", currentMap.TimeOfDay.Format("15:04")))
+    g.UpdateStatusLine()
+}
+
+// waitUntilCustomTime opens a text-input prompt where the player can type a
+// target time in HH:MM format.
+func (g *GameStateGameplay) waitUntilCustomTime() {
+    currentMap := g.engine.GetGame().GetMap()
+    prompt := fmt.Sprintf("Wait until (HH:MM, now %s): ", currentMap.TimeOfDay.Format("15:04"))
+    g.engine.GetUI().ShowTextInput(prompt, "", func(text string) {
+        var h, m int
+        if _, err := fmt.Sscanf(text, "%d:%d", &h, &m); err != nil || h < 0 || h > 23 || m < 0 || m > 59 {
+            g.Print("Invalid time. Use HH:MM, e.g. 22:30.")
+            return
+        }
+        g.waitUntilHour(h, m)
+    }, func() {
+        g.Print("Cancelled.")
+    })
 }

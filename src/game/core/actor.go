@@ -31,22 +31,24 @@ func (d CauseOfDeath) IsPlayer() bool {
     return d.Source.Actor != nil && d.Source.Actor.IsPlayer()
 }
 
-func (d CauseOfDeath) WithoutKiller() string {
-    if d.Source.Item != nil {
-        return fmt.Sprintf(string(d.Description), d.Source.Item.Name)
+func (d CauseOfDeath) descriptionWithItem() string {
+    desc := string(d.Description)
+    if d.Source.Item != nil && strings.Contains(desc, "%s") {
+        return fmt.Sprintf(desc, d.Source.Item.Name)
     }
-    return string(d.Description)
+    return desc
+}
+
+func (d CauseOfDeath) WithoutKiller() string {
+    return d.descriptionWithItem()
 }
 
 func (d CauseOfDeath) WithKiller() string {
-    if d.Source.Actor != nil && d.Source.Item != nil {
-        return fmt.Sprintf(string(d.Description), d.Source.Item.Name) + " by " + d.Source.Actor.Name
-    } else if d.Source.Actor != nil {
-        return string(d.Description) + " by " + d.Source.Actor.Name
-    } else if d.Source.Item != nil {
-        return fmt.Sprintf(string(d.Description), d.Source.Item.Name)
+    desc := d.descriptionWithItem()
+    if d.Source.Actor != nil {
+        return desc + " by " + d.Source.Actor.Name
     }
-    return string(d.Description)
+    return desc
 }
 
 const (
@@ -140,34 +142,36 @@ type AutoMove struct {
 }
 
 type Actor struct {
-    MapPos             geometry.Point
-    LastPos            geometry.Point
-    Move               AutoMove         // automatic movement
-    Path               []geometry.Point // current Path (reverse highlighting)
-    LookDirection      float64          // angle in degrees = 270 = north = up
-    Fov                *geometry.FOV    // field of vision
-    FovMode            gridmap.FoVMode  // field of vision mode
-    FovShiftForPeeking geometry.Point   // field of vision shift for peeking
-    Name               string
-    EquippedItem       *Item
-    Inventory          *InventoryComponent
-    Dialogue           *DialogueComponent
-    AutoMoveSpeed      int
-    Status             ActorState
-    Health             int
-    DamageTaken        []DamageInfo
-    FoVinDegrees       float64
-    Type               ActorType
-    MovementMode       MovementMode
-    DebugFlag          bool
-    DraggedBody        *Actor
-    Clothes            Clothing
-    MaxVisionRange     int
-    AI                 *AIComponent
-    Script             *ScriptComponent
-    IsEyeWitness       bool
-    IsHidden           bool
-    IsBodyBagged       bool
+    MapPos            geometry.Point
+    LastPos           geometry.Point
+    Move              AutoMove         // automatic movement
+    Path              []geometry.Point // current Path (reverse highlighting)
+    LookDirection     float64          // angle in degrees = 270 = north = up
+    Fov               *geometry.FOV    // field of vision
+    FovMode           gridmap.FoVMode  // field of vision mode
+    FoVShift          geometry.Point   // field of vision shift for peeking
+    InteractionShift  geometry.Point   // shift to apply to position for interactions (talking, using items, etc)
+    Name              string
+    EquippedItem      *Item
+    Inventory         *InventoryComponent
+    Dialogue          *DialogueComponent
+    AutoMoveSpeed     int
+    Status            ActorState
+    Health            int
+    DamageTaken       []DamageInfo
+    FoVinDegrees      float64
+    Type              ActorType
+    MovementMode      MovementMode
+    DebugFlag         bool
+    DraggedBody       *Actor
+    Clothes           Clothing
+    MaxVisionRange    int
+    AI                *AIComponent
+    Script            *ScriptComponent
+    IsEyeWitness      bool
+    IsHidden          bool
+    IsBodyBagged      bool
+    lastHolsteredItem *Item
 }
 type OrientedLocation struct {
     Location  geometry.Point
@@ -220,14 +224,17 @@ type AIState interface{}
 type AIComponent struct {
     PathBlockedCount    int
     Knowledge           *IndividualKnowledge
-    Schedule            Schedule
+    Schedule            string // name of the schedule in GridMap.AllSchedules
+    CurrentTaskIndex    int    // index into the named schedule's Tasks slice
     stateStack          []AIState
     StartPosition       geometry.Point
     StartLookDirection  float64
     SuspicionCounter    int
     LastSuspicionRaised time.Time
     Movement            AIMovement
-    TicksToUpdate       int
+    // NextUpdateIn is the remaining time in fractional seconds before the next AI update fires.
+    // Decremented each game tick by (timeFactor / TPS). The AI action runs when this reaches 0 or below.
+    NextUpdateIn        float64
     UpdatePredicate     func() bool
     DebugFlag           bool
 }
@@ -274,40 +281,18 @@ func (a *AIComponent) debugPrintStateStack() {
         println(fmt.Sprintf("| %T", a.stateStack[i]))
     }
 }
-func (a *AIComponent) HasTasks() bool {
-    return len(a.Schedule.Tasks) > 0
+func (a *AIComponent) HasSchedule() bool {
+    return a.Schedule != ""
 }
 
-func (a *AIComponent) addTask(task ScheduledTask) {
-    a.Schedule.Tasks = append(a.Schedule.Tasks, task)
+// CurrentTask returns the task the actor is currently executing.
+func (a *AIComponent) CurrentTask(schedule *gridmap.Schedule) gridmap.ScheduledTask {
+    return schedule.TaskAt(a.CurrentTaskIndex)
 }
 
-func (a *AIComponent) getTaskAt(position geometry.Point) *ScheduledTask {
-    for i, task := range a.Schedule.Tasks {
-        if task.Location == position {
-            return &a.Schedule.Tasks[i]
-        }
-    }
-    return nil
-}
-
-func (a *AIComponent) HasTaskAt(position geometry.Point) bool {
-    return a.getTaskAt(position) != nil
-}
-
-func (a *AIComponent) GetTaskIndexAt(pos geometry.Point) int {
-    for i, task := range a.Schedule.Tasks {
-        if task.Location == pos {
-            return i
-        }
-    }
-    return -1
-}
-
-func (a *AIComponent) IsAtTaskLocation(person *Actor) bool {
-    return a.Schedule.Tasks != nil &&
-        len(a.Schedule.Tasks) > 0 &&
-        person.Pos() == a.Schedule.CurrentTask().Location
+// AdvanceTask moves the actor to the next task in the schedule (wrapping around).
+func (a *AIComponent) AdvanceTask(schedule *gridmap.Schedule) {
+    a.CurrentTaskIndex = schedule.NextIndex(a.CurrentTaskIndex)
 }
 
 func (a *AIComponent) LowerSuspicion() {
@@ -320,12 +305,12 @@ func (a *AIComponent) LowerSuspicion() {
 func (a *AIComponent) IsUpdateAllowed() bool {
     return a.UpdatePredicate == nil || a.UpdatePredicate()
 }
+
 func NewEmptyAIComponent() *AIComponent {
     aiBehaviour := &AIComponent{
         Knowledge: &IndividualKnowledge{
             CompromisedDisguises: mapset.NewSet[string](),
         },
-        Schedule: Schedule{Tasks: make([]ScheduledTask, 0)},
     }
     return aiBehaviour
 }
@@ -357,6 +342,7 @@ func NewDefaultResponses() map[string]Utterance {
         },
     }
 }
+
 func (a *Actor) Pos() geometry.Point {
     return a.MapPos
 }
@@ -383,23 +369,30 @@ func (a *Actor) SetPos(point geometry.Point) {
 // Environmental hazards (fire, water, etc) - Must: Background Color, Optional: Foreground Color & icon
 
 type Clothing struct {
-    Name    string
-    FgColor common.HSVColor
-    BgColor common.HSVColor
+    Name  string
+    Color ClothingColor
+}
+
+// FgColor returns the foreground colour for this clothing from the shared palette.
+func (c Clothing) FgColor() common.HSVColor {
+    if col, ok := ClothingPalette[c.Color]; ok {
+        return col
+    }
+    return ClothingPalette[ClothingColorBlack]
 }
 
 func (c Clothing) EncodeAsString() string {
-    return fmt.Sprintf("%s\t(%.2f, %.2f, %.2f)\t(%.2f, %.2f, %.2f)", c.Name, c.FgColor.H, c.FgColor.S, c.FgColor.V, c.BgColor.H, c.BgColor.S, c.BgColor.V)
+    return fmt.Sprintf("%s\t%s", c.Name, c.Color)
 }
 
 func NewClothingFromString(encoded string) *Clothing {
     parts := strings.Split(encoded, "\t")
     name := strings.TrimSpace(parts[0])
-    fgParts := strings.Split(strings.Trim(parts[1], "() "), ",")
-    bgParts := strings.Split(strings.Trim(parts[2], "() "), ",")
-    fgColor := common.HSVColor{H: mustParseFloat(fgParts[0]), S: mustParseFloat(fgParts[1]), V: mustParseFloat(fgParts[2])}
-    bgColor := common.HSVColor{H: mustParseFloat(bgParts[0]), S: mustParseFloat(bgParts[1]), V: mustParseFloat(bgParts[2])}
-    return &Clothing{Name: name, FgColor: fgColor, BgColor: bgColor}
+    color := ClothingColorBlack
+    if len(parts) >= 2 {
+        color = ClothingColor(strings.TrimSpace(parts[1]))
+    }
+    return &Clothing{Name: name, Color: color}
 }
 
 func mustParseFloat(s string) float64 {
@@ -508,8 +501,17 @@ func (a *Actor) AimDistance() int {
 func (a *Actor) AddDamage(Amount int, Type stimuli.StimulusType) {
     a.DamageTaken = append(a.DamageTaken, DamageInfo{Amount, Type})
 }
+
+// FoVSource returns the point from which this actor's field of vision should be calculated.
+// Must always return a walkable tile.
 func (a *Actor) FoVSource() geometry.Point {
-    return a.Pos().Add(a.FovShiftForPeeking)
+    return a.Pos().Add(a.FoVShift)
+}
+
+// InteractSource returns the point from which this actor's interactions (talking, using items, etc) should be calculated.
+// Can be different from FoVSource if, for example, the actor is right next to a wall.
+func (a *Actor) InteractSource() geometry.Point {
+    return a.Pos().Add(a.InteractionShift)
 }
 
 type AIMoveDelay float64
@@ -520,17 +522,6 @@ const (
     MoveDelayWalking        AIMoveDelay = 0.8
     MoveDelayBrokenLegs     AIMoveDelay = 3
 )
-
-func (a *Actor) ShiftSchedulesBy(offset geometry.Point, mapSize geometry.Point) {
-    if a.IsPlayer() {
-        return
-    }
-    newTasks := make([]ScheduledTask, len(a.AI.Schedule.Tasks))
-    for i, task := range a.AI.Schedule.Tasks {
-        newTasks[i] = task.WithLocationShifted(offset, mapSize)
-    }
-    a.AI.Schedule.Tasks = newTasks
-}
 
 func (a *Actor) MoveDelay() AIMoveDelay {
     switch {
@@ -578,9 +569,10 @@ func (a *Actor) runeFromDirection() rune {
 }
 
 func (a *Actor) Style(st common.Style) common.Style {
-    actorStyle := st.WithFg(a.Clothes.FgColor)
+    actorStyle := st.WithFg(a.Clothes.FgColor())
     if a.IsEyeWitness {
-        actorStyle = st.WithFg(common.HSVColor{H: a.Clothes.FgColor.H, S: a.Clothes.FgColor.S, V: 4})
+        fg := a.Clothes.FgColor()
+        actorStyle = st.WithFg(common.HSVColor{H: fg.H, S: fg.S, V: 4})
     }
     if a.Dialogue.IsCurrentlySpeaking {
         actorStyle = a.ChatStyle()
@@ -611,10 +603,21 @@ func (a *Actor) CanSeeActor(other *Actor) bool {
     return a.CanSee(other.Pos()) && other.IsVisible()
 }
 
-func (a *Actor) PutItemAway() {
-    if a.EquippedItem == nil || a.EquippedItem.IsBig {
+func (a *Actor) HolsterItem() {
+
+    if a.EquippedItem == nil {
+        if a.lastHolsteredItem != nil {
+            a.EquippedItem = a.lastHolsteredItem
+            a.lastHolsteredItem = nil
+        }
         return
     }
+
+    if a.EquippedItem.IsBig {
+        return
+    }
+
+    a.lastHolsteredItem = a.EquippedItem
     a.EquippedItem = nil
     return
 }
@@ -752,6 +755,37 @@ func (a *Actor) HasKeyCardInInventory(keyString string) bool {
         }
     }
     return false
+}
+
+// CountItemTypeInInventory returns how many items of the given type the actor
+// currently carries (including the equipped slot).
+func (a *Actor) CountItemTypeInInventory(itemType ItemType) int {
+    if a.Inventory == nil {
+        return 0
+    }
+    count := 0
+    for _, item := range a.Inventory.Items {
+        if item.Type == itemType {
+            count++
+        }
+    }
+    return count
+}
+
+// ConsumeItemsFromInventory removes up to count items of the given type from
+// the actor's inventory, starting from the end of the slice.
+func (a *Actor) ConsumeItemsFromInventory(itemType ItemType, count int) {
+    if a.Inventory == nil {
+        return
+    }
+    consumed := 0
+    for i := len(a.Inventory.Items) - 1; i >= 0 && consumed < count; i-- {
+        if a.Inventory.Items[i].Type == itemType {
+            a.Inventory.Items[i].HeldBy = nil
+            a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
+            consumed++
+        }
+    }
 }
 
 func (a *Actor) IsDraggingBody() bool {
@@ -904,9 +938,10 @@ func (a *Actor) StartDialogue(name string) {
     }
 }
 func (a *Actor) ChatStyle() common.Style {
+    fg := a.Clothes.FgColor()
     return common.Style{
-        Foreground: a.Clothes.FgColor.WithV(a.Clothes.FgColor.V + 2),
-        Background: a.Clothes.BgColor,
+        Foreground: fg.WithV(fg.V + 2),
+        Background: common.Black,
     }
 }
 

@@ -1,0 +1,79 @@
+TaskForSchedule: shop1-guard
+Location: (31,13)
+Duration: (10.00)
+LookDir: (180.00)
+LookDir: (0.00)
+
+TaskForSchedule: shop1-guard
+Location: (30,10)
+Duration: (10.00)
+LookDir: (180.00)
+LookDir: (0.00)
+
+TaskForSchedule: shop1-guard
+Location: (30,8)
+Duration: (10.00)
+LookDir: (180.00)
+LookDir: (0.00)
+
+TaskForSchedule: shop1-guard
+Location: (30,6)
+Duration: (10.00)
+LookDir: (180.00)
+LookDir: (18.43)
+
+TaskForSchedule: shop1-guard
+Location: (30,4)
+Duration: (10.00)
+LookDir: (168.69)
+LookDir: (18.43)
+
+TaskForSchedule: shop1-guard
+Location: (30,1)
+Duration: (10.00)
+LookDir: (26.57)
+
+TaskForSchedule: shop1-guard
+Location: (19,1)
+Duration: (10.00)
+LookDir: (90.00)
+
+TaskForSchedule: shop1-guard
+Location: (5,1)
+Duration: (10.00)
+LookDir: (90.00)
+
+TaskForSchedule: shop1-guard
+Location: (1,1)
+Duration: (10.00)
+LookDir: (0.00)
+
+TaskForSchedule: shop1-guard
+Location: (0,10)
+Duration: (10.00)
+LookDir: (270.00)
+
+TaskForSchedule: shop1-guard
+Location: (0,16)
+Duration: (10.00)
+LookDir: (288.43)
+LookDir: (51.34)
+
+TaskForSchedule: shop1-guard
+Location: (5,16)
+Duration: (10.00)
+LookDir: (270.00)
+LookDir: (90.00)
+
+TaskForSchedule: shop1-guard
+Location: (19,16)
+Duration: (10.00)
+LookDir: (270.00)
+LookDir: (135.00)
+
+TaskForSchedule: shop1-guard
+Location: (30,16)
+Duration: (10.00)
+LookDir: (123.69)
+LookDir: (26.57)
+

@@ -92,27 +92,41 @@ func (g *GameStateEditor) showTextInput(prompt string, prefilled string) {
 
 func (g *GameStateEditor) selectAtMousePos() {
     currentMap := g.engine.GetGame().GetMap()
-    if currentMap.IsActorAt(g.MousePositionInWorld) {
+    pos := g.MousePositionInWorld
+    if currentMap.IsActorAt(pos) {
         g.changeUIStateTo(editActorUI)
-        g.selectActorAt(g.MousePositionInWorld)
-    } else if g.SelectedActor != nil && g.SelectedActor.AI.HasTasks() && g.SelectedActor.AI.HasTaskAt(g.MousePositionInWorld) {
+        g.selectActorAt(pos)
+    } else if g.SelectedSchedule != nil && g.scheduleHasTaskAt(pos) {
         g.changeUIStateTo(editTaskUI)
-        g.selectTaskAt(g.MousePositionInWorld)
-    } else if currentMap.IsObjectAt(g.MousePositionInWorld) {
+        g.selectTaskAt(pos)
+    } else if currentMap.IsObjectAt(pos) {
         g.changeUIStateTo(addObjectsUI)
-        g.selectObjectAt(g.MousePositionInWorld)
-    } else if currentMap.IsItemAt(g.MousePositionInWorld) {
+        g.selectObjectAt(pos)
+    } else if currentMap.IsItemAt(pos) {
         g.changeUIStateTo(addItemsUI)
-        g.selectItemAt(g.MousePositionInWorld)
-    } else if currentMap.IsBakedLightSource(g.MousePositionInWorld) {
+        g.selectItemAt(pos)
+    } else if currentMap.IsBakedLightSource(pos) {
         g.changeUIStateTo(editLightsUI)
-        g.selectLightAt(g.MousePositionInWorld)
-    } else if currentMap.IsNamedLocationAt(g.MousePositionInWorld) {
+        g.selectLightAt(pos)
+    } else if currentMap.IsNamedLocationAt(pos) {
         g.changeUIStateTo(editNamedLocationUI)
-        g.selectedNamedLocation = currentMap.GetNamedLocationByPos(g.MousePositionInWorld)
+        g.selectedNamedLocation = currentMap.GetNamedLocationByPos(pos)
         g.PrintAsMessage("edit named location -> " + g.selectedNamedLocation)
     }
     return
+}
+
+// scheduleHasTaskAt reports whether the currently selected schedule has a task at pos.
+func (g *GameStateEditor) scheduleHasTaskAt(pos geometry.Point) bool {
+    if g.SelectedSchedule == nil {
+        return false
+    }
+    for _, task := range g.SelectedSchedule.Tasks {
+        if task.Location == pos {
+            return true
+        }
+    }
+    return false
 }
 
 func (g *GameStateEditor) OpenMenuBarDropDown(title string, xOffset int, items []services.MenuItem) {

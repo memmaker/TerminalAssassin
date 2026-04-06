@@ -1,0 +1,215 @@
+TaskForSchedule: blue_lotus_guard_1
+Location: (16,44)
+Duration: (10.00)
+
+TaskForSchedule: blue_lotus_guard_2
+Location: (14,48)
+Duration: (10.00)
+
+TaskForSchedule: blue_lotus_leader
+Location: (15,48)
+Duration: (10.00)
+
+TaskForSchedule: detective
+Location: (17,82)
+Duration: (10.00)
+
+TaskForSchedule: detective
+Location: (18,89)
+Duration: (10.00)
+
+TaskForSchedule: doc_brown
+Location: (73,74)
+Duration: (10.00)
+
+TaskForSchedule: doc_brown
+Location: (59,74)
+Duration: (10.00)
+
+TaskForSchedule: homeless_man
+Location: (15,73)
+Duration: (10.00)
+
+TaskForSchedule: homeless_man
+Location: (15,77)
+Duration: (10.00)
+
+TaskForSchedule: homeless_man
+Location: (35,83)
+Duration: (10.00)
+
+TaskForSchedule: homeless_man
+Location: (54,64)
+Duration: (10.00)
+
+TaskForSchedule: homeless_man
+Location: (62,54)
+Duration: (10.00)
+
+TaskForSchedule: homeless_man
+Location: (34,54)
+Duration: (10.00)
+
+TaskForSchedule: hotel_guest_1
+Location: (47,47)
+Duration: (10.00)
+
+TaskForSchedule: hotel_guest_1
+Location: (55,47)
+Duration: (10.00)
+
+TaskForSchedule: hotel_guest_2
+Location: (48,40)
+Duration: (10.00)
+
+TaskForSchedule: hotel_guest_2
+Location: (55,40)
+Duration: (10.00)
+
+TaskForSchedule: hotel_guest_2
+Location: (48,44)
+Duration: (10.00)
+
+TaskForSchedule: hotel_guest_3
+Location: (42,41)
+Duration: (10.00)
+
+TaskForSchedule: hotel_guest_3
+Location: (43,44)
+Duration: (10.00)
+
+TaskForSchedule: ms_brown
+Location: (58,65)
+Duration: (10.00)
+
+TaskForSchedule: ms_brown
+Location: (59,63)
+Duration: (10.00)
+
+TaskForSchedule: ms_brown
+Location: (56,64)
+Duration: (10.00)
+
+TaskForSchedule: ms_brown
+Location: (72,69)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_guard_1
+Location: (45,87)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_guard_1
+Location: (41,84)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_guard_2
+Location: (51,84)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_guard_2
+Location: (46,88)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_guard_2
+Location: (52,93)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_guard_3
+Location: (28,86)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_guard_3
+Location: (45,87)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_leader
+Location: (66,89)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_leader
+Location: (63,86)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_leader
+Location: (55,89)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_leader
+Location: (33,89)
+Duration: (10.00)
+
+TaskForSchedule: red_dragon_leader
+Location: (46,84)
+Duration: (10.00)
+
+TaskForSchedule: tourist_1
+Location: (37,59)
+Duration: (10.00)
+
+TaskForSchedule: tourist_1
+Location: (16,59)
+Duration: (10.00)
+
+TaskForSchedule: tourist_1
+Location: (29,49)
+Duration: (10.00)
+
+TaskForSchedule: tourist_1
+Location: (67,54)
+Duration: (10.00)
+
+TaskForSchedule: tourist_1
+Location: (53,76)
+Duration: (10.00)
+
+TaskForSchedule: tourist_1
+Location: (69,93)
+Duration: (10.00)
+
+TaskForSchedule: tourist_1
+Location: (24,95)
+Duration: (10.00)
+
+TaskForSchedule: tourist_1
+Location: (16,75)
+Duration: (10.00)
+
+TaskForSchedule: tourist_2
+Location: (50,56)
+Duration: (10.00)
+
+TaskForSchedule: tourist_2
+Location: (46,63)
+Duration: (10.00)
+
+TaskForSchedule: tourist_2
+Location: (46,75)
+Duration: (10.00)
+
+TaskForSchedule: tourist_2
+Location: (16,75)
+Duration: (10.00)
+
+TaskForSchedule: tourist_2
+Location: (24,95)
+Duration: (10.00)
+
+TaskForSchedule: tourist_2
+Location: (46,76)
+Duration: (10.00)
+
+TaskForSchedule: warehouse_manager
+Location: (22,72)
+Duration: (10.00)
+
+TaskForSchedule: warehouse_manager
+Location: (13,68)
+Duration: (10.00)
+
+TaskForSchedule: warehouse_worker
+Location: (19,69)
+Duration: (10.00)
+
+TaskForSchedule: warehouse_worker
+Location: (42,69)
+Duration: (10.00)
