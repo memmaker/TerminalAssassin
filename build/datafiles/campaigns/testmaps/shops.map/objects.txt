@@ -264,6 +264,11 @@ Name: light window (closed)
 FgColor: (0.00, 0.00, 0.00)
 BgColor: (0.90, 0.90, 0.90)
 
+ObjectAt: (44,42)
+Name: light window (open)
+FgColor: (0.00, 0.00, 0.00)
+BgColor: (0.90, 0.90, 0.90)
+
 ObjectAt: (45,49)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.00)

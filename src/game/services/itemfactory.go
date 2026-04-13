@@ -1,16 +1,17 @@
 package services
 
 import (
-    "fmt"
-    "os"
-    "path"
-    "path/filepath"
-    "regexp"
-    "time"
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"time"
 
-    "github.com/memmaker/terminal-assassin/common"
-    "github.com/memmaker/terminal-assassin/game/core"
-    "github.com/memmaker/terminal-assassin/gridmap"
+	"github.com/memmaker/terminal-assassin/common"
+	"github.com/memmaker/terminal-assassin/game/core"
+	"github.com/memmaker/terminal-assassin/gridmap"
 )
 
 func NewFactory(engine Engine) *ItemFactory {
@@ -82,32 +83,52 @@ func (f ItemFactory) ItemFromNameAndKey(name string, key string) *core.Item {
 }
 
 func (f ItemFactory) DecodeStringToItem(name string) core.Item {
-    externalData := f.engine.GetData()
-    keyPattern := regexp.MustCompile(`^Key\((.*)\)$`)
-    keyCardPattern := regexp.MustCompile(`^KeyCard\((.*)\)$`)
-    paperPattern := regexp.MustCompile(`^Message\((.*)\): (.*)$`)
-    if keyPattern.MatchString(name) {
-        submatches := keyPattern.FindStringSubmatch(name)
-        keyString := submatches[1]
-        return *core.NewKey(keyString)
-    } else if keyCardPattern.MatchString(name) {
-        submatches := keyCardPattern.FindStringSubmatch(name)
-        keyString := submatches[1]
-        return *core.NewKeyCard(keyString)
-    } else if paperPattern.MatchString(name) {
-        submatches := paperPattern.FindStringSubmatch(name)
-        textFilename := submatches[1]
-        paperName := submatches[2]
-        paper := f.CreatePieceOfPaper(paperName, textFilename)
-        return *paper
-    }
-    if item, ok := externalData.ItemByName(name); ok {
-        result := *item
-        f.applyItemBehavior(&result)
-        return result
-    }
-    println("WARNING: Could not find item with name " + name)
-    return core.Item{}
+	externalData := f.engine.GetData()
+	keyPattern := regexp.MustCompile(`^Key\((.*)\)$`)
+	keyCardPattern := regexp.MustCompile(`^KeyCard\((.*)\)$`)
+	paperPattern := regexp.MustCompile(`^Message\((.*)\): (.*)$`)
+	lockpickPattern := regexp.MustCompile(`^Lockpick\((\d+)\)$`)
+	lockpickElectronicPattern := regexp.MustCompile(`^LockpickElectronic\((\d+)\)$`)
+	if keyPattern.MatchString(name) {
+		submatches := keyPattern.FindStringSubmatch(name)
+		keyString := submatches[1]
+		return *core.NewKey(keyString)
+	} else if keyCardPattern.MatchString(name) {
+		submatches := keyCardPattern.FindStringSubmatch(name)
+		keyString := submatches[1]
+		return *core.NewKeyCard(keyString)
+	} else if paperPattern.MatchString(name) {
+		submatches := paperPattern.FindStringSubmatch(name)
+		textFilename := submatches[1]
+		paperName := submatches[2]
+		paper := f.CreatePieceOfPaper(paperName, textFilename)
+		return *paper
+	} else if lockpickPattern.MatchString(name) {
+		submatches := lockpickPattern.FindStringSubmatch(name)
+		uses, _ := strconv.Atoi(submatches[1])
+		if item, ok := externalData.ItemByName("Lockpick"); ok {
+			result := *item
+			result.Uses = uses
+			f.applyItemBehavior(&result)
+			return result
+		}
+	} else if lockpickElectronicPattern.MatchString(name) {
+		submatches := lockpickElectronicPattern.FindStringSubmatch(name)
+		uses, _ := strconv.Atoi(submatches[1])
+		if item, ok := externalData.ItemByName("Lockpick (electronic)"); ok {
+			result := *item
+			result.Uses = uses
+			f.applyItemBehavior(&result)
+			return result
+		}
+	}
+	if item, ok := externalData.ItemByName(name); ok {
+		result := *item
+		f.applyItemBehavior(&result)
+		return result
+	}
+	println("WARNING: Could not find item with name " + name)
+	return core.Item{}
 }
 func (f ItemFactory) StringsToItems(inventory []string) []*core.Item {
     items := make([]*core.Item, len(inventory))
@@ -135,14 +156,18 @@ func (f ItemFactory) CreatePieceOfPaper(name string, filename string) *core.Item
 
 // need a way to convert items to strings
 func EncodeItemAsString(item *core.Item) string {
-    if item.Type == core.ItemTypeKeyCard {
-        return fmt.Sprintf("KeyCard(%s)", item.KeyString)
-    } else if item.Type == core.ItemTypeKey {
-        return fmt.Sprintf("Key(%s)", item.KeyString)
-    } else if item.Type == core.ItemTypeMessage {
-        return fmt.Sprintf("Message(%s): %s", item.KeyString, item.Name)
-    }
-    return item.Name
+	if item.Type == core.ItemTypeKeyCard {
+		return fmt.Sprintf("KeyCard(%s)", item.KeyString)
+	} else if item.Type == core.ItemTypeKey {
+		return fmt.Sprintf("Key(%s)", item.KeyString)
+	} else if item.Type == core.ItemTypeMessage {
+		return fmt.Sprintf("Message(%s): %s", item.KeyString, item.Name)
+	} else if item.Type == core.ItemTypeMechanicalLockpick {
+		return fmt.Sprintf("Lockpick(%d)", item.Uses)
+	} else if item.Type == core.ItemTypeElectronicLockpick {
+		return fmt.Sprintf("LockpickElectronic(%d)", item.Uses)
+	}
+	return item.Name
 }
 
 // applyItemBehavior wires up engine-bound runtime behaviour (InsteadOfUse etc.)

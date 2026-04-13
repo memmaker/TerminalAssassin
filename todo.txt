@@ -1,3 +1,9 @@
+# Stealth Missions that are fun
+1. Eliminate Targets
+2. Extract Targets
+3. Destroy Objects
+4. Steal Items
+
 # High Priority
  - Talking to NPCs (Taking the place of an NPC..)
  - Environmental Stuff
@@ -280,3 +286,36 @@ If no smoking zone is available, he will smoke randomly on his schedule.
  - Flooding & Water propagation
 
 Utility UI: https://www.gamedeveloper.com/programming/are-behavior-trees-a-thing-of-the-past-
+
+# Next Prompt
+
+# Movement is weird
+
+The first directional input after a long wait should move the player character instantly.
+Instead it seems as one needs to hold the movement direction for a certain amount of time for a movement to be triggerd.
+
+# Run should override sneak
+
+# Extract information for color theme
+
+List all "things" in the game, that currently have their own color defined or are rendered using any kind of color.
+Differentiate between foreground and background color and only tell me about colors that are actually used.
+Include UI elements as the menus and HUD.
+
+# Color overhaul
+
+Let's start by creating a struct that represents a color theme for the entire game
+
+A color theme must define colors for:
+ - Map Background
+ - Wall Foreground/Background
+ - Object Foreground
+ - Item Foreground
+
+# Frenzy Status
+
+I want to add another status effect to the game, alongside sleeping, etc. This is probably an ActorState.
+Let's call it "frenzy".
+When an actor is in the frenzy state, he will blindly attack the nearest reachable actor.
+If he has a ranged weapon he will use that, otherwise melee attacks are used.
+Add this actorstate and also a dart gun that will apply the frenzy state to any actor that is shot with it.

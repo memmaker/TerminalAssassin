@@ -43,3 +43,24 @@ func (i *InventoryComponent) AsRunes() string {
 func (i *InventoryComponent) IsEmpty() bool {
 	return len(i.Items) == 0
 }
+
+// FindItemByType returns the first item of the given type, or nil.
+func (i *InventoryComponent) FindItemByType(itemType ItemType) *Item {
+	for _, it := range i.Items {
+		if it.Type == itemType {
+			return it
+		}
+	}
+	return nil
+}
+
+// Contains reports whether item is currently held in this inventory.
+func (i *InventoryComponent) Contains(item *Item) bool {
+	for _, it := range i.Items {
+		if it == item {
+			return true
+		}
+	}
+	return false
+}
+

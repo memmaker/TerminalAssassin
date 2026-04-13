@@ -104,13 +104,13 @@ type PoisonAction struct {
 }
 
 func (a PoisonAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
-	if !a.hasPoison(person) {
-		return
-	}
-	currentMap := m.GetGame().GetMap()
-	poisonItem := person.EquippedItem
-	person.EquippedItem = nil
-	person.Inventory.RemoveItem(poisonItem)
+    if !a.hasPoison(person) {
+        return
+    }
+    currentMap := m.GetGame().GetMap()
+    poisonItem := person.EquippedItem
+    person.EquippedItem = nil
+    person.Inventory.RemoveItem(poisonItem)
     switch poisonItem.Type {
     case core.ItemTypeEmeticPoison:
         currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusEmeticPoison, StimForce: 10})
@@ -126,19 +126,19 @@ func (a PoisonAction) Action(m services.Engine, person *core.Actor, position geo
 }
 
 func (a PoisonAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
-	currentMap := m.GetGame().GetMap()
-	isFoodOrDrinkTile := currentMap.IsTileWithSpecialAt(actionAt, gridmap.SpecialTileTypeFood)
-	return a.hasPoison(person) &&
-		isFoodOrDrinkTile &&
-		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusLethalPoison) &&
-		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusEmeticPoison) &&
-		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusInducedSleep)
+    currentMap := m.GetGame().GetMap()
+    isFoodOrDrinkTile := currentMap.IsTileWithSpecialAt(actionAt, gridmap.SpecialTileTypeFood)
+    return a.hasPoison(person) &&
+        isFoodOrDrinkTile &&
+        !currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusLethalPoison) &&
+        !currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusEmeticPoison) &&
+        !currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusInducedSleep)
 }
 
 func (a PoisonAction) hasPoison(actor *core.Actor) bool {
-	poisonItem := actor.EquippedItem
-	hasPoison := poisonItem != nil && (poisonItem.Type == core.ItemTypeEmeticPoison || poisonItem.Type == core.ItemTypeLethalPoison || poisonItem.Type == core.ItemTypeSleepPoison)
-	return hasPoison
+    poisonItem := actor.EquippedItem
+    hasPoison := poisonItem != nil && (poisonItem.Type == core.ItemTypeEmeticPoison || poisonItem.Type == core.ItemTypeLethalPoison || poisonItem.Type == core.ItemTypeSleepPoison)
+    return hasPoison
 }
 
 func (a PoisonAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
@@ -350,6 +350,139 @@ func (k KnockOnWallAction) IsActionPossible(m services.Engine, _ *core.Actor, ac
 type DialogueAction struct {
     DialogueName   string
     InitialSpeaker *core.Actor
+}
+
+// FenceShopAction triggers the fence's buy/sell menu when the player is adjacent.
+type FenceShopAction struct{}
+
+func (f FenceShopAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
+    actorAt := m.GetGame().GetMap().ActorAt(actionAt)
+    return actorAt != nil && actorAt.IsFence() && actorAt.IsActive()
+}
+
+func (f FenceShopAction) Description(_ services.Engine, _ *core.Actor, _ geometry.Point) (rune, common.Style) {
+    return 'F', common.DefaultStyle.WithBg(common.LegalActionGreen)
+}
+
+func (f FenceShopAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
+    fence := m.GetGame().GetMap().ActorAt(position)
+    if fence == nil {
+        return
+    }
+    openFenceShopMenu(m, person, fence, 0)
+}
+
+func openFenceShopMenu(m services.Engine, player *core.Actor, fence *core.Actor, initialIndex int) {
+    userInterface := m.GetUI()
+    career := m.GetCareer()
+    var menuItems []services.MenuItem
+
+    hasLoot := false
+    for _, item := range player.Inventory.Items {
+        if item.LootValue > 0 && !item.IsLockpickType() {
+            hasLoot = true
+            break
+        }
+    }
+    if hasLoot {
+        menuItems = append(menuItems, services.MenuItem{
+            Label: "Sell loot >",
+            Handler: func() {
+                openSellLootMenu(m, player)
+            },
+        })
+    }
+
+    for idx, itm := range fence.Inventory.Items {
+        item := itm
+        itemIdx := idx
+        price := uint64(item.LootValue)
+        if item.IsLockpickType() {
+            // Lockpicks are sold one at a time (one use = one pick).
+            menuItems = append(menuItems, services.MenuItem{
+                Label: fmt.Sprintf("Buy %s ($%d each, %d left)", item.Name, price, item.Uses),
+                Handler: func() {
+                    if career.Money < price {
+                        m.GetGame().PrintMessage(fmt.Sprintf("Not enough money. Balance: $%d", career.Money))
+                        openFenceShopMenu(m, player, fence, itemIdx)
+                        return
+                    }
+                    career.Money -= price
+                    // Add one use to an existing stack in the player's inventory, or create a new item.
+                    if existing := player.Inventory.FindItemByType(item.Type); existing != nil {
+                        existing.Uses++
+                    } else {
+                        single := item.DeepCopy()
+                        single.Uses = 1
+                        player.Inventory.AddItem(single)
+                        single.HeldBy = player
+                    }
+                    // Consume one use from the fence's stack.
+                    item.Uses--
+                    if item.Uses <= 0 {
+                        fence.Inventory.RemoveItem(item)
+                    }
+                    m.GetGame().PrintMessage(fmt.Sprintf("Bought 1x %s for $%d. Balance: $%d", item.Name, price, career.Money))
+                    m.GetGame().UpdateHUD()
+                    openFenceShopMenu(m, player, fence, itemIdx)
+                },
+            })
+        } else {
+            menuItems = append(menuItems, services.MenuItem{
+                Label: fmt.Sprintf("Buy %s ($%d)", item.Name, price),
+                Handler: func() {
+                    if career.Money < price {
+                        m.GetGame().PrintMessage(fmt.Sprintf("Not enough money. Balance: $%d", career.Money))
+                        openFenceShopMenu(m, player, fence, itemIdx)
+                        return
+                    }
+                    career.Money -= price
+                    fence.Inventory.RemoveItem(item)
+                    player.Inventory.AddItem(item)
+                    item.HeldBy = player
+                    m.GetGame().PrintMessage(fmt.Sprintf("Bought %s for $%d. Balance: $%d", item.Name, price, career.Money))
+                    m.GetGame().UpdateHUD()
+                    openFenceShopMenu(m, player, fence, itemIdx)
+                },
+            })
+        }
+    }
+
+    if len(menuItems) == 0 {
+        m.GetGame().PrintMessage("The fence has nothing to offer.")
+        return
+    }
+    m.GetGame().PrintMessage(fmt.Sprintf("Balance: $%d", career.Money))
+    userInterface.OpenWideAutoCloseMenuWithCallback("The Fence", menuItems, initialIndex, nil)
+}
+
+func openSellLootMenu(m services.Engine, player *core.Actor) {
+    userInterface := m.GetUI()
+    career := m.GetCareer()
+    var sellItems []services.MenuItem
+
+    for _, item := range player.Inventory.Items {
+        item := item
+        if item.LootValue <= 0 || item.IsLockpickType() {
+            continue
+        }
+        value := uint64(item.LootValue)
+        sellItems = append(sellItems, services.MenuItem{
+            Label: fmt.Sprintf("Sell %s (+$%d)", item.Name, value),
+            Handler: func() {
+                player.Inventory.RemoveItem(item)
+                career.Money += value
+                m.GetGame().PrintMessage(fmt.Sprintf("Sold %s for $%d. Balance: $%d", item.Name, value, career.Money))
+                m.GetGame().UpdateHUD()
+                openSellLootMenu(m, player)
+            },
+        })
+    }
+
+    if len(sellItems) == 0 {
+        return
+    }
+    userInterface.OpenWideAutoCloseMenuWithCallback("Sell Loot", sellItems, 0, nil)
 }
 
 func (d DialogueAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {

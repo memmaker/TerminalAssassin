@@ -2,3 +2,12 @@ ItemAt: (26,18)
 Name: Key card
 Key: Safe Keycard 1
 
+ItemAt: (56,38)
+Name: Diamond Necklace
+
+ItemAt: (56,39)
+Name: Diamond Necklace
+
+ItemAt: (56,41)
+Name: Diamond Necklace
+

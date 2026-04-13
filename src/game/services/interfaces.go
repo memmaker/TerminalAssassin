@@ -76,6 +76,7 @@ type UIInterface interface {
     OpenFixedWidthAutoCloseMenu(title string, items []MenuItem)
     OpenFixedWidthAutoCloseMenuWithCallback(title string, items []MenuItem, onClose func())
     OpenFixedWidthStackedMenu(title string, items []MenuItem)
+    OpenWideAutoCloseMenuWithCallback(title string, items []MenuItem, initialIndex int, onClose func())
     HUDHeight() int
     OpenMapsMenu(afterLoad func(*gridmap.GridMap[*core.Actor, *core.Item, Object]))
     OpenFancyMenu(menuItems []MenuItem)

@@ -288,7 +288,7 @@ func (m *Model) SoundEventAt(soundLocation geometry.Point, kindOfSound core.Obse
                 if isActorAt && actorAt.CanPerceive() {
                     if kindOfSound.IsSpeech() {
                         actorAt.TryRespondToSpeech(m.engine.CurrentTick(), string(kindOfSound))
-                    } else if aic.IsControlledByAI(actorAt) {
+                    } else if aic.IsControlledByAI(actorAt) && !actorAt.IsCriminal() {
                         if !actorAt.IsInCombat() {
                             actorAt.LookAt(soundLocation)
                         }
@@ -304,7 +304,7 @@ func (m *Model) SuspiciousActionAt(pos geometry.Point, kindOfEvent core.Observat
     currentMap := m.GetMap()
     aic := m.engine.GetAI()
     for _, a := range currentMap.Actors() {
-        if a == currentMap.Player || (!a.CanUseItems()) || (!a.CanSeeInVisionCone(pos)) || a.IsInvestigating() {
+        if a == currentMap.Player || (!a.CanUseItems()) || (!a.CanSeeInVisionCone(pos)) || a.IsInvestigating() || a.IsCriminal() {
             continue
         }
         aic.ReportIncident(a, pos, kindOfEvent)
@@ -319,7 +319,7 @@ func (m *Model) IllegalActionAt(pos geometry.Point, kindOfEvent core.Observation
         actorAt = currentMap.Player
     }
     for _, a := range currentMap.Actors() {
-        if a.IsPlayer() || a.IsInCombat() || !a.CanPerceive() || !a.CanSeeInVisionCone(pos) || m.AreAllies(a, actorAt) {
+        if a.IsPlayer() || a.IsInCombat() || !a.CanPerceive() || !a.CanSeeInVisionCone(pos) || m.AreAllies(a, actorAt) || a.IsCriminal() {
             continue
         }
         if actorAt != nil {
@@ -869,6 +869,8 @@ func (m *Model) PickUpItemAt(person *core.Actor, pos geometry.Point) {
         m.InsteadOfPickingUpClothes(person, itemHere)
         return
     }
+    m.GetMap().RemoveItem(itemHere)
+
     equippedItem := person.EquippedItem
     bigItemInHands := equippedItem != nil && equippedItem.IsBig
     // big items cannot go into the inventory, only held in hands
@@ -876,12 +878,29 @@ func (m *Model) PickUpItemAt(person *core.Actor, pos geometry.Point) {
         m.forceDropInventoryItem(person, equippedItem, pos)
     }
 
-    m.GetMap().RemoveItem(itemHere)
+    // Lockpicks stack: merge into existing inventory slot using Uses as counter.
+    if itemHere.IsLockpickType() {
+        pickedUses := itemHere.Uses
+        if pickedUses <= 0 {
+            pickedUses = 1
+        }
+        if existingStack := person.Inventory.FindItemByType(itemHere.Type); existingStack != nil {
+            existingStack.Uses += pickedUses
+            if !bigItemInHands {
+                person.EquippedItem = existingStack
+            }
+            m.engine.PublishEvent(services.ItemPickedUpEvent{Item: existingStack, Actor: person})
+            return
+        }
+        // First lockpick of this type: normalise Uses before adding to inventory.
+        itemHere.Uses = pickedUses
+    }
+
     person.Inventory.AddItem(itemHere)
     itemHere.HeldBy = person
 
-    // equip any item directly, except if we already hold a big item
-    if !bigItemInHands {
+    // big items always go into hands; small items auto-equip only when hands are free
+    if itemHere.IsBig || !bigItemInHands {
         person.EquippedItem = itemHere
     }
 
@@ -1052,6 +1071,7 @@ func (m *Model) SpawnClothingItem(pos geometry.Point, clothing core.Clothing) {
 }
 
 var actorActions = []services.ContextAction{
+    FenceShopAction{},
     PianoWire{},
     DrownAction{},
     PushOverEdge{},

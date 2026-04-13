@@ -112,6 +112,8 @@ func (g *GameStateEditor) toggleActorType() {
         g.SelectedActor.Type = core.ActorTypeEnforcer
     case core.ActorTypeEnforcer:
         g.SelectedActor.Type = core.ActorTypeTarget
+    case core.ActorTypeTarget:
+        g.SelectedActor.Type = core.ActorTypeFence
     default:
         g.SelectedActor.Type = core.ActorTypeCivilian
     }

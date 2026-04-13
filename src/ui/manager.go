@@ -344,27 +344,72 @@ func (m *Manager) OpenFixedWidthStackedMenu(title string, items []services.MenuI
     m.pushModal(NewMenu(title, items, bbox, m.PopModal, nil))
 }
 
+// OpenWideAutoCloseMenuWithCallback opens a menu whose width is derived from
+// the longest item label, so all text is always readable.  Like AutoClose, the
+// menu closes before executing the selected handler (beforeConfirm = closeFunc).
+// initialIndex sets the pre-selected cursor position (0 = first item).
+func (m *Manager) OpenWideAutoCloseMenuWithCallback(title string, items []services.MenuItem, initialIndex int, onClose func()) {
+    itemCount := ConditionalCount(items)
+    if itemCount == 0 {
+        return
+    }
+    bbox := m.contentWidthRect(items, itemCount)
+    closeFunc := func() {
+        m.PopModal()
+        if onClose != nil {
+            onClose()
+        }
+    }
+    menu := NewMenu(title, items, bbox, closeFunc, closeFunc)
+    menu.SetInitialSelection(initialIndex)
+    m.pushModal(menu)
+}
+
+// contentWidthRect returns a bounding box wide enough to display the longest
+// item label in full.  Width is computed in square-cell units; each square cell
+// holds two half-width characters, which is what menus render into.
+func (m *Manager) contentWidthRect(items []services.MenuItem, itemCount int) geometry.Rect {
+    maxLabelLen := widthFromItems(items)
+    // (Size.X - 1) * 2 chars fit inside the box (exclusive borders at Min.X and Max.X).
+    // For maxLabelLen chars: Size.X = ceil(maxLabelLen/2) + 1.
+    requiredWidth := (maxLabelLen+1)/2 + 1
+    screenW := m.engine.ScreenGridWidth()
+    if requiredWidth > screenW-2 {
+        requiredWidth = screenW - 2
+    }
+    xStart := (screenW - requiredWidth) / 2
+    xEnd := xStart + requiredWidth
+
+    yStart := 3
+    yEnd := yStart + itemCount + 1
+    maxYEnd := m.engine.ScreenGridHeight() - 4
+    if yEnd > maxYEnd {
+        yEnd = maxYEnd
+    }
+    return geometry.NewRect(xStart, yStart, xEnd, yEnd)
+}
+
 func (m *Manager) HalfWidthRect(itemCount int) geometry.Rect {
-	yStart := 3
-	yEnd := yStart + itemCount + 1
-	// Cap yEnd so the menu never overlaps the bottom menu bar (3 rows).
-	maxYEnd := m.engine.ScreenGridHeight() - 4
-	if yEnd > maxYEnd {
-		yEnd = maxYEnd
-	}
-	xStart := m.engine.ScreenGridWidth() / 4
-	xEnd := m.engine.ScreenGridWidth() - xStart
-	bbox := geometry.NewRect(xStart, yStart, xEnd, yEnd)
-	return bbox
+    yStart := 3
+    yEnd := yStart + itemCount + 1
+    // Cap yEnd so the menu never overlaps the bottom menu bar (3 rows).
+    maxYEnd := m.engine.ScreenGridHeight() - 4
+    if yEnd > maxYEnd {
+        yEnd = maxYEnd
+    }
+    xStart := m.engine.ScreenGridWidth() / 4
+    xEnd := m.engine.ScreenGridWidth() - xStart
+    bbox := geometry.NewRect(xStart, yStart, xEnd, yEnd)
+    return bbox
 }
 
 func (m *Manager) OpenFancyMenu(menuItems []services.MenuItem) {
-	itemCount := ConditionalCount(menuItems)
-	bbox := m.HalfWidthRect(itemCount)
-	m.RenderRevealAnimation(common.White.ToHSV(), common.RGBAColor{R: 0.2, G: 0.2, B: 0.6, A: 1.0}.ToHSV(), bbox, func() {
-		menu := NewMenu("", menuItems, bbox, nil, nil)
-		m.pushModal(menu)
-	})
+    itemCount := ConditionalCount(menuItems)
+    bbox := m.HalfWidthRect(itemCount)
+    m.RenderRevealAnimation(common.White.ToHSV(), common.RGBAColor{R: 0.2, G: 0.2, B: 0.6, A: 1.0}.ToHSV(), bbox, func() {
+        menu := NewMenu("", menuItems, bbox, nil, nil)
+        m.pushModal(menu)
+    })
 }
 
 func (m *Manager) RenderRevealAnimation(fgColor common.HSVColor, bgColor common.HSVColor, box geometry.Rect, onFinished func()) {
@@ -504,40 +549,40 @@ func (m *Manager) ShowNoAbortTextInputAt(pos geometry.Point, width int, prompt s
 }
 
 func (m *Manager) ShowTextInput(prompt string, prefill string, onComplete func(userInput string), onAbort func()) {
-	// The text input renders at Y:-1 which TextInput.Draw resolves to the last
-	// grid row.  Resolve it here too so the cursor particle lands on the same row.
-	lastRow := m.engine.ScreenGridHeight() - 1
-	animator := m.engine.GetAnimator()
-	cursorPos := geometry.Point{X: len(prompt) + len(prefill), Y: lastRow}
-	cursor := &CursorParticle{
-		Pos:             cursorPos,
-		OldPos:          cursorPos,
-		Color:           common.TerminalColor.ToHSV(),
-		DelayAppearance: 35,
-	}
-	animator.AddParticle(cursor)
-	changeCursorPos := func(newPos geometry.Point) {
-		if newPos.Y < 0 {
-			newPos.Y = lastRow
-		}
-		cursor.Pos = newPos
-	}
-	m.pushModal(NewTextInputAt(
-		geometry.Point{Y: -1},
-		m.engine.ScreenGridWidth(),
-		prompt,
-		prefill,
-		func(userInput string) {
-			m.PopModal()
-			cursor.Kill()
-			onComplete(userInput)
-		},
-		func() {
-			m.PopModal()
-			cursor.Kill()
-			onAbort()
-		}))
-	m.currentModal().(*TextInput).OnCursorMove = changeCursorPos
+    // The text input renders at Y:-1 which TextInput.Draw resolves to the last
+    // grid row.  Resolve it here too so the cursor particle lands on the same row.
+    lastRow := m.engine.ScreenGridHeight() - 1
+    animator := m.engine.GetAnimator()
+    cursorPos := geometry.Point{X: len(prompt) + len(prefill), Y: lastRow}
+    cursor := &CursorParticle{
+        Pos:             cursorPos,
+        OldPos:          cursorPos,
+        Color:           common.TerminalColor.ToHSV(),
+        DelayAppearance: 35,
+    }
+    animator.AddParticle(cursor)
+    changeCursorPos := func(newPos geometry.Point) {
+        if newPos.Y < 0 {
+            newPos.Y = lastRow
+        }
+        cursor.Pos = newPos
+    }
+    m.pushModal(NewTextInputAt(
+        geometry.Point{Y: -1},
+        m.engine.ScreenGridWidth(),
+        prompt,
+        prefill,
+        func(userInput string) {
+            m.PopModal()
+            cursor.Kill()
+            onComplete(userInput)
+        },
+        func() {
+            m.PopModal()
+            cursor.Kill()
+            onAbort()
+        }))
+    m.currentModal().(*TextInput).OnCursorMove = changeCursorPos
 }
 
 func (m *Manager) ShowPager(title string, lines []core.StyledText, onQuit func()) {
@@ -633,55 +678,56 @@ func (m *Manager) ShowStyledAlert(styledText []core.StyledText, bgColor common.C
     alert.SetBackgroundColor(bgColor)
     m.pushModal(alert)
 }
+
 // OpenTilePicker pushes a 2-D icon picker as a modal.
 // Items are arranged in a roughly square grid with one-tile gaps.
 // onHover is called with the hovered item's label (or "" on leave).
 // onClose is invoked after a selection or dismissal.
 func (m *Manager) OpenTilePicker(title string, items []services.MenuItem, onHover func(string), onClose func()) {
-	filtered := Filtered(items, func(item services.MenuItem) bool {
-		return item.Condition == nil || item.Condition()
-	})
-	if len(filtered) == 0 {
-		return
-	}
+    filtered := Filtered(items, func(item services.MenuItem) bool {
+        return item.Condition == nil || item.Condition()
+    })
+    if len(filtered) == 0 {
+        return
+    }
 
-	cols := ColsForItems(len(filtered))
-	rows := (len(filtered) + cols - 1) / cols
+    cols := ColsForItems(len(filtered))
+    rows := (len(filtered) + cols - 1) / cols
 
-	screenW := m.engine.ScreenGridWidth()
-	screenH := m.engine.ScreenGridHeight()
+    screenW := m.engine.ScreenGridWidth()
+    screenH := m.engine.ScreenGridHeight()
 
-	// DrawBox renders (2*cols+1) x (2*rows+1) tiles on screen (inclusive bounds).
-	renderedW := 2*cols + 1
-	renderedH := 2*rows + 1
+    // DrawBox renders (2*cols+1) x (2*rows+1) tiles on screen (inclusive bounds).
+    renderedW := 2*cols + 1
+    renderedH := 2*rows + 1
 
-	x0 := (screenW - renderedW) / 2
-	y0 := (screenH - renderedH) / 2
-	if x0 < 0 {
-		x0 = 0
-	}
-	if y0 < 2 {
-		y0 = 2 // stay clear of any top menu bar
-	}
-	// Keep the box on screen.
-	if x0+2*cols >= screenW {
-		x0 = screenW - 2*cols - 1
-	}
-	if y0+2*rows >= screenH-2 {
-		y0 = screenH - 2*rows - 3
-	}
-	if y0 < 0 {
-		y0 = 0
-	}
+    x0 := (screenW - renderedW) / 2
+    y0 := (screenH - renderedH) / 2
+    if x0 < 0 {
+        x0 = 0
+    }
+    if y0 < 2 {
+        y0 = 2 // stay clear of any top menu bar
+    }
+    // Keep the box on screen.
+    if x0+2*cols >= screenW {
+        x0 = screenW - 2*cols - 1
+    }
+    if y0+2*rows >= screenH-2 {
+        y0 = screenH - 2*rows - 3
+    }
+    if y0 < 0 {
+        y0 = 0
+    }
 
-	bbox := geometry.NewRect(x0, y0, x0+2*cols, y0+2*rows)
-	closeFunc := func() {
-		m.PopModal()
-		if onClose != nil {
-			onClose()
-		}
-	}
-	m.pushModal(NewTilePicker(title, filtered, cols, bbox, onHover, closeFunc))
+    bbox := geometry.NewRect(x0, y0, x0+2*cols, y0+2*rows)
+    closeFunc := func() {
+        m.PopModal()
+        if onClose != nil {
+            onClose()
+        }
+    }
+    m.pushModal(NewTilePicker(title, filtered, cols, bbox, onHover, closeFunc))
 }
 
 func (m *Manager) ShowAlert(strings []string) {

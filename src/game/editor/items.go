@@ -86,6 +86,14 @@ func (g *GameStateEditor) placeItemAtPos(item core.Item, pos geometry.Point) {
 
     if currentMap.IsActorAt(pos) {
         actorAt := currentMap.ActorAt(pos)
+        // Lockpicks stack: increment uses on the existing item instead of adding a duplicate.
+        if placedItem.IsLockpickType() {
+            if existing := actorAt.Inventory.FindItemByType(placedItem.Type); existing != nil {
+                existing.Uses += placedItem.Uses
+                g.PrintAsMessage(fmt.Sprintf("Stacked %s (%d uses) for %s", placedItem.Name, existing.Uses, actorAt.Name))
+                return
+            }
+        }
         actorAt.Inventory.AddItem(placedItem)
         placedItem.HeldBy = actorAt
         g.PrintAsMessage("Gave " + placedItem.Name + " to " + actorAt.Name)

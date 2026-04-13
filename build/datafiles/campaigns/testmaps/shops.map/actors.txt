@@ -1,3 +1,15 @@
+Name: Hermes
+ActorType: fence
+Position: (14,56)
+LookDirection: 39.81
+Clothing: a jacket
+MoveSpeed: 3
+FoVinDegrees: 90.00
+VisionRange: 12
+Inventory: Pistol (silenced)
+Inventory: Lockpick(5)
+Inventory: LockpickElectronic(5)
+
 Name: Shop Guard 1
 ActorType: guard
 Position: (31,11)
@@ -7,5 +19,5 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 12
 Inventory: Flashlight
-Inventory: AMT 1911 'Hardballer'
+Inventory: Pistol
 

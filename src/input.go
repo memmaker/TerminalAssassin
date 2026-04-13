@@ -729,8 +729,8 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             msgs = append(msgs, core.HolsterItem)
         }
 
-        // ── R3 (RightStick click) → toggle sneaking ──────────────────────────
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightStick) {
+        // ── D-Pad Right → toggle sneaking ───────────────────────────────────
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftRight) {
             i.padSneaking = !i.padSneaking
             if i.padSneaking {
                 msgs = append(msgs, core.StartSneaking)
@@ -754,9 +754,10 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             msgs = append(msgs, core.DiveTackle)
         }
 
-        // ── R1 (FrontTopRight) → interact at current peek tile ──────────────
+        // ── R1 (FrontTopRight) / ✕·A (RightBottom) → interact at current peek tile ──
         // Dialogue when walking/standing; pickpocket when sneaking; knock when facing a wall.
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontTopRight) {
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontTopRight) ||
+            inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightBottom) {
             msgs = append(msgs, core.ContextAction)
         }
 

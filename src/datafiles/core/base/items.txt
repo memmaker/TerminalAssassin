@@ -2,6 +2,7 @@ name: Coin
 icon: ·
 type: common
 projectile_range: 10
+loot_value: 5
 
 name: Pistol
 icon: ٤
@@ -11,6 +12,7 @@ projectile_range: 12
 noise_radius: 15
 audio_cue: pistol_shot
 trigger_effects: BulletTrigger(35)
+loot_value: 200
 
 name: Pistol (silenced)
 icon: ٤
@@ -19,6 +21,7 @@ uses: 7
 projectile_range: 12
 audio_cue: silenced_pistol
 trigger_effects: BulletTrigger(35)
+loot_value: 350
 
 name: Submachine Gun
 icon: ٣
@@ -28,6 +31,7 @@ projectile_range: 12
 noise_radius: 17
 audio_cue: smg_shot
 trigger_effects: BulletTrigger(40)
+loot_value: 500
 
 name: Assault Rifle
 icon: ٯ
@@ -38,6 +42,7 @@ projectile_range: 18
 noise_radius: 23
 audio_cue: ak47_shot
 trigger_effects: BulletTrigger(50)
+loot_value: 700
 
 name: Shotgun
 icon: ٥
@@ -48,6 +53,7 @@ projectile_range: 15
 noise_radius: 23
 audio_cue: shotgun_shot
 trigger_effects: BulletTrigger(35)
+loot_value: 400
 
 name: Sniper Rifle
 icon: ٢
@@ -58,6 +64,7 @@ projectile_range: 50
 noise_radius: 30
 audio_cue: sniper_shot
 trigger_effects: BulletTrigger(100)
+loot_value: 800
 
 name: Sniper Rifle (silenced)
 icon: ٢
@@ -68,6 +75,7 @@ projectile_range: 40
 noise_radius: 4
 audio_cue: silenced_rifle
 trigger_effects: BulletTrigger(80)
+loot_value: 1000
 
 name: Dart Gun (sleep)
 icon: ١
@@ -75,6 +83,7 @@ type: dart_gun
 uses: 2
 projectile_range: 10
 trigger_effects: SleepDartTrigger(50)
+loot_value: 300
 
 name: Dart Gun (emetic)
 icon: ١
@@ -82,78 +91,94 @@ type: dart_gun
 uses: 3
 projectile_range: 10
 trigger_effects: EmeticDartTrigger
+loot_value: 250
 
 name: Taser
 icon: ١
 type: taser
 uses: 3
 trigger_effects: TaserTrigger(50)
+loot_value: 200
 
 name: Lockpick
 icon: ¸
 type: mechanical_lockpick
+uses: 1
+loot_value: 50
 
 name: Flashlight
 icon: Ƴ
 type: flashlight
 projectile_range: 15
+loot_value: 75
 
 name: Lockpick (electronic)
 type: electronic_lockpick
 icon: ´
+uses: 1
+loot_value: 150
 
 name: Knife
 icon: ¹
 type: knife
 projectile_range: 8
 trigger_effects: PiercingTrigger(50)
+loot_value: 100
 
 name: Scissors
 icon: ʵ
 type: melee_sharp
 projectile_range: 7
 trigger_effects: PiercingTrigger(35)
+loot_value: 50
 
 name: Screwdriver
 icon: ˈ
 type: screwdriver
 projectile_range: 6
 trigger_effects: PiercingTrigger(35)
+loot_value: 60
 
 name: Fiber Wire
 icon: µ
 type: piano_wire
 trigger_effects: PianoWireTrigger
+loot_value: 150
 
 name: Baseball Bat
 icon: º
 type: melee_blunt
 projectile_range: 5
 trigger_effects: BluntTrigger(80)
+loot_value: 75
 
 name: Crowbar
 icon: ˉ
 type: crowbar
 projectile_range: 5
 trigger_effects: BluntTrigger(80)
+loot_value: 80
 
 name: Wrench
 icon: ˊ
 type: wrench
 projectile_range: 6
 trigger_effects: BluntTrigger(80)
+loot_value: 60
 
 name: Soda Can
 icon: ʲ
 type: common
 projectile_range: 9
 trigger_effects: BluntTrigger(20)
+loot_value: 10
 
 name: Cigarette
 icon: ˵
 type: common
 projectile_range: 10
 trigger_effects: FireStarterTrigger(15)
+loot_value: 5
 
 name: Grenade (fragmentation)
 icon: ː
@@ -161,6 +186,7 @@ type: explosive
 uses: 1
 projectile_range: 7
 trigger_effects: ImpactExplosionTrigger(50, 3, 3)
+loot_value: 400
 
 name: Bomb (remote)
 icon: ˺
@@ -168,6 +194,7 @@ type: remote_explosive
 uses: 1
 projectile_range: 7
 trigger_effects: RemoteExplosionTrigger(10, 3, 3)
+loot_value: 500
 
 name: Taser (remote)
 icon: ˮ
@@ -175,28 +202,33 @@ type: remote_taser
 uses: 1
 projectile_range: 7
 trigger_effects: RemoteTaserTrigger(10)
+loot_value: 350
 
 name: Poison (lethal)
 icon: ¶
 type: lethal_poison
 uses: 1
 trigger_effects: LethalPoisonTrigger
+loot_value: 300
 
 name: Poison (emetic)
 icon: ¶
 type: emetic_poison
 uses: 1
 trigger_effects: EmeticPoisonTrigger
+loot_value: 200
 
 name: Poison (sleep)
 icon: ¶
 type: sleep_poison
 uses: 1
 trigger_effects: SleepPoisonTrigger
+loot_value: 200
 
 name: Cloth
 icon: ˴
 type: cleaner
+loot_value: 30
 
 name: Gasoline Can
 icon: ˓
@@ -204,6 +236,7 @@ type: melee_blunt
 projectile_range: 6
 trigger_effects: GasolineTrigger
 reaction_effects: CanOfGasolineReaction
+loot_value: 40
 
 name: Gas Canister
 icon: ٧
@@ -211,6 +244,7 @@ type: melee_blunt
 projectile_range: 5
 trigger_effects: BluntTrigger(35)
 reaction_effects: GasCanisterReaction
+loot_value: 40
 
 name: Gold Piece
 icon: ·
@@ -223,6 +257,7 @@ icon: Ő
 type: proximity_mine
 projectile_range: 5
 trigger_effects: ProximityMineTrigger(50, 4, 40)
+loot_value: 400
 
 name: Grenade (sleep poison)
 icon: ˑ
@@ -230,6 +265,7 @@ type: sleep_poison_grenade
 uses: 1
 projectile_range: 7
 trigger_effects: SleepPoisonGrenadeTrigger(4, 10)
+loot_value: 350
 
 name: Grenade (lethal poison)
 icon: ː
@@ -237,27 +273,32 @@ type: lethal_poison_grenade
 uses: 1
 projectile_range: 7
 trigger_effects: LethalPoisonGrenadeTrigger(4, 10)
+loot_value: 400
 
 name: Trip Mine (sleep poison)
 icon: Ő
 type: sleep_poison_mine
 projectile_range: 5
 trigger_effects: SleepPoisonTripMineTrigger(3, 10)
+loot_value: 350
 
 name: Trip Mine (lethal poison)
 icon: Ő
 type: lethal_poison_mine
 projectile_range: 5
 trigger_effects: LethalPoisonTripMineTrigger(3, 10)
+loot_value: 400
 
 name: Camera
 icon: Ư
 type: camera
 uses: 5
+loot_value: 200
 
 name: Shovel
 icon: ư
 type: shovel
+loot_value: 80
 
 name: Diamond Necklace
 icon: Ʋ

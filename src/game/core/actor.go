@@ -127,6 +127,7 @@ const (
     ActorTypeGuard    ActorType = "guard"
     ActorTypeEnforcer ActorType = "enforcer"
     ActorTypeTarget   ActorType = "target"
+    ActorTypeFence    ActorType = "fence"
 )
 
 type MovementMode rune
@@ -362,7 +363,20 @@ func (a *Actor) Icon() rune {
     if a.DraggedBody != nil {
         return '☠'
     }
+    if a.IsFence() {
+        return 'F'
+    }
     return '☺'
+}
+
+// IsFence returns true when this actor is a fence (criminal shopkeeper).
+func (a *Actor) IsFence() bool {
+    return a.Type == ActorTypeFence
+}
+
+// IsCriminal returns true when this actor is a criminal who ignores all alerts.
+func (a *Actor) IsCriminal() bool {
+    return a.Type == ActorTypeFence
 }
 
 func (a *Actor) SetPos(point geometry.Point) {
@@ -550,7 +564,9 @@ func (a *Actor) Symbol() rune {
     case ActorStatusDead:
         return GlyphCorpse
     default:
-        //return a.runeFromName()
+        if a.IsFence() {
+            return 'F'
+        }
         return a.runeFromDirection()
     }
 }
@@ -782,34 +798,61 @@ func (a *Actor) HasKeyCardInInventory(keyString string) bool {
 }
 
 // CountItemTypeInInventory returns how many items of the given type the actor
-// currently carries (including the equipped slot).
+// currently carries. For lockpick types the Uses field acts as the stack counter,
+// so all Uses values are summed rather than counting item instances.
 func (a *Actor) CountItemTypeInInventory(itemType ItemType) int {
-    if a.Inventory == nil {
-        return 0
-    }
-    count := 0
-    for _, item := range a.Inventory.Items {
-        if item.Type == itemType {
-            count++
-        }
-    }
-    return count
+	if a.Inventory == nil {
+		return 0
+	}
+	count := 0
+	for _, item := range a.Inventory.Items {
+		if item.Type != itemType {
+			continue
+		}
+		if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
+			if item.Uses > 0 {
+				count += item.Uses
+			}
+		} else {
+			count++
+		}
+	}
+	return count
 }
 
-// ConsumeItemsFromInventory removes up to count items of the given type from
-// the actor's inventory, starting from the end of the slice.
+// ConsumeItemsFromInventory removes up to count units of the given type from
+// the actor's inventory. For lockpick types each unit is one Use; the item is
+// removed from inventory when its Uses reach zero.
 func (a *Actor) ConsumeItemsFromInventory(itemType ItemType, count int) {
-    if a.Inventory == nil {
-        return
-    }
-    consumed := 0
-    for i := len(a.Inventory.Items) - 1; i >= 0 && consumed < count; i-- {
-        if a.Inventory.Items[i].Type == itemType {
-            a.Inventory.Items[i].HeldBy = nil
-            a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
-            consumed++
-        }
-    }
+	if a.Inventory == nil {
+		return
+	}
+	if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
+		remaining := count
+		for i := len(a.Inventory.Items) - 1; i >= 0 && remaining > 0; i-- {
+			if a.Inventory.Items[i].Type != itemType {
+				continue
+			}
+			item := a.Inventory.Items[i]
+			if item.Uses <= remaining {
+				remaining -= item.Uses
+				item.HeldBy = nil
+				a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
+			} else {
+				item.Uses -= remaining
+				remaining = 0
+			}
+		}
+		return
+	}
+	consumed := 0
+	for i := len(a.Inventory.Items) - 1; i >= 0 && consumed < count; i-- {
+		if a.Inventory.Items[i].Type == itemType {
+			a.Inventory.Items[i].HeldBy = nil
+			a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
+			consumed++
+		}
+	}
 }
 
 func (a *Actor) IsDraggingBody() bool {

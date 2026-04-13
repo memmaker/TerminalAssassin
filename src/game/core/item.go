@@ -37,7 +37,7 @@ var itemTypeNames = map[ItemType]string{
     ItemTypeKnife:               "knife",
     ItemTypePianoWire:           "piano_wire",
     ItemTypeMechanicalLockpick:  "mechanical_lockpick",
-    ItemTypeElectronicLockpick: "electronic_lockpick",
+    ItemTypeElectronicLockpick:  "electronic_lockpick",
     ItemTypeCleaner:             "cleaner",
     ItemTypeClothing:            "clothing",
     ItemTypeKey:                 "key",
@@ -122,19 +122,19 @@ const (
 // itemTypeTraits holds every per-type capability flag and value in one place.
 // Adding a new ItemType only requires one entry in itemTraitsTable below.
 type itemTypeTraits struct {
-    hasMeleeAction         bool
-    isMeleeTool            bool    // tool-use melee (stimuli via TriggerOnToolUsage)
-    meleeDecreaseUses      bool    // consumes a use on melee activation
-    hasRangedAction        bool
-    isThrowable            bool
-    canSelfActivate        bool    // place / arm at own tile (e.g. proximity mines)
-    isRemoteDetonated      bool
-    isSpreadShot           bool
-    isMeleeWeapon          bool    // physical strike weapon (for IsWeapon / IsMeleeWeapon)
-    isRangedWeapon         bool    // firearm (for IsRangedWeapon / IsWeapon)
-    isAutomaticRangedWeapon bool   // full-auto (for IsAutomaticRangedWeapon / HasBurstWeapon)
-    cooldownSecs           float64 // 0 → default minimum (0.07 s)
-    scopeFoV               float64 // 0 → no scope; >0 → scoped FoV angle in degrees
+    hasMeleeAction          bool
+    isMeleeTool             bool // tool-use melee (stimuli via TriggerOnToolUsage)
+    meleeDecreaseUses       bool // consumes a use on melee activation
+    hasRangedAction         bool
+    isThrowable             bool
+    canSelfActivate         bool // place / arm at own tile (e.g. proximity mines)
+    isRemoteDetonated       bool
+    isSpreadShot            bool
+    isMeleeWeapon           bool    // physical strike weapon (for IsWeapon / IsMeleeWeapon)
+    isRangedWeapon          bool    // firearm (for IsRangedWeapon / IsWeapon)
+    isAutomaticRangedWeapon bool    // full-auto (for IsAutomaticRangedWeapon / HasBurstWeapon)
+    cooldownSecs            float64 // 0 → default minimum (0.07 s)
+    scopeFoV                float64 // 0 → no scope; >0 → scoped FoV angle in degrees
 }
 
 // itemTraitsTable is the single source of truth for every ItemType capability.
@@ -465,10 +465,16 @@ func (i *Item) DecreaseUsesLeft() {
     }
 }
 
-func (i *Item) IsWeapon() bool               { return i.IsRangedWeapon() || i.IsMeleeWeapon() }
-func (i *Item) IsMeleeWeapon() bool          { return itemTraitsTable[i.Type].isMeleeWeapon }
-func (i *Item) IsObviousWeapon() bool        { return i.IsRangedWeapon() || i.Type == ItemTypeKnife }
-func (i *Item) IsRangedWeapon() bool         { return itemTraitsTable[i.Type].isRangedWeapon }
+// IsLockpickType returns true for mechanical or electronic lockpicks.
+// These items stack in a single inventory slot using Uses as the item counter.
+func (i *Item) IsLockpickType() bool {
+    return i.Type == ItemTypeMechanicalLockpick || i.Type == ItemTypeElectronicLockpick
+}
+
+func (i *Item) IsWeapon() bool                { return i.IsRangedWeapon() || i.IsMeleeWeapon() }
+func (i *Item) IsMeleeWeapon() bool           { return itemTraitsTable[i.Type].isMeleeWeapon }
+func (i *Item) IsObviousWeapon() bool         { return i.IsRangedWeapon() || i.Type == ItemTypeKnife }
+func (i *Item) IsRangedWeapon() bool          { return itemTraitsTable[i.Type].isRangedWeapon }
 func (i *Item) IsAutomaticRangedWeapon() bool { return itemTraitsTable[i.Type].isAutomaticRangedWeapon }
 
 func (i *Item) SetKey(key string) {

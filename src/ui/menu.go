@@ -303,6 +303,20 @@ func NewMenu(title string, menuItems []services.MenuItem, boundingBox geometry.R
     }
 }
 
+// SetInitialSelection moves the cursor to idx, clamped to valid range.
+func (m *Menu) SetInitialSelection(idx int) {
+    if len(m.menuItems) == 0 {
+        return
+    }
+    if idx >= len(m.menuItems) {
+        idx = len(m.menuItems) - 1
+    }
+    if idx < 0 {
+        idx = 0
+    }
+    m.selectedItemIndex = idx
+}
+
 func Filtered(items []services.MenuItem, predicate func(item services.MenuItem) bool) []services.MenuItem {
     var filtered []services.MenuItem
     for _, item := range items {
