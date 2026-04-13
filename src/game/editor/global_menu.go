@@ -44,6 +44,11 @@ func (g *GameStateEditor) openGlobalMenu() {
             Handler:  g.saveMap,
             QuickKey: "s",
         },
+
+        {
+            Label:   "Ambient Light",
+            Handler: g.changeAmbientLight,
+        },
         {
             Label:   "Set default style",
             Handler: g.setDefaultStyleFromCurrent,

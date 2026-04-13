@@ -81,6 +81,7 @@ type UIInterface interface {
     OpenFancyMenu(menuItems []MenuItem)
     OpenXOffsetAutoCloseMenuWithCallback(xOffset int, items []MenuItem, callback func())
     OpenAtPosAutoCloseMenuWithCallback(pos geometry.Point, items []MenuItem, callback func())
+    OpenTilePicker(title string, items []MenuItem, onHover func(string), onClose func())
     PopModal()
     ShowTextInputAt(pos geometry.Point, width int, prompt string, prefilled string, onClose func(string), onAbort func())
     ShowTextInput(prompt string, prefilled string, onClose func(string), onAbort func())
@@ -338,7 +339,13 @@ type Engine interface {
     MapWindowHeight() int
     // Schedule should only be used if the effect MUST NOT be cancelled or re-scheduled.
     // And the call must handle being run after the gameplay state has quit.
+    // Schedule fires after a wall-clock delay (unaffected by TimeFactor).
     Schedule(delayInSeconds float64, functionCall func())
+    // ScheduleGameTime fires after a game-time delay that scales with TimeFactor.
+    // Use this for all physics/simulation events (fire ticks, poison delay, etc.)
+    // so they respect world-time scaling.  If TimeFactor is 0 (frozen) the call
+    // is silently dropped.
+    ScheduleGameTime(delayInSeconds float64, functionCall func())
     ScheduleInTicks(delayInTicks uint64, functionCall func())
     ScheduleWhen(condition func() bool, functionCall func())
     QuitGame()
@@ -435,7 +442,7 @@ type KeyDefinitions struct {
     SameTileActionKey ebiten.Key
     SneakModeKey      ebiten.Key
     DropItemKey       ebiten.Key
-    PutItemAwayKey    ebiten.Key
+    HolsterItemKey    ebiten.Key
     UseItemKey        ebiten.Key
     InventoryKey      ebiten.Key
 }

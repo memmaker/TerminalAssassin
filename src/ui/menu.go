@@ -123,6 +123,11 @@ func (m *Menu) handlePointerCommand(cmd core.PointerCommand) {
         }
     case core.MouseLeftReleased:
         m.activateSelectedItem()
+    case core.MouseRight:
+        m.isDirty = true
+        if m.onClose != nil {
+            m.onClose()
+        }
     case core.MouseWheelUp:
         if m.needsScrolling() {
             m.scrollUp()
@@ -192,6 +197,9 @@ func (m *Menu) Draw(grid console.CellInterface) {
     grid.HalfWidthFill(halfWidthBounds, common.Cell{Rune: ' ', Style: common.Style{Foreground: common.Transparent, Background: common.Transparent}})
     for yPos := m.boundingBox.Min.Y + 1; yPos < m.boundingBox.Max.Y; yPos++ {
         itemIndex := yPos - m.boundingBox.Min.Y - 1 + m.scrollPos
+        if itemIndex >= len(m.menuItems) {
+            break
+        }
         item := m.menuItems[itemIndex]
 
         xPos := m.boundingBox.Min.X + 1

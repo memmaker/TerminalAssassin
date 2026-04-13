@@ -37,7 +37,7 @@ func (g *GameStateEditor) openScheduleLibraryMenu() {
             Icon: 'S',
         })
     }
-	g.engine.GetUI().OpenFixedWidthAutoCloseMenu("Schedules", menuItems)
+	g.OpenMenuBarDropDown("Schedules", (2*6)-2, menuItems)
 }
 
 // createNewSchedule prompts for a name

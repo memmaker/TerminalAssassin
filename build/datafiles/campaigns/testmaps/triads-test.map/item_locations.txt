@@ -96,6 +96,12 @@ Key: Security Night Club
 ItemAt: (62,51)
 Name: Soda Can
 
+ItemAt: (63,35)
+Name: Submachine Gun
+
+ItemAt: (63,37)
+Name: Assault Rifle
+
 ItemAt: (63,42)
 Name: Poison (lethal)
 

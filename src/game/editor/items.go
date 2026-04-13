@@ -39,7 +39,7 @@ func (g *GameStateEditor) openItemMenu() {
             }),
         })
     }
-    g.OpenMenuBarDropDown("Choose item", (2*3)-2, menuItems)
+	g.OpenTilePickerDropDown("Choose item", menuItems)
     return
 }
 

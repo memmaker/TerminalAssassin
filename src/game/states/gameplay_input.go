@@ -100,12 +100,12 @@ func (g *GameStateGameplay) BeginMouseAiming() {
         return
     }
     g.Ui = aimingUIState
-	if player.EquippedItem.Type.HasScope() {
-		player.FovMode = gridmap.FoVModeScoped
-		currentMap.UpdateFieldOfView(player)
-	}
-	g.AdjustPlayerAimFromMouse()
-	return
+    if player.EquippedItem.Type.HasScope() {
+        player.FovMode = gridmap.FoVModeScoped
+        currentMap.UpdateFieldOfView(player)
+    }
+    g.AdjustPlayerAimFromMouse()
+    return
 }
 
 func (g *GameStateGameplay) BeginExamine() {
@@ -235,8 +235,8 @@ func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64)
         g.Ui = aimingUIState
         g.padAimActive = true
         g.padAimPos = player.FoVSource().ToPointF()
-		if player.EquippedItem != nil && player.EquippedItem.Type.HasScope() {
-			player.FovMode = gridmap.FoVModeScoped
+        if player.EquippedItem != nil && player.EquippedItem.Type.HasScope() {
+            player.FovMode = gridmap.FoVModeScoped
             currentMap.UpdateFieldOfView(player)
         }
     }
@@ -371,6 +371,7 @@ func (g *GameStateGameplay) setAimFromPeekDirection(direction geometry.Point) {
 func (g *GameStateGameplay) ToggleShowCompleteMap() {
     g.engine.GetGame().GetMap().SetAllExplored()
     g.DebugModeActive = !g.DebugModeActive
+    g.Print("Debug mode: " + strconv.FormatBool(g.DebugModeActive))
     g.isDirty = true
 }
 

@@ -12,165 +12,70 @@ import (
 
 type ItemType int
 
-func (t ItemType) ToString() string {
-    switch t {
-    case ItemTypeCommon:
-        return "common"
-    case ItemTypePistol:
-        return "pistol"
-    case ItemTypeShotgun:
-        return "shotgun"
-    case ItemTypeSniperRifle:
-        return "sniper_rifle"
-    case ItemTypeAssaultRifle:
-        return "assault_rifle"
-    case ItemTypeSubmachineGun:
-        return "submachine_gun"
-    case ItemTypeMeleeSharp:
-        return "melee_sharp"
-    case ItemTypeMeleeBlunt:
-        return "melee_blunt"
-    case ItemTypeTool:
-        return "tool"
-    case ItemTypeLethalPoison:
-        return "lethal_poison"
-    case ItemTypeEmeticPoison:
-        return "emetic_poison"
-    case ItemTypeScrewdriver:
-        return "screwdriver"
-    case ItemTypeWrench:
-        return "wrench"
-    case ItemTypeTaser:
-        return "taser"
-    case ItemTypeDartGun:
-        return "dart_gun"
-    case ItemTypeRemoteTaser:
-        return "remote_taser"
-    case ItemTypeCrowbar:
-        return "crowbar"
-    case ItemTypePianoWire:
-        return "piano_wire"
-    case ItemTypeMechanicalLockpick:
-        return "mechanical_lockpick"
-    case ItemTypeElectronicalLockpick:
-        return "electronical_lockpick"
-    case ItemTypeCleaner:
-        return "cleaner"
-    case ItemTypeClothing:
-        return "clothing"
-    case ItemTypeKey:
-        return "key"
-    case ItemTypeKeyCard:
-        return "key_card"
-    case ItemTypeKnife:
-        return "knife"
-    case ItemTypeLoot:
-        return "loot"
-    case ItemTypeExplosive:
-        return "explosive"
-    case ItemTypeRemoteExplosive:
-        return "remote_explosive"
-    case ItemTypeProximityMine:
-        return "proximity_mine"
-    case ItemTypeSleepPoison:
-        return "sleep_poison"
-    case ItemTypeLethalPoisonGrenade:
-        return "lethal_poison_grenade"
-    case ItemTypeSleepPoisonGrenade:
-        return "sleep_poison_grenade"
-    case ItemTypeLethalPoisonMine:
-        return "lethal_poison_mine"
-    case ItemTypeSleepPoisonMine:
-        return "sleep_poison_mine"
-    case ItemTypeCamera:
-        return "camera"
-    case ItemTypeShovel:
-        return "shovel"
-    case ItemTypeFlashlight:
-        return "flashlight"
-    default:
-        return "unknown"
+// itemTypeNames is the single source of truth for ItemType ↔ string mapping.
+// itemTypeByName is the reverse map, built once in init().
+// ItemTypeMessage is intentionally omitted — it has no serialised string form.
+var itemTypeNames = map[ItemType]string{
+    ItemTypeCommon:              "common",
+    ItemTypePistol:              "pistol",
+    ItemTypeShotgun:             "shotgun",
+    ItemTypeSniperRifle:         "sniper_rifle",
+    ItemTypeAssaultRifle:        "assault_rifle",
+    ItemTypeSubmachineGun:       "submachine_gun",
+    ItemTypeMeleeSharp:          "melee_sharp",
+    ItemTypeMeleeBlunt:          "melee_blunt",
+    ItemTypeTool:                "tool",
+    ItemTypeLethalPoison:        "lethal_poison",
+    ItemTypeEmeticPoison:        "emetic_poison",
+    ItemTypeSleepPoison:         "sleep_poison",
+    ItemTypeScrewdriver:         "screwdriver",
+    ItemTypeWrench:              "wrench",
+    ItemTypeTaser:               "taser",
+    ItemTypeDartGun:             "dart_gun",
+    ItemTypeRemoteTaser:         "remote_taser",
+    ItemTypeCrowbar:             "crowbar",
+    ItemTypeKnife:               "knife",
+    ItemTypePianoWire:           "piano_wire",
+    ItemTypeMechanicalLockpick:  "mechanical_lockpick",
+    ItemTypeElectronicLockpick: "electronic_lockpick",
+    ItemTypeCleaner:             "cleaner",
+    ItemTypeClothing:            "clothing",
+    ItemTypeKey:                 "key",
+    ItemTypeKeyCard:             "key_card",
+    ItemTypeLoot:                "loot",
+    ItemTypeExplosive:           "explosive",
+    ItemTypeRemoteExplosive:     "remote_explosive",
+    ItemTypeProximityMine:       "proximity_mine",
+    ItemTypeLethalPoisonGrenade: "lethal_poison_grenade",
+    ItemTypeSleepPoisonGrenade:  "sleep_poison_grenade",
+    ItemTypeLethalPoisonMine:    "lethal_poison_mine",
+    ItemTypeSleepPoisonMine:     "sleep_poison_mine",
+    ItemTypeCamera:              "camera",
+    ItemTypeShovel:              "shovel",
+    ItemTypeFlashlight:          "flashlight",
+}
+
+var itemTypeByName map[string]ItemType
+
+func init() {
+    itemTypeByName = make(map[string]ItemType, len(itemTypeNames))
+    for k, v := range itemTypeNames {
+        itemTypeByName[v] = k
     }
 }
-func NewItemTypeFromString(text string) ItemType {
-    switch text {
-    case "common":
-        return ItemTypeCommon
-    case "pistol":
-        return ItemTypePistol
-    case "shotgun":
-        return ItemTypeShotgun
-    case "sniper_rifle":
-        return ItemTypeSniperRifle
-    case "assault_rifle":
-        return ItemTypeAssaultRifle
-    case "submachine_gun":
-        return ItemTypeSubmachineGun
-    case "melee_sharp":
-        return ItemTypeMeleeSharp
-    case "melee_blunt":
-        return ItemTypeMeleeBlunt
-    case "tool":
-        return ItemTypeTool
-    case "lethal_poison":
-        return ItemTypeLethalPoison
-    case "emetic_poison":
-        return ItemTypeEmeticPoison
-    case "screwdriver":
-        return ItemTypeScrewdriver
-    case "wrench":
-        return ItemTypeWrench
-    case "taser":
-        return ItemTypeTaser
-    case "dart_gun":
-        return ItemTypeDartGun
-    case "remote_taser":
-        return ItemTypeRemoteTaser
-    case "crowbar":
-        return ItemTypeCrowbar
-    case "piano_wire":
-        return ItemTypePianoWire
-    case "mechanical_lockpick":
-        return ItemTypeMechanicalLockpick
-    case "electronical_lockpick":
-        return ItemTypeElectronicalLockpick
-    case "cleaner":
-        return ItemTypeCleaner
-    case "clothing":
-        return ItemTypeClothing
-    case "key":
-        return ItemTypeKey
-    case "key_card":
-        return ItemTypeKeyCard
-    case "loot":
-        return ItemTypeLoot
-    case "knife":
-        return ItemTypeKnife
-    case "explosive":
-        return ItemTypeExplosive
-    case "remote_explosive":
-        return ItemTypeRemoteExplosive
-    case "proximity_mine":
-        return ItemTypeProximityMine
-    case "sleep_poison":
-        return ItemTypeSleepPoison
-    case "lethal_poison_grenade":
-        return ItemTypeLethalPoisonGrenade
-    case "sleep_poison_grenade":
-        return ItemTypeSleepPoisonGrenade
-    case "lethal_poison_mine":
-        return ItemTypeLethalPoisonMine
-    case "sleep_poison_mine":
-        return ItemTypeSleepPoisonMine
-    case "camera":
-        return ItemTypeCamera
-    case "shovel":
-        return ItemTypeShovel
-    case "flashlight":
-        return ItemTypeFlashlight
-    default:
-        return ItemTypeCommon
+
+func (t ItemType) ToString() string {
+    if s, ok := itemTypeNames[t]; ok {
+        return s
     }
+    return "unknown"
+}
+
+func NewItemTypeFromString(text string) ItemType {
+    if t, ok := itemTypeByName[text]; ok {
+        return t
+    }
+    return ItemTypeCommon
 }
 
 const (
@@ -195,7 +100,7 @@ const (
     ItemTypeKnife
     ItemTypePianoWire
     ItemTypeMechanicalLockpick
-    ItemTypeElectronicalLockpick
+    ItemTypeElectronicLockpick
     ItemTypeCleaner
     ItemTypeClothing
     ItemTypeKey
@@ -214,90 +119,88 @@ const (
     ItemTypeFlashlight
 )
 
-// HasMeleeAction returns true when the item can be used at melee range.
-func (t ItemType) HasMeleeAction() bool {
-    switch t {
-    case ItemTypePistol, ItemTypeShotgun, ItemTypeSniperRifle, ItemTypeAssaultRifle,
-        ItemTypeSubmachineGun, ItemTypeMeleeSharp, ItemTypeMeleeBlunt, ItemTypeTool,
-        ItemTypeLethalPoison, ItemTypeEmeticPoison, ItemTypeSleepPoison,
-        ItemTypeScrewdriver, ItemTypeWrench, ItemTypeTaser, ItemTypeCrowbar,
-        ItemTypeKnife, ItemTypePianoWire, ItemTypeCleaner, ItemTypeFlashlight:
-        return true
-    }
-    return false
+// itemTypeTraits holds every per-type capability flag and value in one place.
+// Adding a new ItemType only requires one entry in itemTraitsTable below.
+type itemTypeTraits struct {
+    hasMeleeAction         bool
+    isMeleeTool            bool    // tool-use melee (stimuli via TriggerOnToolUsage)
+    meleeDecreaseUses      bool    // consumes a use on melee activation
+    hasRangedAction        bool
+    isThrowable            bool
+    canSelfActivate        bool    // place / arm at own tile (e.g. proximity mines)
+    isRemoteDetonated      bool
+    isSpreadShot           bool
+    isMeleeWeapon          bool    // physical strike weapon (for IsWeapon / IsMeleeWeapon)
+    isRangedWeapon         bool    // firearm (for IsRangedWeapon / IsWeapon)
+    isAutomaticRangedWeapon bool   // full-auto (for IsAutomaticRangedWeapon / HasBurstWeapon)
+    cooldownSecs           float64 // 0 → default minimum (0.07 s)
+    scopeFoV               float64 // 0 → no scope; >0 → scoped FoV angle in degrees
 }
+
+// itemTraitsTable is the single source of truth for every ItemType capability.
+// All predicate methods below are one-line lookups into this table.
+var itemTraitsTable = map[ItemType]itemTypeTraits{
+    ItemTypeCommon:              {hasRangedAction: true, isThrowable: true},
+    ItemTypePistol:              {hasMeleeAction: true, hasRangedAction: true, isRangedWeapon: true, cooldownSecs: 0.30},
+    ItemTypeShotgun:             {hasMeleeAction: true, hasRangedAction: true, isRangedWeapon: true, isSpreadShot: true, cooldownSecs: 1.50},
+    ItemTypeSniperRifle:         {hasMeleeAction: true, hasRangedAction: true, isRangedWeapon: true, cooldownSecs: 2.00, scopeFoV: 20.0},
+    ItemTypeAssaultRifle:        {hasMeleeAction: true, hasRangedAction: true, isRangedWeapon: true, isAutomaticRangedWeapon: true, cooldownSecs: 0.20},
+    ItemTypeSubmachineGun:       {hasMeleeAction: true, hasRangedAction: true, isRangedWeapon: true, isAutomaticRangedWeapon: true, cooldownSecs: 0.10},
+    ItemTypeMeleeSharp:          {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
+    ItemTypeMeleeBlunt:          {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
+    ItemTypeTool:                {hasMeleeAction: true, isMeleeTool: true, meleeDecreaseUses: true},
+    ItemTypeLethalPoison:        {hasMeleeAction: true, isMeleeTool: true, meleeDecreaseUses: true},
+    ItemTypeEmeticPoison:        {hasMeleeAction: true, isMeleeTool: true, meleeDecreaseUses: true},
+    ItemTypeSleepPoison:         {hasMeleeAction: true, isMeleeTool: true, meleeDecreaseUses: true},
+    ItemTypeScrewdriver:         {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
+    ItemTypeWrench:              {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
+    ItemTypeTaser:               {hasMeleeAction: true, meleeDecreaseUses: true, cooldownSecs: 0.20},
+    ItemTypeDartGun:             {hasRangedAction: true, cooldownSecs: 2.00},
+    ItemTypeRemoteTaser:         {hasRangedAction: true, isThrowable: true, isRemoteDetonated: true},
+    ItemTypeCrowbar:             {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
+    ItemTypeKnife:               {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
+    ItemTypePianoWire:           {hasMeleeAction: true, isMeleeWeapon: true},
+    ItemTypeCleaner:             {hasMeleeAction: true, isMeleeTool: true, meleeDecreaseUses: true},
+    ItemTypeLoot:                {hasRangedAction: true, isThrowable: true},
+    ItemTypeExplosive:           {hasRangedAction: true, isThrowable: true},
+    ItemTypeRemoteExplosive:     {hasRangedAction: true, isThrowable: true, isRemoteDetonated: true},
+    ItemTypeProximityMine:       {hasRangedAction: true, isThrowable: true, canSelfActivate: true},
+    ItemTypeLethalPoisonGrenade: {hasRangedAction: true, isThrowable: true},
+    ItemTypeSleepPoisonGrenade:  {hasRangedAction: true, isThrowable: true},
+    ItemTypeLethalPoisonMine:    {hasRangedAction: true, isThrowable: true, canSelfActivate: true},
+    ItemTypeSleepPoisonMine:     {hasRangedAction: true, isThrowable: true, canSelfActivate: true},
+    ItemTypeFlashlight:          {hasMeleeAction: true, scopeFoV: 60.0},
+    // ItemTypeMechanicalLockpick, ItemTypeElectronicLockpick, ItemTypeClothing,
+    // ItemTypeKey, ItemTypeKeyCard, ItemTypeMessage, ItemTypeCamera, ItemTypeShovel
+    // use all-false / zero defaults.
+}
+
+// HasMeleeAction returns true when the item can be used at melee range.
+func (t ItemType) HasMeleeAction() bool { return itemTraitsTable[t].hasMeleeAction }
 
 // IsMeleeTool returns true when the melee action is a tool-use (applies stimuli
 // via TriggerOnToolUsage) rather than a physical strike.
-func (t ItemType) IsMeleeTool() bool {
-    switch t {
-    case ItemTypeLethalPoison, ItemTypeEmeticPoison, ItemTypeSleepPoison,
-        ItemTypeTool, ItemTypeCleaner:
-        return true
-    }
-    return false
-}
+func (t ItemType) IsMeleeTool() bool { return itemTraitsTable[t].isMeleeTool }
 
 // MeleeDecreaseUses returns true when activating the item in melee should
 // consume a use. Physical-strike weapons (guns pistol-whipping, blades) return
 // false so that ammo / unlimited-use items are not inadvertently decremented.
-func (t ItemType) MeleeDecreaseUses() bool {
-    switch t {
-    case ItemTypeTaser, ItemTypeLethalPoison, ItemTypeEmeticPoison,
-        ItemTypeSleepPoison, ItemTypeTool, ItemTypeCleaner:
-        return true
-    }
-    return false
-}
+func (t ItemType) MeleeDecreaseUses() bool { return itemTraitsTable[t].meleeDecreaseUses }
 
 // HasRangedAction returns true when the item can be used at range.
-func (t ItemType) HasRangedAction() bool {
-    switch t {
-    case ItemTypePistol, ItemTypeShotgun, ItemTypeSniperRifle, ItemTypeAssaultRifle,
-        ItemTypeSubmachineGun, ItemTypeDartGun,
-        ItemTypeKnife, ItemTypeMeleeSharp, ItemTypeMeleeBlunt, ItemTypeScrewdriver,
-        ItemTypeWrench, ItemTypeCrowbar,
-        ItemTypeExplosive, ItemTypeRemoteExplosive, ItemTypeProximityMine,
-        ItemTypeLethalPoisonGrenade, ItemTypeSleepPoisonGrenade,
-        ItemTypeLethalPoisonMine, ItemTypeSleepPoisonMine,
-        ItemTypeRemoteTaser, ItemTypeLoot, ItemTypeCommon:
-        return true
-    }
-    return false
-}
+func (t ItemType) HasRangedAction() bool { return itemTraitsTable[t].hasRangedAction }
 
 // IsThrowable returns true when the ranged action is a throw (including
 // throw-remote). Used by the aim system to enable target lock-on.
-func (t ItemType) IsThrowable() bool {
-    switch t {
-    case ItemTypeKnife, ItemTypeMeleeSharp, ItemTypeMeleeBlunt, ItemTypeScrewdriver,
-        ItemTypeWrench, ItemTypeCrowbar,
-        ItemTypeExplosive, ItemTypeRemoteExplosive, ItemTypeProximityMine,
-        ItemTypeLethalPoisonGrenade, ItemTypeSleepPoisonGrenade,
-        ItemTypeLethalPoisonMine, ItemTypeSleepPoisonMine,
-        ItemTypeRemoteTaser, ItemTypeLoot, ItemTypeCommon:
-        return true
-    }
-    return false
-}
+func (t ItemType) IsThrowable() bool { return itemTraitsTable[t].isThrowable }
 
 // CanSelfActivate returns true when the item can be placed / armed at the
 // player's own tile (drop-to-arm, e.g. proximity mines).
-func (t ItemType) CanSelfActivate() bool {
-    switch t {
-    case ItemTypeProximityMine, ItemTypeLethalPoisonMine, ItemTypeSleepPoisonMine:
-        return true
-    }
-    return false
-}
+func (t ItemType) CanSelfActivate() bool { return itemTraitsTable[t].canSelfActivate }
 
-func (t ItemType) IsRemoteDetonated() bool {
-    return t == ItemTypeRemoteExplosive || t == ItemTypeRemoteTaser
-}
+func (t ItemType) IsRemoteDetonated() bool { return itemTraitsTable[t].isRemoteDetonated }
 
-func (t ItemType) IsSpreadShot() bool {
-    return t == ItemTypeShotgun
-}
+func (t ItemType) IsSpreadShot() bool { return itemTraitsTable[t].isSpreadShot }
 
 // SpreadShotDegrees is the angular spread (in degrees) for a shotgun blast.
 const SpreadShotDegrees = 44
@@ -309,42 +212,19 @@ const ShotgunPelletCount = uint8(5)
 // item type. This is the delay before the item can be used again after firing
 // or striking.
 func (t ItemType) CooldownSecs() float64 {
-    switch t {
-    case ItemTypePistol:
-        return 0.30
-    case ItemTypeSubmachineGun:
-        return 0.10
-    case ItemTypeAssaultRifle:
-        return 0.20
-    case ItemTypeShotgun:
-        return 1.50
-    case ItemTypeSniperRifle:
-        return 2.00
-    case ItemTypeDartGun:
-        return 2.00
-    case ItemTypeTaser:
-        return 0.20
+    if c := itemTraitsTable[t].cooldownSecs; c > 0 {
+        return c
     }
     return 0.07 // default minimum cooldown for melee, throwables, tools, etc.
 }
 
 // HasScope returns true when equipping the item activates a directional narrow
 // FoV cone (scoped mode). True for sniper rifles and the flashlight.
-func (t ItemType) HasScope() bool {
-    return t == ItemTypeSniperRifle || t == ItemTypeFlashlight
-}
+func (t ItemType) HasScope() bool { return itemTraitsTable[t].scopeFoV > 0 }
 
 // ScopeFoV returns the field-of-view cone angle in degrees used while in
 // scoped mode. Returns 0 for items that have no scope.
-func (t ItemType) ScopeFoV() float64 {
-    switch t {
-    case ItemTypeSniperRifle:
-        return 20.0
-    case ItemTypeFlashlight:
-        return 60.0
-    }
-    return 0
-}
+func (t ItemType) ScopeFoV() float64 { return itemTraitsTable[t].scopeFoV }
 
 // LockDifficulty controls how many lockpicks a door/safe consumes and how long
 // the picking animation takes (Deus-Ex-style consumable picks).
@@ -397,6 +277,15 @@ func NewLockDifficultyFromString(s string) LockDifficulty {
     }
     return LockDifficultyEasy
 }
+
+// LockType distinguishes mechanical (key + lockpick) from electronic (keycard + e-pick).
+// Shared by Door and Safe.
+type LockType bool
+
+const (
+    LockTypeMechanical LockType = false
+    LockTypeElectronic LockType = true
+)
 
 type ItemEffectTrigger uint16
 
@@ -576,35 +465,11 @@ func (i *Item) DecreaseUsesLeft() {
     }
 }
 
-func (i *Item) IsWeapon() bool {
-    return i.IsRangedWeapon() || i.IsMeleeWeapon()
-
-}
-func (i *Item) IsMeleeWeapon() bool {
-    return i.Type == ItemTypeMeleeSharp ||
-        i.Type == ItemTypeMeleeBlunt ||
-        i.Type == ItemTypeScrewdriver ||
-        i.Type == ItemTypeWrench ||
-        i.Type == ItemTypeCrowbar ||
-        i.Type == ItemTypePianoWire ||
-        i.Type == ItemTypeKnife
-}
-
-func (i *Item) IsObviousWeapon() bool {
-    return i.IsRangedWeapon() || i.Type == ItemTypeKnife
-}
-
-func (i *Item) IsRangedWeapon() bool {
-    return i.Type == ItemTypePistol ||
-        i.Type == ItemTypeShotgun ||
-        i.Type == ItemTypeSniperRifle ||
-        i.IsAutomaticRangedWeapon()
-}
-
-func (i *Item) IsAutomaticRangedWeapon() bool {
-    return i.Type == ItemTypeAssaultRifle ||
-        i.Type == ItemTypeSubmachineGun
-}
+func (i *Item) IsWeapon() bool               { return i.IsRangedWeapon() || i.IsMeleeWeapon() }
+func (i *Item) IsMeleeWeapon() bool          { return itemTraitsTable[i.Type].isMeleeWeapon }
+func (i *Item) IsObviousWeapon() bool        { return i.IsRangedWeapon() || i.Type == ItemTypeKnife }
+func (i *Item) IsRangedWeapon() bool         { return itemTraitsTable[i.Type].isRangedWeapon }
+func (i *Item) IsAutomaticRangedWeapon() bool { return itemTraitsTable[i.Type].isAutomaticRangedWeapon }
 
 func (i *Item) SetKey(key string) {
     i.KeyString = key

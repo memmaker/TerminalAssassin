@@ -244,7 +244,7 @@ func (m *Manager) RemoveFromScene(widget services.UIWidget) {
 }
 
 func (m *Manager) OpenXOffsetAutoCloseMenuWithCallback(xOffset int, items []services.MenuItem, onClose func()) {
-    height := len(items) + 1
+    height := ConditionalCount(items) + 1
     yEnd := m.engine.ScreenGridHeight() - 4
     yStart := yEnd - height
     if yStart < 0 {
@@ -277,7 +277,7 @@ func (m *Manager) OpenXOffsetAutoCloseMenuWithCallback(xOffset int, items []serv
 func (m *Manager) OpenAtPosAutoCloseMenuWithCallback(pos geometry.Point, items []services.MenuItem, onClose func()) {
     screenW := m.engine.ScreenGridWidth()
     screenH := m.engine.ScreenGridHeight()
-    height := len(items) + 1
+    height := ConditionalCount(items) + 1
     width := (widthFromItems(items) / 2) + 4
 
     // Prefer opening downward from the click; flip upward if near bottom.
@@ -633,6 +633,57 @@ func (m *Manager) ShowStyledAlert(styledText []core.StyledText, bgColor common.C
     alert.SetBackgroundColor(bgColor)
     m.pushModal(alert)
 }
+// OpenTilePicker pushes a 2-D icon picker as a modal.
+// Items are arranged in a roughly square grid with one-tile gaps.
+// onHover is called with the hovered item's label (or "" on leave).
+// onClose is invoked after a selection or dismissal.
+func (m *Manager) OpenTilePicker(title string, items []services.MenuItem, onHover func(string), onClose func()) {
+	filtered := Filtered(items, func(item services.MenuItem) bool {
+		return item.Condition == nil || item.Condition()
+	})
+	if len(filtered) == 0 {
+		return
+	}
+
+	cols := ColsForItems(len(filtered))
+	rows := (len(filtered) + cols - 1) / cols
+
+	screenW := m.engine.ScreenGridWidth()
+	screenH := m.engine.ScreenGridHeight()
+
+	// DrawBox renders (2*cols+1) x (2*rows+1) tiles on screen (inclusive bounds).
+	renderedW := 2*cols + 1
+	renderedH := 2*rows + 1
+
+	x0 := (screenW - renderedW) / 2
+	y0 := (screenH - renderedH) / 2
+	if x0 < 0 {
+		x0 = 0
+	}
+	if y0 < 2 {
+		y0 = 2 // stay clear of any top menu bar
+	}
+	// Keep the box on screen.
+	if x0+2*cols >= screenW {
+		x0 = screenW - 2*cols - 1
+	}
+	if y0+2*rows >= screenH-2 {
+		y0 = screenH - 2*rows - 3
+	}
+	if y0 < 0 {
+		y0 = 0
+	}
+
+	bbox := geometry.NewRect(x0, y0, x0+2*cols, y0+2*rows)
+	closeFunc := func() {
+		m.PopModal()
+		if onClose != nil {
+			onClose()
+		}
+	}
+	m.pushModal(NewTilePicker(title, filtered, cols, bbox, onHover, closeFunc))
+}
+
 func (m *Manager) ShowAlert(strings []string) {
     textStyle := common.DefaultStyle.Reversed()
     formatted := make([]core.StyledText, len(strings))

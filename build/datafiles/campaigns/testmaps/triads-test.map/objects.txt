@@ -12,6 +12,7 @@ ObjectAt: (13,71)
 Name: light door (locked)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (14,62)
 Name: light window (closed)
@@ -22,6 +23,7 @@ ObjectAt: (14,66)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (16,67)
 Name: locker (container)
@@ -32,6 +34,7 @@ ObjectAt: (17,79)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (17,93)
 Name: light window (closed)
@@ -42,6 +45,7 @@ ObjectAt: (18,17)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.02, 1.04, 1.20)
+Difficulty: easy
 
 ObjectAt: (18,71)
 Name: oil drum (liquid container)
@@ -57,6 +61,7 @@ ObjectAt: (18,8)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.02, 1.04, 1.20)
+Difficulty: easy
 
 ObjectAt: (19,63)
 Name: light window (closed)
@@ -67,6 +72,7 @@ ObjectAt: (19,65)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (19,71)
 Name: oil drum (liquid container)
@@ -87,6 +93,7 @@ ObjectAt: (20,86)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (21,92)
 Name: locker (container)
@@ -113,6 +120,7 @@ Name: electronic door (locked)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.02, 1.04, 1.20)
 Key: Security Night Club
+Difficulty: easy
 
 ObjectAt: (26,71)
 Name: oil drum (liquid container)
@@ -148,6 +156,7 @@ ObjectAt: (28,89)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (29,86)
 Name: a sink (liquid faucet)
@@ -163,11 +172,13 @@ ObjectAt: (31,85)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (33,89)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (34,63)
 Name: light window (closed)
@@ -213,6 +224,7 @@ ObjectAt: (37,89)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (41,35)
 Name: light window (closed)
@@ -233,6 +245,7 @@ ObjectAt: (41,52)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (41,83)
 Name: light window (closed)
@@ -288,6 +301,7 @@ ObjectAt: (45,69)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (45,94)
 Name: light window (closed)
@@ -298,21 +312,25 @@ ObjectAt: (46,37)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (46,43)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (46,48)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (46,83)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (46,95)
 Name: power box (distractor)
@@ -338,11 +356,13 @@ ObjectAt: (48,52)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (5,15)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.02, 1.04, 1.20)
+Difficulty: easy
 
 ObjectAt: (51,83)
 Name: light window (closed)
@@ -354,6 +374,7 @@ Name: mechanical safe (locked)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
 Key: triads safe
+Difficulty: easy
 Content: Diamond Necklace
 Content: Gold Watch
 
@@ -366,11 +387,13 @@ ObjectAt: (54,89)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (55,69)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (55,73)
 Name: light window (closed)
@@ -387,18 +410,21 @@ Name: light door (locked)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
 Key: Room 102
+Difficulty: easy
 
 ObjectAt: (57,42)
 Name: light door (locked)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
 Key: Room 101
+Difficulty: easy
 
 ObjectAt: (57,48)
 Name: light door (locked)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
 Key: Room 100
+Difficulty: easy
 
 ObjectAt: (57,54)
 Name: light window (closed)
@@ -434,6 +460,7 @@ ObjectAt: (62,72)
 Name: light door (closed)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (62,76)
 Name: light window (closed)
@@ -454,6 +481,7 @@ ObjectAt: (66,67)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (67,26)
 Name: gravestone|Willy Wonka
@@ -464,6 +492,7 @@ ObjectAt: (67,72)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (67,89)
 Name: cabinet (container)
@@ -479,6 +508,7 @@ ObjectAt: (69,67)
 Name: light door (open)
 FgColor: (0.00, 0.00, 0.13)
 BgColor: (1.20, 1.09, 1.08)
+Difficulty: easy
 
 ObjectAt: (70,23)
 Name: gravestone|Helga

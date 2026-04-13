@@ -38,7 +38,7 @@ const (
     StopSneaking
     PickUpItem
     DropItem
-    PutItemAway
+    HolsterItem
     NextItem
     PreviousItem
     OpenInventory
@@ -57,6 +57,7 @@ const (
     BeginMouseAiming
     Assassinate
     DiveTackle // Circle + active right stick → dive/tackle in peek direction
+    StopAiming // L2 released → exit gamepad aim mode and return to default state
 )
 
 const (

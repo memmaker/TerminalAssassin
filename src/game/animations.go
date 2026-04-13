@@ -140,15 +140,18 @@ func (a *Animator) ActorEngagedAnimation(person *core.Actor, r rune, actionPosit
 }
 
 func (a *Animator) PlayerChangeClothesAnimation(actionPosition geometry.Point, otherClothes core.Clothing, finishedCallback, cancelCallback func()) {
-    missionMap := a.engine.GetGame().GetMap()
-    player := missionMap.Player
-    otherClothesColor := otherClothes.FgColor()
-    onFinish := func() {
-        stats := a.engine.GetGame().GetStats()
-        stats.DisguisesWorn.Add(otherClothes.Name)
-        finishedCallback()
-    }
-    a.engagedWithSoundAnimation(player, actionPosition, "get-dressed", core.GlyphClothing, otherClothesColor, onFinish, cancelCallback)
+	missionMap := a.engine.GetGame().GetMap()
+	player := missionMap.Player
+	otherClothesColor := otherClothes.FgColor()
+	onFinish := func() {
+		oldClothing := player.Clothes // still old before finishedCallback runs
+		finishedCallback()
+		a.engine.PublishEvent(services.PlayerChangedClothesEvent{
+			OldClothing: oldClothing,
+			NewClothing: otherClothes,
+		})
+	}
+	a.engagedWithSoundAnimation(player, actionPosition, "get-dressed", core.GlyphClothing, otherClothesColor, onFinish, cancelCallback)
 }
 
 func (a *Animator) ActorEngagedIllegalAnimation(person *core.Actor, r rune, actionPosition geometry.Point, timeNeededInSeconds float64, finishedCallback func(), cancelCallback func()) {

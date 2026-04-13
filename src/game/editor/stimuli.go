@@ -56,6 +56,16 @@ func (g *GameStateEditor) openStimuliMenu() {
 				})
 			}),
 		},
+		{
+			Label: "High Voltage",
+			Icon:  core.GlyphElectric,
+			Handler: g.setBrushHandler(addStimuliUI, core.GlyphElectric, func(pos geometry.Point) {
+				g.engine.GetGame().GetMap().AddStimulusToTile(pos, stimuli.Stim{
+					StimType:  stimuli.StimulusHighVoltage,
+					StimForce: 80,
+				})
+			}),
+		},
 	}
 	g.OpenMenuBarDropDown("Stimuli", (2*7)-2, menuItems)
 }

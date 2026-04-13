@@ -21,17 +21,18 @@ func (f *FollowerMovement) OnMapLoad(m gridmap.GridMap[*core.Actor, *core.Item, 
 	f.PosOffset = geometry.RotateVector(f.PosOffset, f.Leader.LookDirection)
 }
 
-func (f *FollowerMovement) NextAction() {
-	// the plan:
-	// the follower has a position he wants to be at relative to the Leader
-	// the follower position must always have LoS to the Leader
-	// first we need to determine if the position can be occupied at all
-	// we are satisfied if the follower is at the right position and can see the Leader
-	if f.isInPosition(f.Person) && f.canSee(f.Person.Pos(), f.Leader.Pos()) {
-		f.watchTheArea(f.Person)
-	} else {
-		f.Replan(f.Person)
-	}
+func (f *FollowerMovement) NextAction() core.AIUpdate {
+    // the plan:
+    // the follower has a position he wants to be at relative to the Leader
+    // the follower position must always have LoS to the Leader
+    // first we need to determine if the position can be occupied at all
+    // we are satisfied if the follower is at the right position and can see the Leader
+    if f.isInPosition(f.Person) && f.canSee(f.Person.Pos(), f.Leader.Pos()) {
+        f.watchTheArea(f.Person)
+    } else {
+        f.Replan(f.Person)
+    }
+    return NextUpdateIn(float64(f.Person.MoveDelay()))
 }
 func (f *FollowerMovement) isInPosition(person *core.Actor) bool {
 	targetPos := f.Leader.Pos().Add(f.PosOffset)

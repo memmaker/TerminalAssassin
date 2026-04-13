@@ -6,14 +6,16 @@ import (
 	"strings"
 )
 
+// functionCallPattern is compiled once; LooksLikeAFunction and GetNameAndArgs
+// are called frequently during script parsing.
+var functionCallPattern = regexp.MustCompile(`([A-Za-z]+)\((.*)\)`)
+
 func LooksLikeAFunction(line string) bool {
-	regexpPattern := regexp.MustCompile(`([A-Za-z]+)\((.*)\)`)
-	return regexpPattern.MatchString(line)
+	return functionCallPattern.MatchString(line)
 }
 
 func GetNameAndArgs(line string) (string, []string) {
-	regexpPattern := regexp.MustCompile(`([A-Za-z]+)\((.*)\)`)
-	matches := regexpPattern.FindStringSubmatch(line)
+	matches := functionCallPattern.FindStringSubmatch(line)
 	if matches == nil {
 		return line, []string{}
 	}

@@ -35,10 +35,10 @@ type GameStateGameplay struct {
     FocusedActor          *core.Actor
     targetMovePath        []geometry.Point
     ActionMap             map[geometry.Point]services.ContextAction
-	contextActionsHelp   string
-	lastPlayerMovementAt time.Time
+    contextActionsHelp    string
+    lastPlayerMovementAt  time.Time
 
-	MoveTimer *time.Timer
+    MoveTimer *time.Timer
 
     initActors              bool
     DebugModeActive         bool
@@ -188,7 +188,6 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
 
     userInterface := g.engine.GetUI()
     toolTipFunc := func(origin geometry.Point, stringLength int) geometry.Rect { // from screen to half screen
-
         finalScreenHalfPos := userInterface.CalculateLabelPlacement(origin, stringLength)
         labelBounds := ui.NewBoundsForText(finalScreenHalfPos, stringLength)
         topOverlap := false
@@ -214,6 +213,54 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
             g.Print(fmt.Sprintf("%s picked up %s.", t.Actor.Name, t.Item.Name))
         } else {
             g.Print(fmt.Sprintf("Picked up %s.", t.Item.Name))
+        }
+        return true
+    }))
+
+    // HUD / message routing — replaces the type-asserting UpdateHUD / PrintMessage on Model.
+    g.engine.SubscribeToEvents(services.NewFilter(func(_ services.HUDDirtyEvent) bool {
+        g.UpdateHUD()
+        return true
+    }))
+    g.engine.SubscribeToEvents(services.NewFilter(func(e services.PrintMessageEvent) bool {
+        g.Print(e.Text)
+        return true
+    }))
+
+    // Mission-stats tracking — decoupled from model/ai/animation internals.
+    g.engine.SubscribeToEvents(services.NewFilter(func(_ services.PlayerSpottedEvent) bool {
+        stats.BeenSpotted = true
+        return true
+    }))
+    g.engine.SubscribeToEvents(services.NewFilter(func(_ services.BodyDiscoveredEvent) bool {
+        stats.BodiesFound = true
+        return true
+    }))
+    g.engine.SubscribeToEvents(services.NewFilter(func(e services.ActorKilledEvent) bool {
+        stats.AddKill(e.Victim, e.CauseOfDeath, e.Position, utils.UTicksToSeconds(g.engine.CurrentTick()))
+        return true
+    }))
+    g.engine.SubscribeToEvents(services.NewFilter(func(e services.PlayerChangedClothesEvent) bool {
+        stats.DisguisesWorn.Add(e.NewClothing.Name)
+        return true
+    }))
+
+    // Ambience sound — reacts to zone changes instead of running in playerEnteredCell.
+    g.engine.SubscribeToEvents(services.NewFilter(func(e services.ActorEnteredZoneEvent) bool {
+        if e.Actor != g.engine.GetGame().GetMap().Player {
+            return true
+        }
+        audioPlayer := g.engine.GetAudio()
+        currentGameMap := g.engine.GetGame().GetMap()
+        if e.OldZone.AmbienceCue != "" {
+            audioPlayer.Stop(e.OldZone.AmbienceCue)
+        } else if currentGameMap.AmbienceSoundCue != "" && e.NewZone.AmbienceCue != "" {
+            audioPlayer.Stop(currentGameMap.AmbienceSoundCue)
+        }
+        if e.NewZone.AmbienceCue != "" {
+            audioPlayer.StartLoop(e.NewZone.AmbienceCue)
+        } else if currentGameMap.AmbienceSoundCue != "" && !audioPlayer.IsCuePlaying(currentGameMap.AmbienceSoundCue) {
+            audioPlayer.StartLoop(currentGameMap.AmbienceSoundCue)
         }
         return true
     }))
@@ -1043,7 +1090,7 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
     case core.PickUpItem:
         model.PickUpItem(player)
         g.UpdateHUD()
-    case core.PutItemAway:
+    case core.HolsterItem:
         player.HolsterItem()
         g.UpdateHUD()
     case core.UseRangedItem:
@@ -1065,6 +1112,12 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
         g.contextAction()
     case core.Cancel:
         g.OpenPauseMenu()
+    case core.StopAiming:
+        if g.padAimActive {
+            g.resetPlayerState()
+            g.ensureWorldPosInView(player.Pos(), 4)
+            model.GetMap().UpdateFieldOfView(player)
+        }
     }
 }
 
@@ -1310,15 +1363,15 @@ func (g *GameStateGameplay) playerUseItem() {
         return
     }
 
-	if isSelf && player.EquippedItem.Type.CanSelfActivate() {
-		player.EquippedItem.DecreaseUsesLeft()
-		actions.UseEquippedItemOnSelf(player)
-	} else if isMelee && player.EquippedItem.Type.HasMeleeAction() {
-		if player.EquippedItem.Type.MeleeDecreaseUses() {
-			player.EquippedItem.DecreaseUsesLeft()
-		}
-		actions.UseEquippedItemForMelee(player, targetPos)
-	}
+    if isSelf && player.EquippedItem.Type.CanSelfActivate() {
+        player.EquippedItem.DecreaseUsesLeft()
+        actions.UseEquippedItemOnSelf(player)
+    } else if isMelee && player.EquippedItem.Type.HasMeleeAction() {
+        if player.EquippedItem.Type.MeleeDecreaseUses() {
+            player.EquippedItem.DecreaseUsesLeft()
+        }
+        actions.UseEquippedItemForMelee(player, targetPos)
+    }
 
     if player.EquippedItem == nil {
         g.resetPlayerState()

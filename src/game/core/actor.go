@@ -31,6 +31,17 @@ func (d CauseOfDeath) IsPlayer() bool {
     return d.Source.Actor != nil && d.Source.Actor.IsPlayer()
 }
 
+// IsBodyDisappearing returns false for causes of death where the body (and
+// therefore the inventory) is physically unreachable — e.g. drowned or fallen
+// into a pit.
+func (d CauseOfDeath) IsBodyDisappearing() bool {
+    switch d.Description {
+    case CoDFalling, CoDDrowned:
+        return false
+    }
+    return true
+}
+
 func (d CauseOfDeath) descriptionWithItem() string {
     desc := string(d.Description)
     if d.Source.Item != nil && strings.Contains(desc, "%s") {
@@ -220,13 +231,12 @@ func (k *IndividualKnowledge) AddSightingOfSuspiciousActor(witness *Actor, locat
     }
 }
 
-type AIState interface{}
 type AIComponent struct {
     PathBlockedCount    int
     Knowledge           *IndividualKnowledge
     Schedule            string // name of the schedule in GridMap.AllSchedules
     CurrentTaskIndex    int    // index into the named schedule's Tasks slice
-    stateStack          []AIState
+    stateStack          []AIStateHandler
     StartPosition       geometry.Point
     StartLookDirection  float64
     SuspicionCounter    int
@@ -234,19 +244,18 @@ type AIComponent struct {
     Movement            AIMovement
     // NextUpdateIn is the remaining time in fractional seconds before the next AI update fires.
     // Decremented each game tick by (timeFactor / TPS). The AI action runs when this reaches 0 or below.
-    NextUpdateIn        float64
-    UpdatePredicate     func() bool
-    DebugFlag           bool
+    NextUpdateIn    float64
+    UpdatePredicate func() bool
+    DebugFlag       bool
 }
 
-func (a *AIComponent) GetState() AIState {
+func (a *AIComponent) GetState() AIStateHandler {
     return a.stateStack[len(a.stateStack)-1]
 }
-func (a *AIComponent) SetState(state AIState) {
-    a.stateStack = []AIState{state}
-    //println(fmt.Sprintf("AI state set to %T", state))
+func (a *AIComponent) SetState(state AIStateHandler) {
+    a.stateStack = []AIStateHandler{state}
 }
-func (a *AIComponent) PushState(state AIState) {
+func (a *AIComponent) PushState(state AIStateHandler) {
     a.stateStack = append(a.stateStack, state)
     if !a.DebugFlag {
         return
@@ -254,10 +263,12 @@ func (a *AIComponent) PushState(state AIState) {
     println(fmt.Sprintf("AI state pushed: %T", state))
     a.debugPrintStateStack()
 }
-func (a *AIComponent) ReplaceState(state AIState) {
+func (a *AIComponent) ReplaceState(state AIStateHandler) {
     a.stateStack[len(a.stateStack)-1] = state
+    if !a.DebugFlag {
+        return
+    }
     println(fmt.Sprintf("AI state replaced with %T", state))
-    // print stack in reverse
     for i := len(a.stateStack) - 1; i >= 0; i-- {
         println(fmt.Sprintf("  %T", a.stateStack[i]))
     }
@@ -407,7 +418,7 @@ func mustParseFloat(s string) float64 {
 func MustParseInt(s string) int {
     f, err := strconv.ParseInt(strings.TrimSpace(s), 10, 32)
     if err != nil {
-        println("Error parsing float: " + s)
+        println("Error parsing integer: " + s)
         return 0
     }
     return int(f)
@@ -478,22 +489,22 @@ func (a *Actor) HasIllegalItemEquipped() bool {
 }
 
 func (a *Actor) HasThrownItemEquipped() bool {
-	return a.EquippedItem != nil && a.EquippedItem.Type.IsThrowable()
+    return a.EquippedItem != nil && a.EquippedItem.Type.IsThrowable()
 }
 
 // AimDistance returns the maximum aiming distance for the player's currently
 // equipped item. Priority: per-weapon ProjectileRange > ThrowingRange > VisionRange.
 func (a *Actor) AimDistance() int {
-	if a.EquippedItem == nil || (!a.EquippedItem.Type.HasRangedAction() && a.EquippedItem.Type.HasMeleeAction()) {
-		return 1 // melee-only item
-	}
-	if a.EquippedItem.ProjectileRange > 0 {
-		return a.EquippedItem.ProjectileRange // per-weapon range (guns, snipers, throwables)
-	}
-	if a.HasThrownItemEquipped() {
-		return ThrowingRange // fallback for throwables without an explicit range
-	}
-	return a.VisionRange()
+    if a.EquippedItem == nil || (!a.EquippedItem.Type.HasRangedAction() && a.EquippedItem.Type.HasMeleeAction()) {
+        return 1 // melee-only item
+    }
+    if a.EquippedItem.ProjectileRange > 0 {
+        return a.EquippedItem.ProjectileRange // per-weapon range (guns, snipers, throwables)
+    }
+    if a.HasThrownItemEquipped() {
+        return ThrowingRange // fallback for throwables without an explicit range
+    }
+    return a.VisionRange()
 }
 func (a *Actor) AddDamage(Amount int, Type stimuli.StimulusType) {
     a.DamageTaken = append(a.DamageTaken, DamageInfo{Amount, Type})
@@ -636,13 +647,13 @@ func (a *Actor) TryRespondToSpeech(currentTick uint64, speechCode string) {
     }
 }
 func (a *Actor) canSeeInScope(p geometry.Point) bool {
-	if a.EquippedItem == nil || !a.EquippedItem.Type.HasScope() {
-		return false
-	}
-	left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.EquippedItem.Type.ScopeFoV())
-	inCone := geometry.InVisionCone(a.FoVSource(), p, left, right)
-	visible := a.Fov.Visible(p)
-	return inCone && visible
+    if a.EquippedItem == nil || !a.EquippedItem.Type.HasScope() {
+        return false
+    }
+    left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.EquippedItem.Type.ScopeFoV())
+    inCone := geometry.InVisionCone(a.FoVSource(), p, left, right)
+    visible := a.Fov.Visible(p)
+    return inCone && visible
 }
 
 func (a *Actor) CanSeeInVisionCone(p geometry.Point) bool {
@@ -688,6 +699,23 @@ func (a *Actor) StrList() []string {
     charSheet = append(charSheet, fmt.Sprintf("Damage Taken:"))
     for _, damage := range a.DamageTaken {
         charSheet = append(charSheet, fmt.Sprintf("  %d of %s damage", damage.Amount, damage.Type))
+    }
+
+    charSheet = append(charSheet, "Inventory:")
+    if a.Inventory == nil || len(a.Inventory.Items) == 0 {
+        charSheet = append(charSheet, "  (empty)")
+    } else {
+        for _, item := range a.Inventory.Items {
+            usesStr := "∞"
+            if item.Uses != UnlimitedUses {
+                usesStr = fmt.Sprintf("%d", item.Uses)
+            }
+            equipped := ""
+            if a.EquippedItem == item {
+                equipped = " [E]"
+            }
+            charSheet = append(charSheet, fmt.Sprintf("  %s (%s)%s", item.Name, usesStr, equipped))
+        }
     }
 
     return charSheet
@@ -877,20 +905,20 @@ func (a *Actor) FoVMode() gridmap.FoVMode {
     return a.FovMode
 }
 func (a *Actor) VisionRange() int {
-	if a.FovMode == gridmap.FoVModeScoped && a.HasScopedItemEquipped() {
-		return a.EquippedItem.ProjectileRange
-	}
-	return a.MaxVisionRange
+    if a.FovMode == gridmap.FoVModeScoped && a.HasScopedItemEquipped() {
+        return a.EquippedItem.ProjectileRange
+    }
+    return a.MaxVisionRange
 }
 func (a *Actor) NameOfClothing() string {
     return a.Clothes.Name
 }
 
 func (a *Actor) HasScopedItemEquipped() bool {
-	if a.EquippedItem == nil {
-		return false
-	}
-	return a.EquippedItem.Type.HasScope()
+    if a.EquippedItem == nil {
+        return false
+    }
+    return a.EquippedItem.Type.HasScope()
 }
 
 func (a *Actor) IsSleeping() bool {

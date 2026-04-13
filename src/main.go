@@ -283,6 +283,17 @@ func (g *ConsoleEngine) Schedule(relativeSeconds float64, call func()) {
     }
     g.ScheduleAbs(g.WorldTicks+relativeTicks, call)
 }
+
+// ScheduleGameTime fires after a game-time delay scaled by TimeFactor.
+// A 1-second game-time event fires after 0.5 real seconds at TimeFactor=2.
+// If the world is frozen (TimeFactor ≤ 0) the call is silently dropped.
+func (g *ConsoleEngine) ScheduleGameTime(relativeSeconds float64, call func()) {
+    tf := g.TimeFactor
+    if tf <= 0 {
+        return // world is frozen; game-time events don't fire
+    }
+    g.Schedule(relativeSeconds/tf, call)
+}
 func (g *ConsoleEngine) ScheduleInTicks(relativeTicks uint64, call func()) {
     if relativeTicks == 0 {
         relativeTicks = 1

@@ -6,7 +6,7 @@ Clothing: Blue lotus
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: AMT 1911 'Hardballer'
+Inventory: Pistol
 Inventory: Soda Can
 
 Name: Blue Lotus Guard 2
@@ -17,7 +17,7 @@ Clothing: Blue lotus
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: AMT 1911 'Hardballer'
+Inventory: Pistol
 Inventory: Cigarette
 
 Name: Blue Lotus Leader
@@ -28,7 +28,7 @@ Clothing: Blue lotus
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: AMT 1911 'Hardballer'
+Inventory: Pistol
 Inventory: Cigarette
 Inventory: Knife
 
@@ -41,7 +41,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: KeyCard(Security Night Club)
-Inventory: Heckler & Koch MP5
+Inventory: Submachine Gun
 
 Name: Bouncer 2
 ActorType: guard
@@ -52,7 +52,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: KeyCard(Security Night Club)
-Inventory: Heckler & Koch MP5
+Inventory: Submachine Gun
 
 Name: Club Bouncer 1
 ActorType: guard
@@ -63,7 +63,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: KeyCard(Security Night Club)
-Inventory: Heckler & Koch MP5
+Inventory: Submachine Gun
 
 Name: Club Bouncer 2
 ActorType: guard
@@ -74,7 +74,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: KeyCard(Security Night Club)
-Inventory: Heckler & Koch MP5
+Inventory: Submachine Gun
 
 Name: Club D.J.
 ActorType: guard
@@ -84,7 +84,7 @@ Clothing: Purple jacket
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: Franchi PA3/215
+Inventory: Shotgun
 Inventory: KeyCard(Security Night Club)
 
 Name: Club Owner
@@ -96,7 +96,7 @@ MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
 Inventory: KeyCard(Security Night Club)
-Inventory: AMT 1911 'Hardballer'
+Inventory: Shotgun
 
 Name: Club Patron
 ActorType: civilian
@@ -298,7 +298,7 @@ Clothing: Red dragon
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: AMT 1911 'Hardballer'
+Inventory: Pistol
 
 Name: Red Dragon Guard 2
 ActorType: guard
@@ -308,7 +308,7 @@ Clothing: Red dragon
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: AMT 1911 'Hardballer'
+Inventory: Pistol
 
 Name: Red Dragon Guard 3
 ActorType: guard
@@ -318,7 +318,7 @@ Clothing: Red dragon
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: AMT 1911 'Hardballer'
+Inventory: Pistol
 
 Name: Red Dragon Leader
 ActorType: target
@@ -328,7 +328,7 @@ Clothing: Red dragon leader
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 10
-Inventory: AMT 1911 'Hardballer'
+Inventory: Pistol
 
 Name: Tourist 1
 ActorType: civilian

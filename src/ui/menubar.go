@@ -140,7 +140,7 @@ func (m *MenuBar) Draw(grid console.CellInterface) {
         grid.SetSquare(drawPos, common.Cell{Rune: item.Icon, Style: common.Style{Foreground: drawColor, Background: m.bgColor}})
         drawPos.X += 2
     }
-    grid.SetSquare(drawPos, common.Cell{Rune: '│', Style: common.Style{Foreground: common.White, Background: m.bgColor}})
+    //grid.SetSquare(drawPos, common.Cell{Rune: '│', Style: common.Style{Foreground: common.White, Background: m.bgColor}})
     drawPos.X += 2
 
     drawColor := common.RGBAColor{R: 0.5, G: 0.5, B: 0.5, A: 1.0}

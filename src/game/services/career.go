@@ -130,7 +130,7 @@ func (c *CareerData) registerChallengePredicates(parser *ChallengeParser, engine
             }
             isMatch := kill.VictimName == nameOfVictim &&
                 kill.CauseOfDeath.Source.Item.Type.ToString() == typeOfItem &&
-                kill.KilerClothingDuringKill == nameOfClothing
+                kill.KillerClothingDuringKill == nameOfClothing
             if isMatch {
                 return true
             }

@@ -19,7 +19,6 @@ import (
     "github.com/memmaker/terminal-assassin/geometry"
 )
 
-
 type InputState struct {
     config               console.GridConfig
     MousePosOnScreenGrid geometry.Point
@@ -41,13 +40,14 @@ type InputState struct {
     keyboardSameTileActionKey ebiten.Key
     keyboardSneakModeKey      ebiten.Key
     keyboardDropItemKey       ebiten.Key
-    keyboardPutItemAwayKey    ebiten.Key
+    keyboardHolsterItemKey    ebiten.Key
     keyboardUseItemKey        ebiten.Key
     keyboardInventoryKey      ebiten.Key
 
-	gamepadIDsBuf              []ebiten.GamepadID
-	gamepadIDs                 map[ebiten.GamepadID]struct{}
-	justPressedStandardButtons map[ebiten.GamepadID][]ebiten.StandardGamepadButton
+    gamepadIDsBuf              []ebiten.GamepadID
+    gamepadIDs                 map[ebiten.GamepadID]struct{}
+    justPressedStandardButtons map[ebiten.GamepadID][]ebiten.StandardGamepadButton
+    lastUIScrollAt             time.Time // rate-limits analog-stick UI scrolling
 
     // required here to correctly calculate the mouse position on screen
     effectiveTileW float64
@@ -74,37 +74,37 @@ func (i *InputState) PollGamepad() {
         }
     }
 
-	i.justPressedStandardButtons = map[ebiten.GamepadID][]ebiten.StandardGamepadButton{}
-	for id := range i.gamepadIDs {
-		/*
-		   maxButton := ebiten.GamepadButton(ebiten.GamepadButtonCount(id))
-		   for b := ebiten.GamepadButton(0); b < maxButton; b++ {
-		       if ebiten.IsGamepadButtonPressed(id, b) {
-		           i.pressedButtons[id] = append(i.pressedButtons[id], b)
-		       }
+    i.justPressedStandardButtons = map[ebiten.GamepadID][]ebiten.StandardGamepadButton{}
+    for id := range i.gamepadIDs {
+        /*
+           maxButton := ebiten.GamepadButton(ebiten.GamepadButtonCount(id))
+           for b := ebiten.GamepadButton(0); b < maxButton; b++ {
+               if ebiten.IsGamepadButtonPressed(id, b) {
+                   i.pressedButtons[id] = append(i.pressedButtons[id], b)
+               }
 
-		       // Log button events.
-		       if inpututil.IsGamepadButtonJustPressed(id, b) {
-		           log.Printf("button pressed: id: %d, button: %d", id, b)
-		       }
-		       if inpututil.IsGamepadButtonJustReleased(id, b) {
-		           //log.Printf("button released: id: %d, button: %d", id, b)
-		       }
-		   }
-		*/
-		if ebiten.IsStandardGamepadLayoutAvailable(id) {
-			for b := ebiten.StandardGamepadButton(0); b <= ebiten.StandardGamepadButtonMax; b++ {
-				// Log button events.
-				if inpututil.IsStandardGamepadButtonJustPressed(id, b) {
-					//log.Printf("standard button pressed: id: %d, button: %d", id, b)
-					i.justPressedStandardButtons[id] = append(i.justPressedStandardButtons[id], b)
-				}
-				if inpututil.IsStandardGamepadButtonJustReleased(id, b) {
-					//log.Printf("standard button released: id: %d, button: %d", id, b)
-				}
-			}
-		}
-	}
+               // Log button events.
+               if inpututil.IsGamepadButtonJustPressed(id, b) {
+                   log.Printf("button pressed: id: %d, button: %d", id, b)
+               }
+               if inpututil.IsGamepadButtonJustReleased(id, b) {
+                   //log.Printf("button released: id: %d, button: %d", id, b)
+               }
+           }
+        */
+        if ebiten.IsStandardGamepadLayoutAvailable(id) {
+            for b := ebiten.StandardGamepadButton(0); b <= ebiten.StandardGamepadButtonMax; b++ {
+                // Log button events.
+                if inpututil.IsStandardGamepadButtonJustPressed(id, b) {
+                    //log.Printf("standard button pressed: id: %d, button: %d", id, b)
+                    i.justPressedStandardButtons[id] = append(i.justPressedStandardButtons[id], b)
+                }
+                if inpututil.IsStandardGamepadButtonJustReleased(id, b) {
+                    //log.Printf("standard button released: id: %d, button: %d", id, b)
+                }
+            }
+        }
+    }
 }
 func (i *InputState) VibrateGamepad(padId ebiten.GamepadID, duration time.Duration, strong float64, weak float64) {
     if strong > 0 || weak > 0 {
@@ -128,7 +128,7 @@ func (i *InputState) GetKeyDefinitions() services.KeyDefinitions {
         SameTileActionKey: i.keyboardSameTileActionKey,
         SneakModeKey:      i.keyboardSneakModeKey,
         DropItemKey:       i.keyboardDropItemKey,
-        PutItemAwayKey:    i.keyboardPutItemAwayKey,
+        HolsterItemKey:    i.keyboardHolsterItemKey,
         UseItemKey:        i.keyboardUseItemKey,
         InventoryKey:      i.keyboardInventoryKey,
     }
@@ -142,7 +142,7 @@ func (i *InputState) ConfirmOrCancel() bool {
     }
     keyPressed := inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeyEscape) || inpututil.IsKeyJustPressed(ebiten.KeySpace)
     mousePressed := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
-	padPressed := inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightBottom) || inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightRight)
+    padPressed := inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightBottom) || inpututil.IsStandardGamepadButtonJustPressed(i.getPadID(), ebiten.StandardGamepadButtonRightRight)
     somethingWasPressed := keyPressed || mousePressed || padPressed
     i.inputConsumed = true
     return somethingWasPressed
@@ -354,8 +354,8 @@ func (i *InputState) pollKeyBoardForGameplay() []core.InputCommand {
     if inpututil.IsKeyJustPressed(i.keyboardDropItemKey) {
         commands = append(commands, core.DropItem)
     }
-    if inpututil.IsKeyJustPressed(i.keyboardPutItemAwayKey) {
-        commands = append(commands, core.PutItemAway)
+    if inpututil.IsKeyJustPressed(i.keyboardHolsterItemKey) {
+        commands = append(commands, core.HolsterItem)
     }
 
     if inpututil.IsKeyJustPressed(i.keyboardUseItemKey) {
@@ -456,7 +456,7 @@ func NewInput(config console.GridConfig) *InputState {
         keyboardUseItemKey:        ebiten.KeySpace,
         keyboardInventoryKey:      ebiten.KeyQ,
         keyboardDropItemKey:       ebiten.KeyX,
-        keyboardPutItemAwayKey:    ebiten.KeyC,
+        keyboardHolsterItemKey:    ebiten.KeyC,
         keyboardSneakModeKey:      ebiten.KeyCapsLock,
     }
     inputState.LoadKeyDefs()
@@ -488,7 +488,7 @@ func (i *InputState) SaveKeyDefs() {
             {Name: "UseItem", Value: i.keyboardUseItemKey.String()},
             {Name: "Inventory", Value: i.keyboardInventoryKey.String()},
             {Name: "DropItem", Value: i.keyboardDropItemKey.String()},
-            {Name: "HolsterItem", Value: i.keyboardPutItemAwayKey.String()},
+            {Name: "HolsterItem", Value: i.keyboardHolsterItemKey.String()},
             {Name: "SneakMode", Value: i.keyboardSneakModeKey.String()},
         },
     })
@@ -540,8 +540,8 @@ func (i *InputState) LoadKeyDefs() {
             i.keyboardInventoryKey = i.toEbitenKey(field.Value)
         } else if field.Name == "DropItem" {
             i.keyboardDropItemKey = i.toEbitenKey(field.Value)
-        } else if field.Name == "HolsterItem" {
-            i.keyboardPutItemAwayKey = i.toEbitenKey(field.Value)
+        } else if field.Name == "HolsterItem" || field.Name == "PutItemAway" {
+            i.keyboardHolsterItemKey = i.toEbitenKey(field.Value)
         } else if field.Name == "SneakMode" {
             i.keyboardSneakModeKey = i.toEbitenKey(field.Value)
         } else {
@@ -701,15 +701,15 @@ func (i *InputState) SetRenderParams(tileW, tileH, offsetX, offsetY float64) {
 
 func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
 
-	var msgs = make([]core.InputCommand, 0)
+    var msgs = make([]core.InputCommand, 0)
 
-	padId := i.getPadID()
+    padId := i.getPadID()
 
-	if padId > -1 {
+    if padId > -1 {
 
-		// ── Right analog stick → peek ─────────
-		rightX := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisRightStickHorizontal)
-		rightY := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisRightStickVertical)
+        // ── Right analog stick → peek ─────────
+        rightX := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisRightStickHorizontal)
+        rightY := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisRightStickVertical)
         const rightDeadzone = 0.2
         rightStickActive := rightX > rightDeadzone || rightX < -rightDeadzone ||
             rightY > rightDeadzone || rightY < -rightDeadzone
@@ -724,9 +724,9 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             msgs = append(msgs, core.DropItem)
         }
 
-        // ── D-Pad Up -> Put Item Away ─────────────────────────────────────────────────
+        // ── D-Pad Up -> Holster Item ─────────────────────────────────────────────────
         if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonLeftTop) {
-            msgs = append(msgs, core.PutItemAway)
+            msgs = append(msgs, core.HolsterItem)
         }
 
         // ── R3 (RightStick click) → toggle sneaking ──────────────────────────
@@ -761,7 +761,7 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
         }
 
         // ── R2 (FrontBottomRight) → fire/throw at aimed position ────────────
-        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonFrontBottomRight) {
+        if ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonFrontBottomRight) {
             msgs = append(msgs, core.UseRangedItem)
         }
 
@@ -786,6 +786,11 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             }
         }
 
+        // -- L2 released → exit pad aim mode regardless of stick position ────────────
+        if inpututil.IsStandardGamepadButtonJustReleased(padId, ebiten.StandardGamepadButtonFrontBottomLeft) {
+            msgs = append(msgs, core.StopAiming)
+        }
+
         // ── Left analog stick → movement ─────────────────────────────────────
         effectiveDelay := baseStepDelayMs
         if i.lastStepWasDiagonal {
@@ -796,15 +801,15 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             command := core.DirectionalGameCommand{
                 Command: core.MovementDirection,
             }
-		// ── Left analog stick supplements D-Pad for movement ─────────────────
-			const leftStickDeadzone = 0.1
+            // ── Left analog stick supplements D-Pad for movement ─────────────────
+            const leftStickDeadzone = 0.1
 
-			if v := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisLeftStickHorizontal); v > leftStickDeadzone || v < -leftStickDeadzone {
-				command.XAxis = v
-			}
-			if v := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisLeftStickVertical); v > leftStickDeadzone || v < -leftStickDeadzone {
-				command.YAxis = v
-			}
+            if v := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisLeftStickHorizontal); v > leftStickDeadzone || v < -leftStickDeadzone {
+                command.XAxis = v
+            }
+            if v := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisLeftStickVertical); v > leftStickDeadzone || v < -leftStickDeadzone {
+                command.YAxis = v
+            }
 
             if command.XAxis != 0 || command.YAxis != 0 {
                 // Use the same 0.5 threshold as toIntDirection in gameplay.go.
@@ -840,6 +845,29 @@ func (i *InputState) pollGamePadForUI() []core.InputCommand {
             commands = append(commands, core.MenuRight)
         }
     }
+
+    // ── Left analog stick → continuous scroll in UI (e.g. pager) ────────────
+    if padId > -1 {
+        const leftDeadzone = 0.2
+        leftY := ebiten.StandardGamepadAxisValue(padId, ebiten.StandardGamepadAxisLeftStickVertical)
+        if leftY > leftDeadzone || leftY < -leftDeadzone {
+            // Scale scroll speed with stick deflection: full push → ~100 ms per line,
+            // half push → ~200 ms per line.
+            delay := time.Duration(float64(100*time.Millisecond) / math.Abs(leftY))
+            if i.lastUIScrollAt.IsZero() || time.Since(i.lastUIScrollAt) >= delay {
+                if leftY > 0 {
+                    commands = append(commands, core.MenuDown)
+                } else {
+                    commands = append(commands, core.MenuUp)
+                }
+                i.lastUIScrollAt = time.Now()
+            }
+        } else {
+            // Reset so the next stick push scrolls immediately.
+            i.lastUIScrollAt = time.Time{}
+        }
+    }
+
     return commands
 }
 

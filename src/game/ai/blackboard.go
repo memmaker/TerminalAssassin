@@ -113,7 +113,7 @@ func (b *Blackboard) LastUnhandledReport(keep func(report core.IncidentReport) b
 		}
 		if report.HasActiveHandler() {
 			currentlyHandling := false
-			if stateOfHandler, ok := report.RegisteredHandler.AI.GetState().(InvestigationMovement); ok {
+            if stateOfHandler, ok := report.RegisteredHandler.AI.GetState().(*InvestigationMovement); ok {
 				currentlyHandling = stateOfHandler.Incident.Hash() == report.Hash()
 			}
 			if !currentlyHandling {

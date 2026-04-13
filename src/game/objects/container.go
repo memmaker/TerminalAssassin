@@ -43,9 +43,7 @@ func (cc *CorpseContainer) Description() string {
 	return cc.Name
 }
 
-func (cc *CorpseContainer) ApplyStimulus(m services.Engine, stim stimuli.Stimulus) {
-	return
-}
+func (cc *CorpseContainer) ApplyStimulus(m services.Engine, stim stimuli.Stimulus) {}
 
 func (cc *CorpseContainer) Pos() geometry.Point {
 	return cc.position

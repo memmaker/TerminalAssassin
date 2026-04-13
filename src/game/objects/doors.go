@@ -61,11 +61,9 @@ func StateFromString(s string) DoorState {
     return DoorStateClosed
 }
 
-type DoorType bool
-
 const (
-    DoorTypeMechanic   DoorType = false
-    DoorTypeElectronic DoorType = true
+    DoorTypeMechanic   = core.LockTypeMechanical
+    DoorTypeElectronic = core.LockTypeElectronic
 )
 
 type Door struct {
@@ -73,7 +71,7 @@ type Door struct {
     KeyString       string
     position        geometry.Point
     IsBurnable      bool
-    Type            DoorType
+    Type            core.LockType
     Keypad          bool
     DamageThreshold int
     Difficulty      core.LockDifficulty
@@ -131,7 +129,6 @@ func (d *Door) ApplyStimulus(m services.Engine, stim stimuli.Stimulus) {
     if isRelevantDamageType && isClosed && stim.Force() > d.DamageThreshold {
         d.State = DoorStateOpen
     }
-    return
 }
 
 func (d *Door) Pos() geometry.Point {
@@ -161,9 +158,9 @@ func (d *Door) ActionDescription() string {
 }
 
 func (d *Door) Action(m services.Engine, person *core.Actor) {
-    animator := m.GetAnimator()
     game := m.GetGame()
-    aic := m.GetAI()
+    unlockDoor := func() { d.State = DoorStateClosed }
+    breakDoor := func() { d.State = DoorStateOpen; game.UpdateAllFoVsFrom(d.Pos()) }
     switch {
     case d.State == DoorStateLocked && d.Keypad:
         m.GetUI().ShowTextInput("Enter code: ", "", func(code string) {
@@ -178,58 +175,9 @@ func (d *Door) Action(m services.Engine, person *core.Actor) {
     case d.State == DoorStateLocked && person.HasKeyCardInInventory(d.KeyString) && d.Type == DoorTypeElectronic:
         d.State = DoorStateClosed
     case d.State == DoorStateLocked && d.Type == DoorTypeMechanic:
-        needed := d.Difficulty.PickCount()
-        hasPicks := person.CountItemTypeInInventory(core.ItemTypeMechanicalLockpick) >= needed
-        hasCrowbar := d.Difficulty != core.LockDifficultyHard && person.CountItemTypeInInventory(core.ItemTypeCrowbar) >= 1
-        if hasPicks {
-            pickTime := d.Difficulty.PickTime()
-            animationCompleted := false
-            until := func() bool { return animationCompleted }
-            onLockPicked := func() {
-                animationCompleted = true
-                person.ConsumeItemsFromInventory(core.ItemTypeMechanicalLockpick, needed)
-                d.State = DoorStateClosed
-            }
-            aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
-            game.IllegalActionAt(d.Pos(), core.ObservationIllegalAction)
-            animator.ActorEngagedAnimation(person, core.GlyphLockpick, d.Pos(), pickTime, onLockPicked)
-        } else if hasCrowbar {
-            crowbarTime := d.Difficulty.PickTime() * 3
-            game.SoundEventAt(d.Pos(), core.ObservationMeleeNoises, 20)
-            game.IllegalActionAt(d.Pos(), core.ObservationIllegalAction)
-            animationCompleted := false
-            until := func() bool { return animationCompleted }
-            onPried := func() {
-                animationCompleted = true
-                person.ConsumeItemsFromInventory(core.ItemTypeCrowbar, 1)
-                d.State = DoorStateClosed
-                game.UpdateAllFoVsFrom(d.Pos())
-            }
-            aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
-            animator.ActorEngagedAnimation(person, core.GlyphCrowbar, d.Pos(), crowbarTime, onPried)
-        } else {
-            if d.Difficulty == core.LockDifficultyHard {
-                game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s).", d.Difficulty.ToString(), needed))
-            } else {
-                game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s) or a crowbar.", d.Difficulty.ToString(), needed))
-            }
-        }
+        performMechanicalPickLock(m, person, d.Pos(), d.Difficulty, unlockDoor, breakDoor)
     case d.State == DoorStateLocked && d.Type == DoorTypeElectronic:
-        needed := d.Difficulty.PickCount()
-        if person.CountItemTypeInInventory(core.ItemTypeElectronicalLockpick) < needed {
-            game.PrintMessage(fmt.Sprintf("This %s lock needs %d pick(s).", d.Difficulty.ToString(), needed))
-            return
-        }
-        pickTime := d.Difficulty.PickTime()
-        animationCompleted := false
-        until := func() bool { return animationCompleted }
-        onLockPicked := func() {
-            animationCompleted = true
-            person.ConsumeItemsFromInventory(core.ItemTypeElectronicalLockpick, needed)
-            d.State = DoorStateClosed
-        }
-        aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
-        animator.ActorEngagedAnimation(person, core.GlyphLockpickElectronic, d.Pos(), pickTime, onLockPicked)
+        performElectronicPickLock(m, person, d.Pos(), d.Difficulty, unlockDoor)
     case d.State == DoorStateOpen:
         d.State = DoorStateClosed
         game.UpdateAllFoVsFrom(d.Pos())
@@ -237,7 +185,6 @@ func (d *Door) Action(m services.Engine, person *core.Actor) {
         d.State = DoorStateOpen
         game.UpdateAllFoVsFrom(d.Pos())
     }
-    return
 }
 
 func (d *Door) IsActionAllowed(m services.Engine, person *core.Actor) bool {
@@ -263,26 +210,9 @@ func (d *Door) Style(st common.Style) common.Style {
 }
 
 func (d *Door) IsUnlockableWithKeyFrom(person *core.Actor) bool {
-    switch {
-    case person == nil:
-        return false
-    case d.Type == DoorTypeMechanic && person.HasKeyInInventory(d.KeyString):
-        return true
-    case d.Type == DoorTypeElectronic && person.HasKeyCardInInventory(d.KeyString):
-        return true
-    }
-    return false
+    return isUnlockableWithKeyFrom(d.Type, d.KeyString, person)
 }
 
 func (d *Door) IsUnlockableWithPickFrom(person *core.Actor) bool {
-    needed := d.Difficulty.PickCount()
-    switch {
-    case person == nil:
-        return false
-    case d.Type == DoorTypeMechanic:
-        return person.CountItemTypeInInventory(core.ItemTypeMechanicalLockpick) >= needed
-    case d.Type == DoorTypeElectronic:
-        return person.CountItemTypeInInventory(core.ItemTypeElectronicalLockpick) >= needed
-    }
-    return false
+    return isUnlockableWithPickFrom(d.Type, d.Difficulty, person)
 }

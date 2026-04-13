@@ -35,7 +35,41 @@ type ActorEnteredZoneEvent struct {
     NewZone     *gridmap.ZoneInfo
 }
 type TriggerEvent struct {
-    Key string
+	Key string
+}
+
+// PlayerChangedClothesEvent is published when the player swaps into a new disguise.
+type PlayerChangedClothesEvent struct {
+	OldClothing core.Clothing
+	NewClothing core.Clothing
+}
+
+// PlayerSpottedEvent is published whenever an NPC conclusively identifies the
+// player as suspicious or dangerous (sets BeenSpotted in mission stats).
+type PlayerSpottedEvent struct{}
+
+// HUDDirtyEvent is published whenever game state changes that require the HUD
+// to be re-rendered (inventory, health, equipped item, …).
+type HUDDirtyEvent struct{}
+
+// PrintMessageEvent is published whenever a one-line feedback message should
+// appear in the middle label of the gameplay HUD.
+type PrintMessageEvent struct {
+	Text string
+}
+
+// ActorKilledEvent is published when an actor is killed (not merely downed).
+// Position is captured at kill time so subscribers don't need to re-query.
+type ActorKilledEvent struct {
+	Victim       *core.Actor
+	CauseOfDeath core.CauseOfDeath
+	Position     geometry.Point
+}
+
+// BodyDiscoveredEvent is published when a patrolling NPC spots a downed body.
+type BodyDiscoveredEvent struct {
+	Discoverer *core.Actor
+	BodyPos    geometry.Point
 }
 
 func (f FixedChallenge) WithTime(completionTime time.Duration) Challenge {

@@ -99,7 +99,7 @@ type: flashlight
 projectile_range: 15
 
 name: Lockpick (electronic)
-type: electronical_lockpick
+type: electronic_lockpick
 icon: ´
 
 name: Knife

@@ -51,7 +51,6 @@ func (w *Window) ApplyStimulus(m services.Engine, stim stimuli.Stimulus) {
     if isRelevantDamageType && isClosed && stim.Force() > w.DamageThreshold {
         w.State = WindowStateBroken
     }
-    return
 }
 
 func (w *Window) Pos() geometry.Point {
@@ -84,7 +83,6 @@ func (w *Window) Action(m services.Engine, person *core.Actor) {
     case WindowStateClosed:
         w.State = WindowStateOpen
     }
-    return
 }
 
 func (w *Window) IsActionAllowed(m services.Engine, person *core.Actor) bool {

@@ -18,7 +18,6 @@ import (
     "github.com/memmaker/terminal-assassin/gridmap"
     "github.com/memmaker/terminal-assassin/mapset"
     "github.com/memmaker/terminal-assassin/ui"
-    "github.com/memmaker/terminal-assassin/utils"
 )
 
 type Model struct {
@@ -95,7 +94,7 @@ func (m *Model) ClearMap(width int, height int) {
 
 func (m *Model) ResetModel() {
     m.actions.Reset()
-    m.ClearMap(m.engine.MapWindowWidth(), m.engine.MapWindowWidth())
+    m.ClearMap(m.gridMap.MapWidth, m.gridMap.MapHeight)
     m.MissionStats = core.NewMissionStats()
 }
 
@@ -103,6 +102,7 @@ func (m *Model) ResetGameState() {
     m.currentGameStates = []services.GameState{}
     m.PushState(&states.GameStateMainMenu{})
 }
+
 func (m *Model) DrawVisionCone(con console.CellInterface, actor *core.Actor) {
     if actor.IsInCombat() {
         return
@@ -121,10 +121,10 @@ func (m *Model) DrawVisionCone(con console.CellInterface, actor *core.Actor) {
         println("Suspicion level out of range")
         return
     }
-    mapHeight := m.GetMap().MapHeight
+    mapWindowHeight := m.GetCamera().ViewPort.Size().Y
     actor.VisionCone(func(worldPos geometry.Point) {
         screenPos := m.GetCamera().WorldToScreen(worldPos)
-        if !con.Contains(screenPos) || screenPos.Y >= mapHeight || !player.CanSee(worldPos) {
+        if !con.Contains(screenPos) || screenPos.Y >= mapWindowHeight || screenPos.Y < 0 || !player.CanSee(worldPos) {
             return
         }
         cellAt := con.AtSquare(screenPos)
@@ -324,7 +324,7 @@ func (m *Model) IllegalActionAt(pos geometry.Point, kindOfEvent core.Observation
         }
         if actorAt != nil {
             if actorAt.IsPlayer() && a.CanSeeInVisionCone(actorAt.Pos()) {
-                m.engine.GetGame().GetStats().BeenSpotted = true
+                m.engine.PublishEvent(services.PlayerSpottedEvent{})
             }
             if kindOfEvent.IsOpenViolence() {
                 a.AI.Knowledge.AddSightingOfDangerousActor(a, actorAt, kindOfEvent, m.engine.CurrentTick())
@@ -391,7 +391,7 @@ func (m *Model) createDistributedStimulus(se stimuli.StimEffect, source core.Eff
 }
 
 func (m *Model) ApplyDelayed(pos geometry.Point, source core.EffectSource, effect stimuli.StimEffect, delay float64) {
-    m.engine.Schedule(delay, func() { m.Apply(pos, source, effect) })
+    m.engine.ScheduleGameTime(delay, func() { m.Apply(pos, source, effect) })
 }
 
 func (m *Model) Apply(atLocation geometry.Point, source core.EffectSource, effects stimuli.StimEffect) {
@@ -413,7 +413,7 @@ func (m *Model) ApplyBurnableToTile(atLocation geometry.Point, source core.Effec
         for _, n := range currentMap.GetFilteredCardinalNeighbors(atLocation, func(p geometry.Point) bool {
             return currentMap.IsStimulusOnTile(p, stimuli.StimulusFire)
         }) {
-            m.engine.Schedule(rand.Float64()*0.5, func() {
+            m.engine.ScheduleGameTime(rand.Float64()*0.5, func() {
                 fireForce := currentMap.ForceOfStimulusOnTile(n, stimuli.StimulusFire)
                 currentMap.AddStimulusToTile(n, stimuli.Stim{StimType: stimuli.StimulusFire, StimForce: fireForce})
             })
@@ -485,7 +485,7 @@ func (m *Model) TakeFireDamage(a *core.Actor, source core.EffectSource, force in
     if a.DiesFromDamage(1) {
         m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusFire, source))
     } else {
-        m.engine.Schedule(1.25, func() {
+        m.engine.ScheduleGameTime(1.25, func() {
             m.checkActorOnBurningTile(a)
         })
     }
@@ -493,14 +493,14 @@ func (m *Model) TakeFireDamage(a *core.Actor, source core.EffectSource, force in
 
 func (m *Model) TakeLethalPoisonDamage(a *core.Actor, source core.EffectSource, force int) {
     randomDelay := rand.Float64() * 5
-    m.engine.Schedule(randomDelay, func() {
+    m.engine.ScheduleGameTime(randomDelay, func() {
         m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusLethalPoison, source))
     })
 }
 
 func (m *Model) TakeEmeticPoisonDamage(a *core.Actor, source core.EffectSource, force int) {
     randomDelay := rand.Float64() * 10
-    m.engine.Schedule(randomDelay, func() {
+    m.engine.ScheduleGameTime(randomDelay, func() {
         m.engine.GetAI().SwitchToVomit(a)
     })
 }
@@ -542,34 +542,7 @@ func SoundStopped(handle services.AudioHandle) func() bool {
         return !handle.IsPlaying()
     }
 }
-func (m *Model) KillAndRemove(victim *core.Actor, causeOfDeath core.CauseOfDeath) {
-    if victim.Status == core.ActorStatusDead {
-        return
-    }
-    defer m.UpdateHUD()
-    victim.Status = core.ActorStatusDead
-    victim.IsEyeWitness = false
 
-    println("KILLED and REMOVED -> " + victim.DebugDisplayName())
-    player := m.GetMap().Player
-    if victim == player {
-        m.EndMissionWithFailure(causeOfDeath)
-        return
-    } else {
-        m.GetMap().SetActorToRemoved(victim)
-        m.MissionStats.AddKill(victim, causeOfDeath, victim.Pos(), utils.UTicksToSeconds(m.engine.CurrentTick()))
-        return
-    }
-}
-
-func (m *Model) RemoveDeadActor(victim *core.Actor) {
-    if victim.Status != core.ActorStatusDead {
-        return
-    }
-    defer m.UpdateHUD()
-    println("REMOVED -> " + victim.DebugDisplayName())
-    m.GetMap().SetActorToRemoved(victim)
-}
 func (m *Model) Kill(victim *core.Actor, causeOfDeath core.CauseOfDeath) {
     if victim.Status == core.ActorStatusDead {
         return
@@ -580,19 +553,31 @@ func (m *Model) Kill(victim *core.Actor, causeOfDeath core.CauseOfDeath) {
 
     m.IllegalActionAt(victim.Pos(), core.ObservationDeath)
 
-    m.DropInventory(victim)
+    if causeOfDeath.IsBodyDisappearing() {
+        m.DropInventory(victim)
+    }
     println("KILLED -> " + victim.DebugDisplayName())
     player := m.GetMap().Player
     if victim == player {
         m.EndMissionWithFailure(causeOfDeath)
         return
     } else {
+        killPos := victim.Pos()
         m.GetMap().SetActorToDowned(victim)
-        m.MissionStats.AddKill(victim, causeOfDeath, victim.Pos(), utils.UTicksToSeconds(m.engine.CurrentTick()))
-        return
+        m.engine.PublishEvent(services.ActorKilledEvent{Victim: victim, CauseOfDeath: causeOfDeath, Position: killPos})
+        if causeOfDeath.IsBodyDisappearing() {
+            m.RemoveDeadActor(victim)
+        }
     }
 }
-
+func (m *Model) RemoveDeadActor(victim *core.Actor) {
+    if victim.Status != core.ActorStatusDead {
+        return
+    }
+    defer m.UpdateHUD()
+    println("REMOVED -> " + victim.DebugDisplayName())
+    m.GetMap().SetActorToRemoved(victim)
+}
 func (m *Model) TryPushActorInDirection(person *core.Actor, targetDirection geometry.Point) {
     pos := person.Pos()
     locationBehindTarget := pos.Add(targetDirection)
@@ -746,7 +731,7 @@ func (m *Model) handleDeathTile(person *core.Actor, deathCell gridmap.MapCell[*c
         if person.IsDead() {
             m.RemoveDeadActor(person)
         } else {
-            m.KillAndRemove(person, core.NewCauseOfDeathFromEnvironment(core.CoDFalling, deathCell.TileType))
+            m.Kill(person, core.NewCauseOfDeathFromEnvironment(core.CoDFalling, deathCell.TileType))
         }
     })
 }
@@ -754,27 +739,8 @@ func (m *Model) handleDeathTile(person *core.Actor, deathCell gridmap.MapCell[*c
 func (m *Model) playerEnteredCell(oldPosition geometry.Point, newPosition geometry.Point) {
     m.tryCleaning(oldPosition)
     m.tryItemSneakingStimuli(oldPosition)
-    m.tryAdaptingAmbienceSounds(oldPosition, newPosition)
 }
 
-func (m *Model) tryAdaptingAmbienceSounds(oldPosition geometry.Point, newPosition geometry.Point) {
-    audio := m.engine.GetAudio()
-    currentMap := m.GetMap()
-    oldZone := currentMap.ZoneAt(oldPosition)
-    newZone := currentMap.ZoneAt(newPosition)
-    if oldZone != newZone {
-        if oldZone.AmbienceCue != "" {
-            audio.Stop(oldZone.AmbienceCue)
-        } else if currentMap.AmbienceSoundCue != "" && newZone.AmbienceCue != "" {
-            audio.Stop(currentMap.AmbienceSoundCue)
-        }
-        if newZone.AmbienceCue != "" {
-            audio.StartLoop(newZone.AmbienceCue)
-        } else if currentMap.AmbienceSoundCue != "" && !audio.IsCuePlaying(currentMap.AmbienceSoundCue) {
-            audio.StartLoop(currentMap.AmbienceSoundCue)
-        }
-    }
-}
 func (m *Model) handleDragging(dragger *core.Actor, oldPosition geometry.Point) {
     model := m
     currentMap := model.GetMap()
@@ -905,19 +871,21 @@ func (m *Model) PickUpItemAt(person *core.Actor, pos geometry.Point) {
     }
     equippedItem := person.EquippedItem
     bigItemInHands := equippedItem != nil && equippedItem.IsBig
+    // big items cannot go into the inventory, only held in hands
     if itemHere.IsBig && bigItemInHands {
-        defer m.forceDropInventoryItem(person, equippedItem, pos)
+        m.forceDropInventoryItem(person, equippedItem, pos)
     }
 
     m.GetMap().RemoveItem(itemHere)
-
     person.Inventory.AddItem(itemHere)
     itemHere.HeldBy = person
-    if itemHere.IsBig || !bigItemInHands {
+
+    // equip any item directly, except if we already hold a big item
+    if !bigItemInHands {
         person.EquippedItem = itemHere
     }
-    m.engine.PublishEvent(services.ItemPickedUpEvent{Item: itemHere, Actor: person})
 
+    m.engine.PublishEvent(services.ItemPickedUpEvent{Item: itemHere, Actor: person})
 }
 
 func (m *Model) InsteadOfPickingUpClothes(actor *core.Actor, item *core.Item) {
@@ -961,12 +929,12 @@ func (m *Model) forceDropInventoryItem(person *core.Actor, itemToDrop *core.Item
         return
     }
     person.Inventory.RemoveItem(itemToDrop)
-    m.forceDropItemAt(itemToDrop, droppedAtPos)
+    m.forceDropItemAt(person, itemToDrop, droppedAtPos)
 }
 
-func (m *Model) forceDropItemAt(itemToDrop *core.Item, droppedAtPos geometry.Point) {
+func (m *Model) forceDropItemAt(person *core.Actor, itemToDrop *core.Item, droppedAtPos geometry.Point) {
     m.MoveItemTo(droppedAtPos, itemToDrop)
-    m.SendTriggerStimuli(nil, itemToDrop, droppedAtPos, core.TriggerOnItemDropped)
+    m.SendTriggerStimuli(person, itemToDrop, droppedAtPos, core.TriggerOnItemDropped)
 }
 func (m *Model) GetValidItemPlacementPosition(pos geometry.Point, item *core.Item) geometry.Point {
     currentMap := m.GetMap()
@@ -979,7 +947,7 @@ func (m *Model) GetValidItemPlacementPosition(pos geometry.Point, item *core.Ite
 }
 func (m *Model) PlaceItem(pos geometry.Point, item *core.Item) geometry.Point {
     validPos := m.GetValidItemPlacementPosition(pos, item)
-    m.forceDropItemAt(item, validPos)
+    m.forceDropItemAt(nil, item, validPos)
     return validPos
 }
 func (m *Model) PlaceItemWithOrigin(origin, pos geometry.Point, item *core.Item) geometry.Point {
@@ -1016,15 +984,11 @@ func (m *Model) SnapNeck(actingPerson, victim *core.Actor) {
 }
 
 func (m *Model) UpdateHUD() {
-    if gs, ok := m.CurrentGameState().(*states.GameStateGameplay); ok {
-        gs.UpdateHUD()
-    }
+    m.engine.PublishEvent(services.HUDDirtyEvent{})
 }
 
 func (m *Model) PrintMessage(text string) {
-    if gs, ok := m.CurrentGameState().(*states.GameStateGameplay); ok {
-        gs.Print(text)
-    }
+    m.engine.PublishEvent(services.PrintMessageEvent{Text: text})
 }
 
 func (m *Model) IllegalPlayerEngagementWithActorAtPos(position geometry.Point, icon rune, engagementFinishedAction func(), engagementCancelledAction func()) {
@@ -1084,7 +1048,7 @@ func (m *Model) SwitchClothesWith(taker *core.Actor, provider *core.Actor) {
 func (m *Model) SpawnClothingItem(pos geometry.Point, clothing core.Clothing) {
     newClothes := &core.Item{Name: clothing.Name, DefinedIcon: core.GlyphClothing, Type: core.ItemTypeClothing, DefinedStyle: common.Style{Foreground: clothing.FgColor()}}
     spawnPos := m.GetValidItemPlacementPosition(pos, newClothes)
-    m.forceDropItemAt(newClothes, spawnPos)
+    m.forceDropItemAt(nil, newClothes, spawnPos)
 }
 
 var actorActions = []services.ContextAction{
@@ -1184,14 +1148,14 @@ func (m *Model) UpdateKnowledgeFromVision(person *core.Actor) {
             person.IsEyeWitness = true
             a.Knowledge.AddSightingOfDangerousActor(person, actorAt, dangerObservation, m.engine.CurrentTick())
             if actorAt.IsPlayer() {
-                m.GetStats().BeenSpotted = true
+                m.engine.PublishEvent(services.PlayerSpottedEvent{})
             }
         } else {
             suspicionObservation := m.GetSuspicionObservation(person, actorAt)
             if suspicionObservation != core.ObservationNull {
                 a.Knowledge.AddSightingOfSuspiciousActor(person, p, suspicionObservation, m.engine.CurrentTick())
                 if actorAt.IsPlayer() {
-                    m.GetStats().BeenSpotted = true
+                    m.engine.PublishEvent(services.PlayerSpottedEvent{})
                 }
             }
         }
@@ -1239,7 +1203,6 @@ func (m *Model) GetDangerObservation(person *core.Actor, dangerActor *core.Actor
 }
 
 func (m *Model) createIncidentsForSuspiciousActivity(person *core.Actor, p geometry.Point) {
-    stats := m.GetStats()
     currentMap := m.GetMap()
     aic := m.engine.GetAI()
 
@@ -1247,7 +1210,7 @@ func (m *Model) createIncidentsForSuspiciousActivity(person *core.Actor, p geome
     if isDownedActorHere {
         downedActorAt := currentMap.DownedActorAt(p)
         if !downedActorAt.IsBodyBagged {
-            stats.BodiesFound = true // this is redundant now..
+            m.engine.PublishEvent(services.BodyDiscoveredEvent{Discoverer: person, BodyPos: p})
             aic.ReportIncident(person, p, core.ObservationBodyFound)
         }
     }
@@ -1343,7 +1306,7 @@ func (m *Model) checkActorOnBurningTile(actor *core.Actor) {
             if currentMap.Player == actor {
                 m.UpdateHUD()
             }
-            m.engine.Schedule(1.25, func() {
+            m.engine.ScheduleGameTime(1.25, func() {
                 m.checkActorOnBurningTile(actor)
             })
         }

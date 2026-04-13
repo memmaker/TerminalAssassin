@@ -21,7 +21,9 @@ func (g *GameStateEditor) openObjectsMenu() {
         {
             Label: "clear object",
             Handler: g.setBrushHandlerWithLightUpdate(addObjectsUI, 'X', func(pos geometry.Point) {
-                currentMap.RemoveObjectAt(pos)
+                if currentMap.IsObjectAt(pos) {
+                    currentMap.RemoveObjectAt(pos)
+                }
             }),
         },
     }
@@ -66,7 +68,7 @@ func (g *GameStateEditor) openObjectsMenu() {
         })
     }
 
-    g.OpenMenuBarDropDown("Choose object", (2*4)-2, menuItems)
+    g.OpenTilePickerDropDown("Choose object", menuItems)
     return
 }
 func (g *GameStateEditor) selectObjectAt(pos geometry.Point) {
@@ -152,26 +154,26 @@ func (g *GameStateEditor) openContentsMenuAt(holder services.ContentHolder, menu
 // setDifficultyOfSelectedObject opens a small menu to choose Easy / Medium /
 // Hard for the selected lock-difficulty-bearing object (door or safe).
 func (g *GameStateEditor) setDifficultyOfSelectedObject() {
-	holder, ok := g.selectedObject.(services.LockDifficultyHolder)
-	if !ok {
-		return
-	}
-	difficulties := []core.LockDifficulty{
-		core.LockDifficultyEasy,
-		core.LockDifficultyMedium,
-		core.LockDifficultyHard,
-	}
-	menuItems := make([]services.MenuItem, 0, len(difficulties))
-	for _, diff := range difficulties {
-		d := diff
-		menuItems = append(menuItems, services.MenuItem{
-			Label: fmt.Sprintf("%s (%d pick(s), %.0fs)", d.ToString(), d.PickCount(), d.PickTime()),
-			Handler: func() {
-				holder.SetLockDifficulty(d)
-				g.PrintAsMessage(fmt.Sprintf("Lock difficulty set to %s", d.ToString()))
-				g.SetDirty()
-			},
-		})
-	}
-	g.OpenMenuBarDropDown("Lock Difficulty", (2*4)-2, menuItems)
+    holder, ok := g.selectedObject.(services.LockDifficultyHolder)
+    if !ok {
+        return
+    }
+    difficulties := []core.LockDifficulty{
+        core.LockDifficultyEasy,
+        core.LockDifficultyMedium,
+        core.LockDifficultyHard,
+    }
+    menuItems := make([]services.MenuItem, 0, len(difficulties))
+    for _, diff := range difficulties {
+        d := diff
+        menuItems = append(menuItems, services.MenuItem{
+            Label: fmt.Sprintf("%s (%d pick(s), %.0fs)", d.ToString(), d.PickCount(), d.PickTime()),
+            Handler: func() {
+                holder.SetLockDifficulty(d)
+                g.PrintAsMessage(fmt.Sprintf("Lock difficulty set to %s", d.ToString()))
+                g.SetDirty()
+            },
+        })
+    }
+    g.OpenMenuBarDropDown("Lock Difficulty", (2*4)-2, menuItems)
 }

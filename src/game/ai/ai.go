@@ -37,10 +37,6 @@ func DeferredUpdate(predicate func() bool) core.AIUpdate {
     }
 }
 
-type AIStateExecutor interface {
-    // NextAction is called when the actor needs to choose a new action.
-    NextAction() core.AIUpdate
-}
 type AIController struct {
     engine       services.Engine
     blackboard   *Blackboard
@@ -202,41 +198,29 @@ func (a *AIController) PushWaitWithStatus(person *core.Actor, status core.ActorS
     if person.IsDowned() || person.IsInCombat() {
         return
     }
-    ai := person.AI
-    person.Status = status
-    ai.PushState(&WaitMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Until: until})
-    person.Move = core.AutoMove{}
-    person.Path = nil
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.pushStateTransition(person, status,
+        &WaitMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Until: until})
 }
+
 func (a *AIController) PushGoto(person *core.Actor, destination geometry.Point) {
     a.PushGotoWithCall(person, destination, nil)
 }
+
 func (a *AIController) PushGotoWithCall(person *core.Actor, destination geometry.Point, callOnArrival func()) {
     if person.IsDowned() || person.IsInCombat() {
         return
     }
-    ai := person.AI
-    ai.PushState(&GotoBehaviour{AIContext: AIContext{Engine: a.engine, Person: person}, TargetLocation: destination, CallOnArrival: callOnArrival})
-    person.Move = core.AutoMove{}
-    person.Path = nil
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.pushStateTransition(person, person.Status,
+        &GotoBehaviour{AIContext: AIContext{Engine: a.engine, Person: person}, TargetLocation: destination, CallOnArrival: callOnArrival})
 }
 
 func (a *AIController) SwitchToCombat(person *core.Actor, target *core.Actor) {
     if person.IsDowned() || person.IsInCombat() {
         return
     }
-    ai := person.AI
-    person.Status = core.ActorStatusCombat
     currentTargetPos := target.Pos()
-    ai.PushState(&CombatMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Target: target, LastKnownPosition: &currentTargetPos})
-    person.Move = core.AutoMove{}
-    person.Path = nil
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.pushStateTransition(person, core.ActorStatusCombat,
+        &CombatMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Target: target, LastKnownPosition: &currentTargetPos})
     println(fmt.Sprintf("%s is now in combat with %s", person.DebugDisplayName(), target.Name))
 }
 
@@ -244,70 +228,55 @@ func (a *AIController) SwitchToCleanup(person *core.Actor) {
     if person.IsDowned() {
         return
     }
-    ai := person.AI
-    person.Status = core.ActorStatusCleanup
-    ai.PushState(&CleanupMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
-    person.Move = core.AutoMove{}
-    person.Path = nil
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
-    println(fmt.Sprintf("%s is now in cleaning up", person.DebugDisplayName()))
+    a.pushStateTransition(person, core.ActorStatusCleanup,
+        &CleanupMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
+    println(fmt.Sprintf("%s is now cleaning up", person.DebugDisplayName()))
 }
 
 func (a *AIController) SwitchToScript(target *core.Actor) {
     if target.IsDowned() || target.Status == core.ActorStatusScripted {
         return
     }
-    ai := target.AI
-    target.Status = core.ActorStatusScripted
-    ai.PushState(&ScriptedState{AIContext: AIContext{Engine: a.engine, Person: target}})
-    target.Move = core.AutoMove{}
-    target.Path = nil
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.pushStateTransition(target, core.ActorStatusScripted,
+        &ScriptedState{AIContext: AIContext{Engine: a.engine, Person: target}})
     println(fmt.Sprintf("%s is now in script mode", target.DebugDisplayName()))
 }
 
 func (a *AIController) SwitchToSnitch(person *core.Actor) {
-    if person.IsDowned() ||
-        person.Status == core.ActorStatusSnitching {
+    if person.IsDowned() || person.Status == core.ActorStatusSnitching {
         return
     }
     ai := person.AI
+    newState := &SnitchMovement{AIContext: AIContext{Engine: a.engine, Person: person}}
     if person.IsInvestigating() {
-        ai.ReplaceState(&SnitchMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
+        ai.ReplaceState(newState)
     } else {
-        ai.PushState(&SnitchMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
+        ai.PushState(newState)
     }
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
     person.Status = core.ActorStatusSnitching
     person.Move = core.AutoMove{}
     person.Path = nil
+    ai.UpdatePredicate = nil
+    ai.NextUpdateIn = stateTransitionDelay
     println(fmt.Sprintf("%s is now snitching", person.DebugDisplayName()))
 }
+
 func (a *AIController) SwitchToPanic(person *core.Actor, dangerLocations []geometry.Point) {
-    if person.IsDowned() ||
-        person.Status == core.ActorStatusPanic {
+    if person.IsDowned() || person.Status == core.ActorStatusPanic {
         return
     }
-    ai := person.AI
-    person.Status = core.ActorStatusPanic
-    var threatActor *core.Actor = nil
+    var threatActor *core.Actor
     for _, danger := range dangerLocations {
-        actorAt, isActorAt := a.engine.GetGame().GetMap().TryGetActorAt(danger)
-        if isActorAt {
+        if actorAt, isActorAt := a.engine.GetGame().GetMap().TryGetActorAt(danger); isActorAt {
             threatActor = actorAt
             break
         }
     }
-    ai.PushState(&PanicMovement{AIContext: AIContext{Engine: a.engine, Person: person}, DangerousLocations: dangerLocations, ThreatActor: threatActor})
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
-    person.Move = core.AutoMove{}
-    person.Path = nil
+    a.pushStateTransition(person, core.ActorStatusPanic,
+        &PanicMovement{AIContext: AIContext{Engine: a.engine, Person: person}, DangerousLocations: dangerLocations, ThreatActor: threatActor})
     println(fmt.Sprintf("%s is now panicking", person.DebugDisplayName()))
 }
+
 func (a *AIController) SwitchToInvestigation(person *core.Actor, incidentReport core.IncidentReport) {
     if person.IsDowned() || person.IsInCombat() ||
         person.Status == core.ActorStatusPanic ||
@@ -316,15 +285,10 @@ func (a *AIController) SwitchToInvestigation(person *core.Actor, incidentReport 
         return
     }
     if a.IsPartOfTravelGroup(person) {
-        travelGroup := a.GetTravelGroup(person)
-        a.handleSplitOfTravelGroup(person, travelGroup)
+        a.handleSplitOfTravelGroup(person, a.GetTravelGroup(person))
     }
-
-    ai := person.AI
-    person.Status = core.ActorStatusInvestigating
-    ai.PushState(&InvestigationMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Incident: incidentReport})
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.pushStateTransition(person, core.ActorStatusInvestigating,
+        &InvestigationMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Incident: incidentReport})
     println(fmt.Sprintf("%s is now investigating %v", person.DebugDisplayName(), incidentReport.Hash()))
 }
 
@@ -334,24 +298,19 @@ func (a *AIController) SwitchToSchedule(person *core.Actor) {
         person.Status == core.ActorStatusOnSchedule {
         return
     }
-    ai := person.AI
-    person.Status = core.ActorStatusOnSchedule
-    ai.SetState(&ScheduledMovement{AIContext{Engine: a.engine, Person: person}})
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.setStateTransition(person, core.ActorStatusOnSchedule,
+        &ScheduledMovement{AIContext{Engine: a.engine, Person: person}})
     println(fmt.Sprintf("%s is now on schedule", person.DebugDisplayName()))
 }
+
 func (a *AIController) SwitchToWatch(person *core.Actor, target *core.Actor, report core.IncidentReport) {
     if person.IsDowned() || person.IsInCombat() ||
         person.Status == core.ActorStatusPanic ||
         person.Status == core.ActorStatusWatching {
         return
     }
-    ai := person.AI
-    person.Status = core.ActorStatusWatching
-    ai.PushState(&WatchMovement{AIContext: AIContext{Engine: a.engine, Person: person}, suspiciousActor: target, lastKnownLocation: person.Pos(), incident: report})
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.pushStateTransition(person, core.ActorStatusWatching,
+        &WatchMovement{AIContext: AIContext{Engine: a.engine, Person: person}, suspiciousActor: target, lastKnownLocation: person.Pos(), incident: report})
     println(fmt.Sprintf("%s is now watching %s", person.DebugDisplayName(), target.Name))
 }
 
@@ -359,11 +318,8 @@ func (a *AIController) SwitchToGuard(person *core.Actor) {
     if person.IsDowned() {
         return
     }
-    ai := person.AI
-    person.Status = core.ActorStatusIdle
-    ai.SetState(&GuardMovement{AIContext{Engine: a.engine, Person: person}})
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.setStateTransition(person, core.ActorStatusIdle,
+        &GuardMovement{AIContext{Engine: a.engine, Person: person}})
     println(fmt.Sprintf("%s is now guarding", person.DebugDisplayName()))
 }
 
@@ -371,10 +327,8 @@ func (a *AIController) SwitchToVomit(person *core.Actor) {
     if person.IsDowned() {
         return
     }
-    ai := person.AI
-    ai.PushState(&VomitMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
-    ai.UpdatePredicate = nil
-    ai.NextUpdateIn = stateTransitionDelay
+    a.pushStateTransition(person, person.Status,
+        &VomitMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
     println(fmt.Sprintf("%s is now vomiting", person.DebugDisplayName()))
 }
 
@@ -450,9 +404,31 @@ func (a *AIController) SetEngaged(person *core.Actor, engagedStatus core.ActorSt
         }
     }
 }
-func (a *AIController) StateOf(person *core.Actor) AIStateExecutor {
-    ai := person.AI
-    return ai.GetState().(AIStateExecutor)
+func (a *AIController) StateOf(person *core.Actor) core.AIStateHandler {
+    return person.AI.GetState()
+}
+
+// pushStateTransition is the shared tail of every SwitchTo* / PushXxx method.
+// It sets the actor status, pushes the new state onto the stack, and resets
+// all per-tick movement fields.
+func (a *AIController) pushStateTransition(person *core.Actor, status core.ActorState, state core.AIStateHandler) {
+    person.Status = status
+    person.AI.PushState(state)
+    person.Move = core.AutoMove{}
+    person.Path = nil
+    person.AI.UpdatePredicate = nil
+    person.AI.NextUpdateIn = stateTransitionDelay
+}
+
+// setStateTransition is like pushStateTransition but replaces the entire stack
+// (used when the new state is an irreversible base state, e.g. Guard, Schedule).
+func (a *AIController) setStateTransition(person *core.Actor, status core.ActorState, state core.AIStateHandler) {
+    person.Status = status
+    person.AI.SetState(state)
+    person.Move = core.AutoMove{}
+    person.Path = nil
+    person.AI.UpdatePredicate = nil
+    person.AI.NextUpdateIn = stateTransitionDelay
 }
 
 // PathSet updates the path of Person to a new position.
@@ -593,7 +569,7 @@ func (a *AIController) ReactToDangerousActor(person *core.Actor) bool {
             //a.RaiseSuspicionAt(person, dangerMan, 200)
             if person.Type == core.ActorTypeGuard {
                 a.SwitchToCombat(person, dangerMan)
-            } else if !contactReport.IsKnownByGuard() && a.IsGuardAvailable() {
+            } else if !contactReport.IsKnownByGuards() && a.IsGuardAvailable() {
                 a.SwitchToSnitch(person)
             } else {
                 a.SwitchToPanic(person, []geometry.Point{dangerMan.Pos()})
@@ -602,7 +578,7 @@ func (a *AIController) ReactToDangerousActor(person *core.Actor) bool {
         } else {
             if person.Type == core.ActorTypeGuard {
                 a.SwitchToInvestigation(person, contactReport)
-            } else if !contactReport.IsKnownByGuard() && a.IsGuardAvailable() {
+            } else if !contactReport.IsKnownByGuards() && a.IsGuardAvailable() {
                 a.SwitchToSnitch(person)
             } else if contactReport.Type.IsOpenViolence() {
                 a.SwitchToPanic(person, []geometry.Point{contactReport.Location})
@@ -649,7 +625,7 @@ func (a *AIController) ReactToDangerousLocations(person *core.Actor) bool {
         if person.Type == core.ActorTypeGuard && a.TryRegisterHandler(person, incident) {
             incident.RegisteredHandler = person
             a.SwitchToInvestigation(person, incident)
-        } else if !incident.IsKnownByGuard() && a.IsGuardAvailable() {
+        } else if !incident.IsKnownByGuards() && a.IsGuardAvailable() {
             a.SwitchToSnitch(person)
         }
         return true
@@ -678,7 +654,7 @@ func (a *AIController) RaiseSuspicionAt(person *core.Actor, dangerousActor *core
     println(fmt.Sprintf("%s raised suspicion at %s", person.DebugDisplayName(), dangerousActor.DebugDisplayName()))
     if ai.SuspicionCounter > 3 {
         if dangerousActor.IsPlayer() {
-            a.engine.GetGame().GetStats().BeenSpotted = true
+            a.engine.PublishEvent(services.PlayerSpottedEvent{})
         }
         ai.SuspicionCounter = 0
         person.IsEyeWitness = true
