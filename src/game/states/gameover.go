@@ -71,7 +71,7 @@ func (g *GameStateGameOver) createDebriefingMessage(success bool) []core.StyledT
     message := make([]core.StyledText, 0)
 
     if success {
-        message = append(message, core.Text("Your career has been updated.").WithStyle(common.DefaultStyle.WithFg(common.Green)))
+        message = append(message, core.Text("Your career has been updated.").WithStyle(common.DefaultStyle.WithFg(core.CurrentTheme.SuccessForeground)))
         message = append(message, core.Text(fmt.Sprintf("You completed the mission in %s", stats.MissionDuration().Round(time.Millisecond))))
         if len(challengeResults.NewlyCompleted) > 0 {
             message = append(message, core.Text(""))
@@ -79,7 +79,7 @@ func (g *GameStateGameOver) createDebriefingMessage(success bool) []core.StyledT
 
             for _, challenge := range challengeResults.NewlyCompleted {
                 challengeMessage := fmt.Sprintf("%s (%d XP) in %s", challenge.Name(), challenge.Reward(), challenge.CompletionTime().Round(time.Millisecond))
-                message = append(message, core.Text(challengeMessage).WithStyle(common.DefaultStyle.WithFg(common.Green)))
+                message = append(message, core.Text(challengeMessage).WithStyle(common.DefaultStyle.WithFg(core.CurrentTheme.SuccessForeground)))
             }
         }
         if len(challengeResults.FasterCompleted) > 0 {
@@ -88,11 +88,11 @@ func (g *GameStateGameOver) createDebriefingMessage(success bool) []core.StyledT
 
             for _, challenge := range challengeResults.FasterCompleted {
                 challengeMessage := fmt.Sprintf("%s (%d XP) in %s", challenge.Name(), challenge.Reward(), challenge.CompletionTime().Round(time.Millisecond))
-                message = append(message, core.Text(challengeMessage).WithStyle(common.DefaultStyle.WithFg(common.Green)))
+                message = append(message, core.Text(challengeMessage).WithStyle(common.DefaultStyle.WithFg(core.CurrentTheme.SuccessForeground)))
             }
         }
     } else {
-        message = append(message, core.Text("This mission was a FAILURE.").WithStyle(common.DefaultStyle.WithFg(common.Red)))
+        message = append(message, core.Text("This mission was a FAILURE.").WithStyle(common.DefaultStyle.WithFg(core.CurrentTheme.FailureForeground)))
         message = append(message, core.Text(fmt.Sprintf("Cause of death: %s", g.CauseOfPlayerDeath.WithKiller())))
     }
 

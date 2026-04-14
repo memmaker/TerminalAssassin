@@ -77,19 +77,17 @@ func (g *GameStateEditor) ResizeAndClearMap(newWidth, newHeight int) {
     game := g.engine.GetGame()
     game.ClearMap(newWidth, newHeight)
     currentMap := game.GetMap()
-    defaultStyle := currentMap.DefaultStyle
     currentMap.Apply(func(cell gridmap.MapCell[*core.Actor, *core.Item, services.Object]) gridmap.MapCell[*core.Actor, *core.Item, services.Object] {
         cell.IsExplored = true
         if cell.TileType.IsWalkable {
-            cell.TileType = cell.TileType.WithBGColor(defaultStyle.Background).WithFGColor(defaultStyle.Foreground)
+            cell.TileType = cell.TileType.WithBGColor(core.CurrentTheme.MapBackground).WithFGColor(core.CurrentTheme.MapForeground)
         } else {
-            wallStyle := defaultStyle.Reversed()
-            cell.TileType = cell.TileType.WithBGColor(wallStyle.Background).WithFGColor(wallStyle.Foreground)
+            cell.TileType = cell.TileType.WithBGColor(core.CurrentTheme.WallBackground).WithFGColor(core.CurrentTheme.WallForeground)
         }
         return cell
     })
-    g.currentForegroundColor = defaultStyle.Foreground
-    g.currentBackgroundColor = defaultStyle.Background
+    g.currentForegroundColor = core.CurrentTheme.MapForeground
+    g.currentBackgroundColor = core.CurrentTheme.MapBackground
     currentMap.ApplyAmbientLight()
     currentMap.UpdateBakedLights()
     currentMap.UpdateDynamicLights()
@@ -101,7 +99,7 @@ func (g *GameStateEditor) Init(engine services.Engine) {
     g.engine = engine
     g.pendingLookDir = -1
     // currentForegroundColor / currentBackgroundColor are initialised from the
-    // map's DefaultStyle inside ResizeAndClearMap (called at the end of Init).
+    // current theme inside ResizeAndClearMap (called at the end of Init).
     editMapUI = UIHandler{
         Name: "edit map",
         KeyPressed: map[core.Key]func(){

@@ -11,9 +11,8 @@ import (
 
 func NewTriggerObject(description string, symbol rune) *TriggerObject {
 	return &TriggerObject{
-		symbol:       symbol,
-		Name:         description,
-		definedStyle: common.DefaultStyle.WithBg(common.Transparent),
+		symbol: symbol,
+		Name:   description,
 	}
 }
 
@@ -22,12 +21,11 @@ func NewTriggerObject(description string, symbol rune) *TriggerObject {
 // can be turned on/off by hand
 // will emit trigger event, if turned on or off
 type TriggerObject struct {
-	position     geometry.Point
-	symbol       rune
-	Name         string
-	definedStyle common.Style
-	state        DeviceState
-	triggerKey   string
+	position   geometry.Point
+	symbol     rune
+	Name       string
+	state      DeviceState
+	triggerKey string
 }
 
 func (t *TriggerObject) GetKey() string {
@@ -36,14 +34,6 @@ func (t *TriggerObject) GetKey() string {
 
 func (t *TriggerObject) SetKey(key string) {
 	t.triggerKey = key
-}
-
-func (t *TriggerObject) GetStyle() common.Style {
-	return t.definedStyle
-}
-
-func (t *TriggerObject) SetStyle(style common.Style) {
-	t.definedStyle = style
 }
 
 func (t *TriggerObject) EncodeAsString() string {
@@ -72,11 +62,11 @@ func (t *TriggerObject) Icon() rune {
 }
 
 func (t *TriggerObject) Style(st common.Style) common.Style {
-	st = t.definedStyle.WithBg(st.Background)
+	st = common.Style{Foreground: core.CurrentTheme.ObjectForeground, Background: st.Background}
 	if t.state == DeviceStateOn {
-		st = st.WithFg(common.Green)
+		st = st.WithFg(core.CurrentTheme.DeviceOnForeground)
 	} else if t.state == DeviceStateBroken {
-		st = st.WithFg(common.Red)
+		st = st.WithFg(core.CurrentTheme.DeviceBrokenForeground)
 	}
 	return st
 }

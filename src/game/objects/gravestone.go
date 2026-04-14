@@ -14,8 +14,7 @@ const gravestonePrefix = "gravestone|"
 
 func NewGravestone(inscription string) *Gravestone {
     return &Gravestone{
-        inscription:  inscription,
-        definedStyle: common.DefaultStyle.Reversed().WithBg(common.Transparent),
+        inscription: inscription,
     }
 }
 
@@ -25,9 +24,8 @@ func GravestoneFromEncoded(encoded string) *Gravestone {
 }
 
 type Gravestone struct {
-    inscription  string
-    position     geometry.Point
-    definedStyle common.Style
+    inscription string
+    position    geometry.Point
 }
 
 // EncodeAsString serialises the gravestone so it survives a save/load cycle.
@@ -38,20 +36,20 @@ func (g *Gravestone) EncodeAsString() string {
 
 // Description is shown in the mouseover tooltip.
 func (g *Gravestone) Description() string {
-	if g.inscription == "" {
-		return "A weathered gravestone."
-	}
-	return g.inscription
+    if g.inscription == "" {
+        return "A weathered gravestone."
+    }
+    return g.inscription
 }
 
 // GetText implements services.Textable.
 func (g *Gravestone) GetText() string {
-	return g.inscription
+    return g.inscription
 }
 
 // SetText implements services.Textable — updates the inscription in place.
 func (g *Gravestone) SetText(text string) {
-	g.inscription = text
+    g.inscription = text
 }
 
 func (g *Gravestone) Icon() rune {
@@ -67,15 +65,7 @@ func (g *Gravestone) SetPos(pos geometry.Point) {
 }
 
 func (g *Gravestone) Style(st common.Style) common.Style {
-    return g.definedStyle.WithBg(st.Background)
-}
-
-func (g *Gravestone) GetStyle() common.Style {
-    return g.definedStyle
-}
-
-func (g *Gravestone) SetStyle(style common.Style) {
-    g.definedStyle = style
+    return common.Style{Foreground: core.CurrentTheme.ObjectForeground, Background: st.Background}
 }
 
 // IsWalkable returns false — gravestones block movement.

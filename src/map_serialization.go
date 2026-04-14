@@ -1,11 +1,9 @@
 package main
 
 import (
-    "bufio"
     "crypto/sha256"
     "encoding/hex"
     "fmt"
-    "github.com/memmaker/terminal-assassin/common"
     "github.com/memmaker/terminal-assassin/game/core"
     "github.com/memmaker/terminal-assassin/game/services"
     "github.com/memmaker/terminal-assassin/geometry"
@@ -19,9 +17,7 @@ import (
 )
 
 type MapSerializer struct {
-    engine            *ConsoleEngine
-    paletteForWriting map[common.RGBAColor]rune
-    paletteForReading []common.Color
+    engine *ConsoleEngine
 }
 
 func (g *MapSerializer) SaveTiles(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {
@@ -157,8 +153,6 @@ func (g *MapSerializer) SaveObjects(currentMap *gridmap.GridMap[*core.Actor, *co
         record := []rec_files.Field{
             {Name: "ObjectAt", Value: objectAt.Pos().String()},
             {Name: "Name", Value: objectAt.EncodeAsString()},
-            {Name: "FgColor", Value: objectAt.GetStyle().Foreground.EncodeAsString()},
-            {Name: "BgColor", Value: objectAt.GetStyle().Background.EncodeAsString()},
         }
         if keyboundObject, ok := objectAt.(services.KeyBound); ok && keyboundObject.GetKey() != "" {
             record = append(record, rec_files.Field{Name: "Key", Value: keyboundObject.GetKey()})
@@ -190,7 +184,6 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
     for _, record := range records {
         var pos geometry.Point
         var objectName string
-        var fgColor, bgColor common.Color
         var key string
         var contents []string
         var difficulty string
@@ -200,10 +193,8 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
                 pos, _ = geometry.NewPointFromString(field.Value)
             case "Name":
                 objectName = field.Value
-            case "FgColor":
-                fgColor = common.NewColorFromString(field.Value)
-            case "BgColor":
-                bgColor = common.NewColorFromString(field.Value)
+            case "FgColor", "BgColor":
+                // legacy field — ignored, colors come from the theme now
             case "Key":
                 key = field.Value
             case "Difficulty":
@@ -217,7 +208,6 @@ func (g *MapSerializer) LoadObjects(files *Files, loadedMap *gridmap.GridMap[*co
             println(fmt.Sprintf("Error loading object '%s'", objectName))
             continue
         }
-        object.SetStyle(common.Style{Foreground: fgColor, Background: bgColor})
         if keyboundObject, ok := object.(services.KeyBound); ok && key != "" {
             keyboundObject.SetKey(key)
         }
@@ -480,12 +470,6 @@ func (g *MapSerializer) ApplyGlobalMapData(loadedMap *gridmap.GridMap[*core.Acto
     loadedMap.MetaData.MissionTitle = globalData.MissionTitle
     loadedMap.TimeOfDay = globalData.TimeOfDay
     loadedMap.AmbienceSoundCue = globalData.AmbienceSoundCue
-    // Older maps lack Default_FG/Default_BG; fall back to the global default.
-    if globalData.DefaultStyle.Foreground == nil {
-        loadedMap.DefaultStyle = common.MapDefaultStyle
-    } else {
-        loadedMap.DefaultStyle = globalData.DefaultStyle
-    }
 }
 
 func (g *MapSerializer) SaveBakedLights(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {
@@ -559,76 +543,6 @@ func (g *MapSerializer) LoadDynamicLights(files *Files, loadedMap *gridmap.GridM
 
     println(fmt.Sprintf("Loaded %d dynamic lights", len(records)))
     return nil
-}
-
-func (g *MapSerializer) colorToPaletteIndex(color common.RGBAColor) rune {
-    if index, ok := g.paletteForWriting[color]; ok {
-        return index
-    }
-    index := rune(len(g.paletteForWriting) + 33)
-    g.paletteForWriting[color] = index
-    return index
-}
-func (g *MapSerializer) paletteIndexToColor(index rune) common.Color {
-    return g.paletteForReading[int(index-33)]
-}
-func (g *MapSerializer) SaveTileColors(loadedMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {
-    file, err := os.Create(filename + ".fg")
-    if err != nil {
-        return err
-    }
-    defer file.Close()
-
-    writeFunc := func(pos geometry.Point) rune {
-        tileStyle := loadedMap.GetCell(pos).TileType.DefinedStyle
-        return g.colorToPaletteIndex(tileStyle.Foreground.ToRGB())
-    }
-    g.writeGrid(file, geometry.Point{X: loadedMap.MapWidth, Y: loadedMap.MapHeight}, writeFunc)
-
-    bgFile, err := os.Create(filename + ".bg")
-    if err != nil {
-        return err
-    }
-    defer bgFile.Close()
-
-    bgWriteFunc := func(pos geometry.Point) rune {
-        tileStyle := loadedMap.GetCell(pos).TileType.DefinedStyle
-        return g.colorToPaletteIndex(tileStyle.Background.ToRGB())
-    }
-    g.writeGrid(bgFile, geometry.Point{X: loadedMap.MapWidth, Y: loadedMap.MapHeight}, bgWriteFunc)
-
-    return nil
-}
-
-func (g *MapSerializer) LoadTileColors(files *Files, loadedMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {
-    fgFile, fgErr := files.Open(filename + ".fg")
-    if fgErr != nil {
-        return fgErr
-    }
-    defer fgFile.Close()
-    fgReadFunc := func(pos geometry.Point, index rune) {
-        color := g.paletteIndexToColor(index)
-        cell := loadedMap.GetCell(pos)
-        cell.TileType.DefinedStyle.Foreground = color
-        loadedMap.SetCell(pos, cell)
-    }
-    fgReadErr := g.readGrid(fgFile, geometry.Point{X: loadedMap.MapWidth, Y: loadedMap.MapHeight}, fgReadFunc)
-    if fgReadErr != nil {
-        return fgReadErr
-    }
-
-    bgFile, bgErr := files.Open(filename + ".bg")
-    if bgErr != nil {
-        return bgErr
-    }
-    defer bgFile.Close()
-    bgReadFunc := func(pos geometry.Point, index rune) {
-        color := g.paletteIndexToColor(index)
-        cell := loadedMap.GetCell(pos)
-        cell.TileType.DefinedStyle.Background = color
-        loadedMap.SetCell(pos, cell)
-    }
-    return g.readGrid(bgFile, geometry.Point{X: loadedMap.MapWidth, Y: loadedMap.MapHeight}, bgReadFunc)
 }
 
 func (g *MapSerializer) SaveZones(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], filename string) error {
@@ -747,38 +661,6 @@ func (g *MapSerializer) LoadNamedLocations(files *Files, currentMap *gridmap.Gri
     return file.Close()
 }
 
-func (g *MapSerializer) SaveCurrentPalette(filename string) error {
-    palFile, err := os.Create(filename)
-    if err != nil {
-        return err
-    }
-    paletteAsList := make([]common.RGBAColor, len(g.paletteForWriting))
-    for color, index := range g.paletteForWriting {
-        paletteAsList[index-33] = color
-    }
-    for _, color := range paletteAsList {
-        fmt.Fprintln(palFile, color.EncodeAsString())
-    }
-    return palFile.Close()
-}
-
-func (g *MapSerializer) LoadPalette(files *Files, filename string) error {
-    g.paletteForReading = make([]common.Color, 0)
-    palFile, err := files.Open(filename)
-    if err != nil {
-        return err
-    }
-
-    scanner := bufio.NewScanner(palFile)
-    paletteIndex := 0
-    for scanner.Scan() {
-        line := scanner.Text()
-        color := common.NewColorFromString(line)
-        g.paletteForReading = append(g.paletteForReading, color)
-        paletteIndex++
-    }
-    return palFile.Close()
-}
 
 func NewGlobalDataFromMap(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object]) gridmap.GlobalMapDataOnDisk {
     return gridmap.GlobalMapDataOnDisk{
@@ -791,29 +673,23 @@ func NewGlobalDataFromMap(currentMap *gridmap.GridMap[*core.Actor, *core.Item, s
         MissionTitle:      currentMap.MetaData.MissionTitle,
         TimeOfDay:         currentMap.TimeOfDay,
         AmbienceSoundCue:  currentMap.AmbienceSoundCue,
-        DefaultStyle:      currentMap.DefaultStyle,
     }
 }
 
 func (g *ConsoleEngine) SaveMap(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object], mapFolder string) error {
-    serializer := MapSerializer{engine: g, paletteForWriting: make(map[common.RGBAColor]rune)}
+    serializer := MapSerializer{engine: g}
 
     globalErr := serializer.SaveGlobalData(currentMap, mapFolder)
     if globalErr != nil {
         return globalErr
     }
 
-    tileErr := serializer.SaveTiles(currentMap, path.Join(mapFolder, "tilemap.txt"))
-    if tileErr != nil {
-        return tileErr
-    }
+	tileErr := serializer.SaveTiles(currentMap, path.Join(mapFolder, "tilemap.txt"))
+	if tileErr != nil {
+		return tileErr
+	}
 
-    tileColorErr := serializer.SaveTileColors(currentMap, path.Join(mapFolder, "tile_colors"))
-    if tileColorErr != nil {
-        return tileColorErr
-    }
-
-    itemErr := serializer.SaveItemLocations(currentMap, path.Join(mapFolder, "item_locations.txt"))
+	itemErr := serializer.SaveItemLocations(currentMap, path.Join(mapFolder, "item_locations.txt"))
     if itemErr != nil {
         return itemErr
     }
@@ -853,20 +729,16 @@ func (g *ConsoleEngine) SaveMap(currentMap *gridmap.GridMap[*core.Actor, *core.I
         return zoneMapErr
     }
 
-    namedLocationsErr := serializer.SaveNamedLocations(currentMap, path.Join(mapFolder, "named_locations.txt"))
-    if namedLocationsErr != nil {
-        return namedLocationsErr
-    }
+	namedLocationsErr := serializer.SaveNamedLocations(currentMap, path.Join(mapFolder, "named_locations.txt"))
+	if namedLocationsErr != nil {
+		return namedLocationsErr
+	}
 
-    paletteErr := serializer.SaveCurrentPalette(path.Join(mapFolder, "palette.txt"))
-    if paletteErr != nil {
-        return paletteErr
-    }
-    return nil
+	return nil
 }
 
 func (g *ConsoleEngine) LoadMap(mapFolder string) (*gridmap.GridMap[*core.Actor, *core.Item, services.Object], error) {
-    serializer := MapSerializer{engine: g, paletteForWriting: make(map[common.RGBAColor]rune)}
+    serializer := MapSerializer{engine: g}
     files := g.Files
     globalData, globalErr := serializer.LoadGlobalData(files, mapFolder)
     if globalErr != nil {
@@ -879,23 +751,14 @@ func (g *ConsoleEngine) LoadMap(mapFolder string) (*gridmap.GridMap[*core.Actor,
     hash := sha256.Sum256([]byte(mapFolder))
     loadedMap.MetaData.HashAsHex = hex.EncodeToString(hash[:])
 
-    serializer.ApplyGlobalMapData(loadedMap, globalData)
+	serializer.ApplyGlobalMapData(loadedMap, globalData)
 
-    paletteErr := serializer.LoadPalette(files, path.Join(mapFolder, "palette.txt"))
-    if paletteErr != nil {
-        return nil, paletteErr
-    }
+	tileErr := serializer.LoadTiles(files, loadedMap, path.Join(mapFolder, "tilemap.txt"))
+	if tileErr != nil {
+		return nil, tileErr
+	}
 
-    tileErr := serializer.LoadTiles(files, loadedMap, path.Join(mapFolder, "tilemap.txt"))
-    if tileErr != nil {
-        return nil, tileErr
-    }
-
-    tileColorErr := serializer.LoadTileColors(files, loadedMap, path.Join(mapFolder, "tile_colors"))
-    if tileColorErr != nil {
-        println("Error loading tile colors: " + tileColorErr.Error())
-    }
-    itemErr := serializer.LoadItemLocations(files, loadedMap, path.Join(mapFolder, "item_locations.txt"))
+	itemErr := serializer.LoadItemLocations(files, loadedMap, path.Join(mapFolder, "item_locations.txt"))
     if itemErr != nil {
         println("Error loading item locations: " + itemErr.Error())
     }

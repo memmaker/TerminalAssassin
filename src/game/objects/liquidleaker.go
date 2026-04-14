@@ -20,15 +20,6 @@ type LiquidLeaker struct {
 	HasLeaked           bool
 	CanBeLeakedByHand   bool
 	LeakingStimulusType stimuli.StimulusType
-	definedStyle        common.Style
-}
-
-func (l *LiquidLeaker) GetStyle() common.Style {
-	return l.definedStyle
-}
-
-func (l *LiquidLeaker) SetStyle(style common.Style) {
-	l.definedStyle = style
 }
 
 func (l *LiquidLeaker) EncodeAsString() string {
@@ -59,16 +50,16 @@ func (l *LiquidLeaker) Icon() rune {
 }
 
 func (l *LiquidLeaker) Style(st common.Style) common.Style {
-	st = l.definedStyle.WithBg(st.Background)
+	st = common.Style{Foreground: core.CurrentTheme.ObjectForeground, Background: st.Background}
 	switch l.LeakingStimulusType {
 	case stimuli.StimulusBurnableLiquid:
-		st = st.WithFg(core.ColorFromCode(core.ColorBurnableForeground))
+		st = st.WithFg(core.CurrentTheme.OilForeground)
 	case stimuli.StimulusWater:
-		st = st.WithFg(core.ColorFromCode(core.ColorWater))
+		st = st.WithFg(core.CurrentTheme.WaterForeground)
 	case stimuli.StimulusLethalPoison:
-		st = st.WithFg(core.ColorFromCode(core.ColorLethal))
+		st = st.WithFg(core.CurrentTheme.LethalPoisonForeground)
 	case stimuli.StimulusEmeticPoison:
-		st = st.WithFg(core.ColorFromCode(core.ColorEmetic))
+		st = st.WithFg(core.CurrentTheme.EmeticPoisonForeground)
 	}
 	return st
 }
@@ -106,7 +97,6 @@ func NewLiquidContainer(description string, symbol rune, leakedStim stimuli.Stim
 		symbol:              symbol,
 		Name:                description,
 		LeakingStimulusType: leakedStim,
-		definedStyle:        common.DefaultStyle.WithBg(common.Transparent),
 	}
 }
 
@@ -116,6 +106,5 @@ func NewLiquidFaucet(description string, symbol rune, leakedStim stimuli.Stimulu
 		Name:                description,
 		LeakingStimulusType: leakedStim,
 		CanBeLeakedByHand:   true,
-		definedStyle:        common.DefaultStyle.WithBg(common.Transparent),
 	}
 }

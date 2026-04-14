@@ -100,7 +100,7 @@ func StimDrawInfo(c gridmap.MapCell[*core.Actor, *core.Item, services.Object], t
     stimStyle := tileStyle
     icon := c.TileType.Icon()
     if c.HasStim(stimuli.StimulusBlood) && c.ForceOfStim(stimuli.StimulusBlood) > 15 {
-        stimStyle = stimStyle.WithFg(core.ColorFromCode(core.ColorBrightRed)).WithBg(core.ColorFromCode(core.ColorMapRed))
+        stimStyle = stimStyle.WithFg(core.CurrentTheme.BloodForeground).WithBg(core.CurrentTheme.BloodBackground)
         icon = runeFromStimType(stimuli.StimulusBlood)
     } else if c.HasStim(stimuli.StimulusFire) {
         stimStyle = styleFromStimType(stimuli.StimulusFire, stimStyle)
@@ -126,7 +126,7 @@ func StimDrawInfo(c gridmap.MapCell[*core.Actor, *core.Item, services.Object], t
         stimStyle = styleFromStimType(stimuli.StimulusInducedSleep, stimStyle)
         icon = runeFromStimType(stimuli.StimulusInducedSleep)
     } else if c.HasStim(stimuli.StimulusBlood) && c.ForceOfStim(stimuli.StimulusBlood) <= 15 {
-        stimStyle = stimStyle.WithFg(core.ColorFromCode(core.ColorBlood))
+        stimStyle = stimStyle.WithFg(core.CurrentTheme.BloodForeground)
         icon = core.GlyphBlood
     }
     return icon, stimStyle
@@ -135,19 +135,19 @@ func StimDrawInfo(c gridmap.MapCell[*core.Actor, *core.Item, services.Object], t
 func styleFromStimType(stimulusType stimuli.StimulusType, st common.Style) common.Style {
     switch stimulusType {
     case stimuli.StimulusWater:
-        return st.WithFg(core.ColorFromCode(core.ColorWater)).WithBg(core.ColorFromCode(core.ColorWaterBackground))
+        return st.WithFg(core.CurrentTheme.WaterForeground).WithBg(core.CurrentTheme.WaterBackground)
     case stimuli.StimulusBurnableLiquid:
-        return st.WithFg(core.ColorFromCode(core.ColorBurnableForeground)).WithBg(core.ColorFromCode(core.ColorBurnableBackground))
+        return st.WithFg(core.CurrentTheme.OilForeground).WithBg(core.CurrentTheme.OilBackground)
     case stimuli.StimulusFire:
-        return st.WithFg(core.ColorFromCode(core.ColorExplosionDark)).WithBg(core.ColorFromCode(core.ColorExplosionLight))
+        return st.WithFg(core.CurrentTheme.FireForeground).WithBg(core.CurrentTheme.FireBackground)
     case stimuli.StimulusLethalPoison:
-        return st.WithFg(core.ColorFromCode(core.ColorLethal))
+        return st.WithFg(core.CurrentTheme.LethalPoisonForeground)
     case stimuli.StimulusEmeticPoison:
-        return st.WithFg(core.ColorFromCode(core.ColorEmetic))
+        return st.WithFg(core.CurrentTheme.EmeticPoisonForeground)
     case stimuli.StimulusInducedSleep:
-        return st.WithFg(core.ColorFromCode(core.ColorSleep))
+        return st.WithFg(core.CurrentTheme.SleepPoisonForeground)
     case stimuli.StimulusHighVoltage:
-        return st.WithFg(core.ColorFromCode(core.ColorElectricForeground)) //.WithBg(ColorFromCode(ColorElectricBackground))
+        return st.WithFg(core.CurrentTheme.ElectricityForeground)
     }
     return st
 }

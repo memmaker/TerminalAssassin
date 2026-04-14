@@ -11,8 +11,6 @@ import (
     "github.com/memmaker/terminal-assassin/gridmap"
 )
 
-var buriedItemColor common.Color = common.NewRGBColorFromBytes(101, 67, 33)
-
 func (g *GameStateEditor) Draw(con console.CellInterface) {
     if g.clearHalfWidth {
         con.HalfWidthTransparent()
@@ -42,26 +40,28 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
             if item := currentMap.ItemAt(worldPos); item.Buried {
                 icon = item.Icon()
                 if g.selectedItem == item {
-                    style = style.WithBg(core.ColorFromCode(core.ColorMarked))
+                    style = style.WithBg(core.CurrentTheme.MarkedBackground)
                 } else {
-                    style = style.WithBg(buriedItemColor)
+                    style = style.WithBg(core.CurrentTheme.EditorBuriedItemBackground)
                 }
             }
         }
 
         if g.LastSelectedPos == worldPos {
-            style = style.WithBg(core.ColorFromCode(core.ColorMarked))
+            style = style.WithBg(core.CurrentTheme.MarkedBackground)
         }
         if g.SelectedZone != nil {
             zoneAt := currentMap.ZoneAt(worldPos)
             if zoneAt != nil && zoneAt.Name == g.SelectedZone.Name {
-                zoneColor := core.ColorFromCode(core.ColorEnforcer)
+                var zoneColor common.Color
                 if zoneAt.IsDropOff() {
-                    zoneColor = core.ColorFromCode(core.ColorWater)
+                    zoneColor = core.CurrentTheme.ZoneDropOffBackground
                 } else if zoneAt.IsHighSecurity() {
-                    zoneColor = core.ColorFromCode(core.ColorBrightRed)
+                    zoneColor = core.CurrentTheme.ZoneHighSecurityBackground
                 } else if zoneAt.IsPublic() {
-                    zoneColor = core.ColorFromCode(core.ColorMapGreen)
+                    zoneColor = core.CurrentTheme.ZonePublicBackground
+                } else if zoneAt.IsPrivate() {
+                    zoneColor = core.CurrentTheme.ZonePrivateBackground
                 }
                 style = style.WithBg(zoneColor)
             }
@@ -83,7 +83,7 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
     })
 
     if m.GetCamera().ViewPort.Contains(currentMap.PlayerSpawn) {
-        con.SetSquare(m.GetCamera().WorldToScreen(currentMap.PlayerSpawn), common.Cell{Rune: '@', Style: common.Style{Foreground: common.Black, Background: common.Green}})
+        con.SetSquare(m.GetCamera().WorldToScreen(currentMap.PlayerSpawn), common.Cell{Rune: '@', Style: common.Style{Foreground: common.Black, Background: core.CurrentTheme.EditorSpawnBackground}})
     }
 
     if g.SelectedActor != nil {
@@ -93,7 +93,7 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
             }
             screenPos := m.GetCamera().WorldToScreen(worldPos)
             cellAt := con.AtSquare(screenPos)
-            con.SetSquare(screenPos, cellAt.WithBackgroundColor(common.Green))
+            con.SetSquare(screenPos, cellAt.WithBackgroundColor(core.CurrentTheme.EditorVisionConeBackground))
         })
     }
 
@@ -123,7 +123,7 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
                 }
                 screenPos := m.GetCamera().WorldToScreen(p)
                 cellAt := con.AtSquare(screenPos)
-                con.SetSquare(screenPos, cellAt.WithBackgroundColor(common.Green))
+                con.SetSquare(screenPos, cellAt.WithBackgroundColor(core.CurrentTheme.EditorVisionConeBackground))
             })
         }
         for _, dir := range task.LookDirections {
@@ -144,7 +144,7 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
             }
             screenPos := m.GetCamera().WorldToScreen(p)
             cellAt := con.AtSquare(screenPos)
-            con.SetSquare(screenPos, cellAt.WithBackgroundColor(core.ColorFromCode(core.ColorMarked)))
+            con.SetSquare(screenPos, cellAt.WithBackgroundColor(core.CurrentTheme.MarkedBackground))
         }
     }
     for name, location := range currentMap.NamedLocations {
@@ -153,9 +153,9 @@ func (g *GameStateEditor) Draw(con console.CellInterface) {
         }
         screenPos := m.GetCamera().WorldToScreen(location)
         cell := con.AtSquare(screenPos)
-        colorForLocation := core.ColorFromCode(core.ColorEnforcer)
+        colorForLocation := core.CurrentTheme.MapBackgroundLight
         if g.selectedNamedLocation != "" && g.selectedNamedLocation == name {
-            colorForLocation = core.ColorFromCode(core.ColorGood)
+            colorForLocation = core.CurrentTheme.MarkedBackground
         }
         con.SetSquare(screenPos, cell.WithBackgroundColor(colorForLocation))
     }
@@ -188,7 +188,7 @@ func (g *GameStateEditor) drawTasks(grid console.CellInterface, schedule *gridma
         itoa := strconv.Itoa(i + 1)
         taskPosOnScreen := camera.WorldToScreen(task.Location)
         if taskPosOnScreen.Y >= 0 && taskPosOnScreen.Y < mapHeight {
-            grid.SetSquare(taskPosOnScreen, common.Cell{Rune: []rune(itoa)[0], Style: common.Style{Foreground: core.ColorFromCode(core.ColorBlood), Background: core.ColorFromCode(core.ColorGray)}})
+            grid.SetSquare(taskPosOnScreen, common.Cell{Rune: []rune(itoa)[0], Style: common.Style{Foreground: core.CurrentTheme.EditorTaskNumberForeground, Background: core.CurrentTheme.SelectionBackground}})
         }
         for _, pos := range task.KnownPath {
             if !camera.ViewPort.Contains(pos) {
@@ -197,9 +197,9 @@ func (g *GameStateEditor) drawTasks(grid console.CellInterface, schedule *gridma
             screenPos := camera.WorldToScreen(pos)
             cellAtPos := grid.AtSquare(screenPos)
             if selectedPos == pos {
-                cellAtPos.Style.Background = core.ColorFromCode(core.ColorMarked)
+                cellAtPos.Style.Background = core.CurrentTheme.MarkedBackground
             } else {
-                cellAtPos.Style.Background = core.ColorFromCode(core.ColorWarning)
+                cellAtPos.Style.Background = core.CurrentTheme.HUDWarningBackground
             }
 
             grid.SetSquare(screenPos, cellAtPos)

@@ -50,12 +50,8 @@ func (g *GameStateEditor) openGlobalMenu() {
             Handler: g.changeAmbientLight,
         },
         {
-            Label:   "Set default style",
-            Handler: g.setDefaultStyleFromCurrent,
-        },
-        {
-            Label:   "Apply default style",
-            Handler: g.applyDefaultStyleToWholeMap,
+            Label:   "Apply theme style",
+            Handler: g.applyThemeStyleToWholeMap,
         },
         {
             Label:   "Auto-Zone",
@@ -88,8 +84,8 @@ func (g *GameStateEditor) loadMap() {
             return cell
         })
         loadedMap.SetAmbientLight(common.GetAmbientLightFromDayTime(loadedMap.TimeOfDay).ToRGB())
-        g.currentForegroundColor = loadedMap.DefaultStyle.Foreground
-        g.currentBackgroundColor = loadedMap.DefaultStyle.Background
+        g.currentForegroundColor = core.CurrentTheme.MapForeground
+        g.currentBackgroundColor = core.CurrentTheme.MapBackground
         g.gridIsDirty = true
     })
 }
@@ -123,32 +119,20 @@ func (g *GameStateEditor) saveMap() {
     return
 }
 
-// setDefaultStyleFromCurrent records the editor's current fg/bg palette as the
-// map's DefaultStyle without touching any existing tile or object colours.
-func (g *GameStateEditor) setDefaultStyleFromCurrent() {
+// applyThemeStyleToWholeMap re-colours every tile on the map using the current
+// theme. Walkable tiles get MapForeground/MapBackground, walls get WallForeground/WallBackground.
+func (g *GameStateEditor) applyThemeStyleToWholeMap() {
     currentMap := g.engine.GetGame().GetMap()
-    currentMap.DefaultStyle = common.Style{
-        Foreground: g.currentForegroundColor,
-        Background: g.currentBackgroundColor,
-    }
-    g.PrintAsMessage(fmt.Sprintf("Map default style set (fg: %v  bg: %v)", g.currentForegroundColor, g.currentBackgroundColor))
-}
-
-// applyDefaultStyleToWholeMap re-colours every tile and object on the map using
-// the map's DefaultStyle. Non-walkable (wall) tiles receive the reversed style.
-func (g *GameStateEditor) applyDefaultStyleToWholeMap() {
-    currentMap := g.engine.GetGame().GetMap()
-    defaultStyle := currentMap.DefaultStyle
 
     currentMap.Apply(func(cell gridmap.MapCell[*core.Actor, *core.Item, services.Object]) gridmap.MapCell[*core.Actor, *core.Item, services.Object] {
-        cell.TileType = cell.TileType.WithBGColor(defaultStyle.Background).WithFGColor(defaultStyle.Foreground)
+        if cell.TileType.IsWalkable {
+            cell.TileType = cell.TileType.WithBGColor(core.CurrentTheme.MapBackground).WithFGColor(core.CurrentTheme.MapForeground)
+        } else {
+            cell.TileType = cell.TileType.WithBGColor(core.CurrentTheme.WallBackground).WithFGColor(core.CurrentTheme.WallForeground)
+        }
         return cell
     })
 
-    for _, obj := range currentMap.Objects() {
-        obj.SetStyle(defaultStyle)
-    }
-
     g.gridIsDirty = true
-    g.PrintAsMessage("Applied default style to whole map")
+    g.PrintAsMessage("Applied theme style to whole map")
 }

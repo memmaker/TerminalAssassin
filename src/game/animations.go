@@ -84,7 +84,7 @@ func (a *Animator) AssassinationAnimation(targets []*core.Actor, icon rune, fini
             cellAt := a.cellOnScreen(grid, pos)
             style := cellAt.Style
             if frameIndex%2 == 0 {
-                style.Foreground = core.ColorFromCode(core.ColorBlood)
+                style.Foreground = core.CurrentTheme.BloodForeground
             }
             a.drawWorldToScreen(grid, pos, common.Cell{Rune: icon, Style: style})
         }
@@ -163,7 +163,7 @@ func (a *Animator) ActorEngagedIllegalAnimation(person *core.Actor, r rune, acti
         cellAt := a.cellOnScreen(grid, actionPosition)
         style := cellAt.Style
         if frameIndex%2 == 0 {
-            style.Foreground = core.ColorFromCode(core.ColorBlood)
+            style.Foreground = core.CurrentTheme.DangerForeground
         }
         a.drawWorldToScreen(grid, actionPosition, common.Cell{Rune: r, Style: style})
     }
@@ -196,7 +196,7 @@ func (a *Animator) ActorEngagedIllegalAnimationWithSound(person *core.Actor, r r
         cellAt := a.cellOnScreen(grid, actionPosition)
         style := cellAt.Style
         if frameIndex%2 == 0 {
-            style.Foreground = core.ColorFromCode(core.ColorBlood)
+            style.Foreground = core.CurrentTheme.DangerForeground
         }
         a.drawWorldToScreen(grid, actionPosition, common.Cell{Rune: r, Style: style})
     }
@@ -231,7 +231,7 @@ func (a *Animator) ActorEngagedIllegalAnimationWithSound(person *core.Actor, r r
 }
 
 func (a *Animator) FoodAnimation(person *core.Actor, actionPosition geometry.Point, completed func()) {
-    a.engagedWithSoundAnimation(person, actionPosition, "eating", 'm', core.ColorFromCode(core.ColorEmetic), completed, completed)
+    a.engagedWithSoundAnimation(person, actionPosition, "eating", 'm', core.CurrentTheme.EmeticPoisonForeground, completed, completed)
 }
 
 func (a *Animator) FallingAnimation(actionPosition geometry.Point, completed func()) {
@@ -243,7 +243,7 @@ func (a *Animator) FallingAnimation(actionPosition geometry.Point, completed fun
         cellAt := a.cellOnScreen(grid, actionPosition)
         style := cellAt.Style
         if frameIndex%2 == 0 {
-            style.Foreground = core.ColorFromCode(core.ColorBlood)
+            style.Foreground = core.CurrentTheme.DangerForeground
         }
         a.drawWorldToScreen(grid, actionPosition, common.Cell{Rune: 'f', Style: style})
     }
@@ -278,7 +278,7 @@ func (a *Animator) TaskAnimation(person *core.Actor, timeInSeconds float64, look
         cellAt := a.cellOnScreen(grid, person.Pos())
         style := cellAt.Style
         if frameIndex%2 == 0 {
-            style.Background = core.ColorFromCode(core.ColorEnforcer)
+            style.Background = core.CurrentTheme.EngagedInTaskBackground
         }
         a.drawWorldToScreen(grid, person.Pos(), common.Cell{Rune: cellAt.Rune, Style: style})
     }
@@ -387,7 +387,7 @@ func (a *Animator) addLookDirectionsSweepAnimation(person *core.Actor, lookDirs 
 }
 
 func (a *Animator) VomitingAnimation(person *core.Actor, actionPosition geometry.Point, completed func()) {
-    a.engagedWithSoundAnimation(person, actionPosition, "vomiting", '&', core.ColorFromCode(core.ColorEmetic), completed, completed)
+    a.engagedWithSoundAnimation(person, actionPosition, "vomiting", '&', core.CurrentTheme.EmeticPoisonForeground, completed, completed)
 }
 
 func (a *Animator) SleepingAnimation(person *core.Actor, finishedCallback func()) {
@@ -396,7 +396,7 @@ func (a *Animator) SleepingAnimation(person *core.Actor, finishedCallback func()
         style := cellAt.Style
         glyph := 'Z'
         if frameIndex%2 == 0 {
-            style.Foreground = core.ColorFromCode(core.ColorWater)
+            style.Foreground = core.CurrentTheme.SleepPoisonForeground
             glyph = 'z'
         }
         a.drawWorldToScreen(grid, person.Pos(), common.Cell{Rune: glyph, Style: style})
@@ -473,7 +473,7 @@ func (a *Animator) ElectricityAnimation(tiles []geometry.Point, source core.Effe
                 }
                 cellAt := a.cellOnScreen(grid, tile)
                 style := cellAt.Style
-                style.Foreground = core.ColorFromCode(core.ColorElectricForeground)
+                style.Foreground = core.CurrentTheme.ElectricityForeground
                 a.drawWorldToScreen(grid, tile, common.Cell{Rune: core.GlyphElectric, Style: style})
             }
         }
@@ -540,7 +540,7 @@ func (a *Animator) BlastDistribution(location geometry.Point, source core.Effect
     }
     drawFunc := func(grid console.CellInterface, frameIndex int) {
         if frameIndex == 0 || frameIndex == 1 {
-            a.drawWorldToScreen(grid, location, common.Cell{Rune: '*', Style: common.Style{Foreground: core.ColorFromCode(core.ColorExplosionDark), Background: core.ColorFromCode(core.ColorExplosionLight)}})
+            a.drawWorldToScreen(grid, location, common.Cell{Rune: '*', Style: common.Style{Foreground: core.CurrentTheme.ExplosionForeground, Background: core.CurrentTheme.ExplosionBackground}})
         }
         tilesAtRange := animationTiles[frameIndex]
         for _, point := range tilesAtRange {
@@ -548,10 +548,10 @@ func (a *Animator) BlastDistribution(location geometry.Point, source core.Effect
             if !game.IsOnScreen(point) {
                 continue
             }
-            explosionStyle := common.Style{Foreground: core.ColorFromCode(core.ColorExplosionDark), Background: core.ColorFromCode(core.ColorExplosionLight)}
+            explosionStyle := common.Style{Foreground: core.CurrentTheme.ExplosionForeground, Background: core.CurrentTheme.ExplosionBackground}
             explodingRune := '*'
             if frameIndex%2 == 0 {
-                explosionStyle = common.Style{Foreground: core.ColorFromCode(core.ColorExplosionLight), Background: core.ColorFromCode(core.ColorExplosionDark)}
+                explosionStyle = common.Style{Foreground: core.CurrentTheme.ExplosionBackground, Background: core.CurrentTheme.ExplosionForeground}
                 cellAt := a.cellOnScreen(grid, point)
                 explodingRune = cellAt.Rune
             }

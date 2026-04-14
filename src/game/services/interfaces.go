@@ -34,8 +34,6 @@ type Object interface {
     Icon() rune
     SetPos(geometry.Point)
     EncodeAsString() string
-    SetStyle(style common.Style)
-    GetStyle() common.Style
 }
 
 type KeyBound interface {

@@ -33,15 +33,6 @@ func (g *GameStateEditor) setBackgroundColorOfTileAt(point geometry.Point, color
     cellAt := currentMap.GetCell(point)
     cellAt.TileType = cellAt.TileType.WithBGColor(color)
     currentMap.SetCell(point, cellAt)
-
-    if currentMap.IsObjectAt(point) {
-        obj := currentMap.ObjectAt(point)
-        newObjStyle := obj.Style(common.Style{
-            Foreground: g.currentForegroundColor,
-            Background: color,
-        }).WithBg(color)
-        obj.SetStyle(newObjStyle)
-    }
 }
 
 func (g *GameStateEditor) setForegroundColorOfTileAt(point geometry.Point, color common.Color) {
@@ -52,15 +43,6 @@ func (g *GameStateEditor) setForegroundColorOfTileAt(point geometry.Point, color
     cellAt := currentMap.GetCell(point)
     cellAt.TileType = cellAt.TileType.WithFGColor(color)
     currentMap.SetCell(point, cellAt)
-
-    if currentMap.IsObjectAt(point) {
-        obj := currentMap.ObjectAt(point)
-        newObjStyle := obj.Style(common.Style{
-            Foreground: color,
-            Background: g.currentBackgroundColor,
-        }).WithFg(color)
-        obj.SetStyle(newObjStyle)
-    }
 }
 
 func (g *GameStateEditor) changeBackgroundColor() {

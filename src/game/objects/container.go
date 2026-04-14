@@ -11,9 +11,8 @@ import (
 
 func NewCorpseContainerAt(description string, symbol rune) *CorpseContainer {
 	return &CorpseContainer{
-		icon:         symbol,
-		Name:         description,
-		definedStyle: common.DefaultStyle.WithBg(common.Transparent),
+		icon: symbol,
+		Name: description,
 	}
 }
 
@@ -24,15 +23,6 @@ type CorpseContainer struct {
 	position        geometry.Point
 	GetOutPosition  geometry.Point
 	IsUsedForHiding bool
-	definedStyle    common.Style
-}
-
-func (cc *CorpseContainer) GetStyle() common.Style {
-	return cc.definedStyle
-}
-
-func (cc *CorpseContainer) SetStyle(style common.Style) {
-	cc.definedStyle = style
 }
 
 func (cc *CorpseContainer) EncodeAsString() string {
@@ -54,12 +44,12 @@ func (cc *CorpseContainer) SetPos(pos geometry.Point) {
 }
 
 func (cc *CorpseContainer) Style(st common.Style) common.Style {
-	st = cc.definedStyle
+	st = common.Style{Foreground: core.CurrentTheme.ObjectForeground, Background: st.Background}
 	if cc.IsUsedForHiding {
-		st = st.WithBg(core.ColorFromCode(core.ColorFoVSource))
+		st = st.WithBg(core.CurrentTheme.ContainerHidingBackground)
 	}
 	if cc.ContainedActor != nil {
-		st = st.WithBg(core.ColorFromCode(core.ColorWarning))
+		st = st.WithBg(core.CurrentTheme.ContainerBodyBackground)
 	}
 	return st
 }

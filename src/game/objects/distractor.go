@@ -20,11 +20,10 @@ const (
 )
 
 func NewZoneDistractor(description string, symbol rune) *ZoneDistractor {
-    return &ZoneDistractor{
-        symbol:       symbol,
-        Name:         description,
-        definedStyle: common.DefaultStyle.WithBg(common.Transparent),
-    }
+	return &ZoneDistractor{
+		symbol: symbol,
+		Name:   description,
+	}
 }
 
 // ZoneDistractor
@@ -32,19 +31,10 @@ func NewZoneDistractor(description string, symbol rune) *ZoneDistractor {
 // can be turned on/off by hand
 // will emit sound regularly, if turned on
 type ZoneDistractor struct {
-    position     geometry.Point
-    symbol       rune
-    Name         string
-    definedStyle common.Style
-    state        DeviceState
-}
-
-func (r *ZoneDistractor) GetStyle() common.Style {
-    return r.definedStyle
-}
-
-func (r *ZoneDistractor) SetStyle(style common.Style) {
-    r.definedStyle = style
+	position geometry.Point
+	symbol   rune
+	Name     string
+	state    DeviceState
 }
 
 func (r *ZoneDistractor) EncodeAsString() string {
@@ -73,13 +63,13 @@ func (r *ZoneDistractor) Icon() rune {
 }
 
 func (r *ZoneDistractor) Style(st common.Style) common.Style {
-    st = r.definedStyle.WithBg(st.Background)
-    if r.state == DeviceStateOn {
-        st = st.WithFg(common.Green)
-    } else if r.state == DeviceStateBroken {
-        st = st.WithFg(common.Red)
-    }
-    return st
+	st = common.Style{Foreground: core.CurrentTheme.ObjectForeground, Background: st.Background}
+	if r.state == DeviceStateOn {
+		st = st.WithFg(core.CurrentTheme.DeviceOnForeground)
+	} else if r.state == DeviceStateBroken {
+		st = st.WithFg(core.CurrentTheme.DeviceBrokenForeground)
+	}
+	return st
 }
 
 func (r *ZoneDistractor) Action(m services.Engine, person *core.Actor) {

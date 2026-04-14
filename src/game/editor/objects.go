@@ -41,11 +41,9 @@ func (g *GameStateEditor) openObjectsMenu() {
                         Name: "gravestone inscription",
                         TextReceived: func(inscription string) {
                             g.setBrushHandlerWithLightUpdate(addObjectsUI, objectCreator.Icon, func(pos geometry.Point) {
-                                defaultStyle := currentMap.DefaultStyle
                                 newObject := objects.NewGravestone(inscription)
-                                newObject.SetStyle(defaultStyle)
                                 currentMap.AddObject(newObject, pos)
-                                currentMap.SetTile(pos, defaultFloor.WithBGColor(defaultStyle.Background).WithFGColor(defaultStyle.Foreground))
+                                currentMap.SetTile(pos, defaultFloor.WithBGColor(core.CurrentTheme.MapBackground).WithFGColor(core.CurrentTheme.MapForeground))
                             })()
                         },
                     }
@@ -59,11 +57,9 @@ func (g *GameStateEditor) openObjectsMenu() {
             Label: identifier,
             Icon:  objectCreator.Icon,
             Handler: g.setBrushHandlerWithLightUpdate(addObjectsUI, 'O', func(pos geometry.Point) {
-                defaultStyle := currentMap.DefaultStyle
                 newObject := objectCreator.Create(identifier)
-                newObject.SetStyle(defaultStyle)
                 currentMap.AddObject(newObject, pos)
-                currentMap.SetTile(pos, defaultFloor.WithBGColor(defaultStyle.Background).WithFGColor(defaultStyle.Foreground))
+                currentMap.SetTile(pos, defaultFloor.WithBGColor(core.CurrentTheme.MapBackground).WithFGColor(core.CurrentTheme.MapForeground))
             }),
         })
     }

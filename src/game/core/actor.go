@@ -398,12 +398,15 @@ type Clothing struct {
     Color ClothingColor
 }
 
-// FgColor returns the foreground colour for this clothing from the shared palette.
+// FgColor returns the foreground colour for this clothing from the active theme's palette.
 func (c Clothing) FgColor() common.HSVColor {
-    if col, ok := ClothingPalette[c.Color]; ok {
-        return col
-    }
-    return ClothingPalette[ClothingColorBlack]
+	if col, ok := CurrentTheme.ClothingColors[c.Color]; ok {
+		return col
+	}
+	if fallback, ok := CurrentTheme.ClothingColors[ClothingColorBlack]; ok {
+		return fallback
+	}
+	return common.NewHSVColorFromRGBBytes(200, 200, 200)
 }
 
 func (c Clothing) EncodeAsString() string {
@@ -853,6 +856,18 @@ func (a *Actor) ConsumeItemsFromInventory(itemType ItemType, count int) {
 			consumed++
 		}
 	}
+}
+
+// RemoveItem removes item from the actor's inventory and clears the equipped
+// and holster slots if they reference the same item.
+func (a *Actor) RemoveItem(item *Item) {
+    a.Inventory.RemoveItem(item)
+    if a.EquippedItem == item {
+        a.EquippedItem = nil
+    }
+    if a.lastHolsteredItem == item {
+        a.lastHolsteredItem = nil
+    }
 }
 
 func (a *Actor) IsDraggingBody() bool {

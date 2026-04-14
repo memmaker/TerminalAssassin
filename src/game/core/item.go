@@ -397,11 +397,11 @@ func (i *Item) Style(st common.Style) common.Style {
     itemStyle := i.DefinedStyle.WithBg(st.Background)
     switch i.Type {
     case ItemTypeEmeticPoison:
-        itemStyle = itemStyle.WithFg(ColorFromCode(ColorEmetic))
+        itemStyle = itemStyle.WithFg(CurrentTheme.EmeticPoisonForeground)
     case ItemTypeLethalPoison, ItemTypeLethalPoisonGrenade, ItemTypeLethalPoisonMine:
-        itemStyle = itemStyle.WithFg(ColorFromCode(ColorLethal))
+        itemStyle = itemStyle.WithFg(CurrentTheme.LethalPoisonForeground)
     case ItemTypeSleepPoison, ItemTypeSleepPoisonGrenade, ItemTypeSleepPoisonMine:
-        itemStyle = itemStyle.WithFg(ColorFromCode(ColorSleep))
+        itemStyle = itemStyle.WithFg(CurrentTheme.SleepPoisonForeground)
     }
     return itemStyle
 }

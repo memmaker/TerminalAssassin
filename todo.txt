@@ -289,10 +289,9 @@ Utility UI: https://www.gamedeveloper.com/programming/are-behavior-trees-a-thing
 
 # Next Prompt
 
-# Movement is weird
+# Night needs to be darker to justify Nightvision
 
-The first directional input after a long wait should move the player character instantly.
-Instead it seems as one needs to hold the movement direction for a certain amount of time for a movement to be triggerd.
+# Looking via gamepad is missing
 
 # Run should override sneak
 
@@ -304,13 +303,38 @@ Include UI elements as the menus and HUD.
 
 # Color overhaul
 
-Let's start by creating a struct that represents a color theme for the entire game
+Explicitly ignore the intro animations for everything that follows.
 
-A color theme must define colors for:
- - Map Background
- - Wall Foreground/Background
- - Object Foreground
- - Item Foreground
+tile_colors.bg and tile_colors.fg files should become deprecated with this change.
+Remove them from all maps.
+
+## Color theme cleanup
+
+Make it clear, either by naming, by commenting or by grouping if a color is used for the foreground or the background when drawing.
+
+Check that every color is only ever used for foreground or background drawing never for both in the code base.
+
+Check if there are colors defined in the theme which are abused/misused in the code because there wasn't good fit. An example would be the use of blood color while in reality a red was wanted.
+
+Go through all the global named colors in color.go and check if these shouldn't be part of the color theme. If so, give them a meaningful name depending on their usage and introduce them into the theme.
+
+Remove them from the color.go file if they are not used anymore. You can start with LegalActionGreen and IllegalActionRed, which were previously defined in color.go and shouldn't be needed anymore.
+
+# Add a visibility number to each actor
+
+The field called visibility is a float between 0 and 1
+
+1 is fully visible and the maximum vision range.
+0 is invisible, even if the actor is right in front of you.
+
+Each location has a visibility modifier.
+
+There is a function to query the current visibility of an actor.
+
+It will first use the CurrentVisibility() method on the actor
+and add the VisibilityModifier() of the actors map location and return the result.
+
+What should be taken into account????
 
 # Frenzy Status
 

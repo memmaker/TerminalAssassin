@@ -26,9 +26,9 @@ func (p PickupAction) IsActionPossible(m services.Engine, person *core.Actor, ac
 }
 
 func (p PickupAction) Description(m services.Engine, person *core.Actor, pos geometry.Point) (rune, common.Style) {
-    style := common.DefaultStyle.WithBg(common.LegalActionGreen)
+    style := common.DefaultStyle.WithBg(core.CurrentTheme.LegalActionBackground)
     if !p.item.IsLegalForActor(person) {
-        style = style.WithBg(common.IllegalActionRed)
+        style = style.WithBg(core.CurrentTheme.IllegalActionBackground)
     }
     return p.item.Icon(), style
 }
@@ -40,7 +40,7 @@ func (p PickupAction) Action(m services.Engine, person *core.Actor, position geo
 type OverflowAction struct{}
 
 func (a OverflowAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphWater, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return core.GlyphWater, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 func (a OverflowAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -56,7 +56,7 @@ func (a OverflowAction) IsActionPossible(m services.Engine, person *core.Actor, 
 type ExitAction struct{}
 
 func (a ExitAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphExit, common.DefaultStyle.WithBg(common.LegalActionGreen)
+    return core.GlyphExit, common.DefaultStyle.WithBg(core.CurrentTheme.LegalActionBackground)
 }
 
 func (a ExitAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -82,7 +82,7 @@ type ExposeElectricityAction struct {
 }
 
 func (e ExposeElectricityAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return e.Icon, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return e.Icon, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 func (e ExposeElectricityAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
@@ -142,13 +142,13 @@ func (a PoisonAction) hasPoison(actor *core.Actor) bool {
 }
 
 func (a PoisonAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphPoison, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return core.GlyphPoison, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 type ChangeClothesAction struct{}
 
 func (c ChangeClothesAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphClothing, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return core.GlyphClothing, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 func (c ChangeClothesAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -164,7 +164,7 @@ func (c ChangeClothesAction) IsActionPossible(m services.Engine, person *core.Ac
 type SnapNeckAction struct{}
 
 func (s SnapNeckAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 func (s SnapNeckAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -183,7 +183,7 @@ type PushOverEdge struct {
 }
 
 func (p PushOverEdge) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 func (p PushOverEdge) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -237,7 +237,7 @@ func (p PushOverEdge) IsActionPossible(m services.Engine, person *core.Actor, ac
 type DrownAction struct{}
 
 func (d DrownAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphToilet, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return core.GlyphToilet, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 func (d DrownAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -275,7 +275,7 @@ func (d DrownAction) IsActionPossible(m services.Engine, person *core.Actor, act
 type PianoWire struct{}
 
 func (s PianoWire) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphPianoWire, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return core.GlyphPianoWire, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 func (s PianoWire) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -300,7 +300,7 @@ func (s PianoWire) IsActionPossible(m services.Engine, person *core.Actor, actio
 type MeleeTakedown struct{}
 
 func (k MeleeTakedown) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(common.IllegalActionRed)
+    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
 func (k MeleeTakedown) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -334,7 +334,7 @@ func (k MeleeTakedown) IsActionPossible(m services.Engine, person *core.Actor, a
 type KnockOnWallAction struct{}
 
 func (k KnockOnWallAction) Description(_ services.Engine, _ *core.Actor, _ geometry.Point) (rune, common.Style) {
-    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(common.LegalActionGreen)
+    return core.GlyphEmptyHand, common.DefaultStyle.WithBg(core.CurrentTheme.LegalActionBackground)
 }
 
 func (k KnockOnWallAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -361,7 +361,7 @@ func (f FenceShopAction) IsActionPossible(m services.Engine, person *core.Actor,
 }
 
 func (f FenceShopAction) Description(_ services.Engine, _ *core.Actor, _ geometry.Point) (rune, common.Style) {
-    return 'F', common.DefaultStyle.WithBg(common.LegalActionGreen)
+    return 'F', common.DefaultStyle.WithBg(core.CurrentTheme.LegalActionBackground)
 }
 
 func (f FenceShopAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
@@ -461,8 +461,8 @@ func openSellLootMenu(m services.Engine, player *core.Actor) {
     career := m.GetCareer()
     var sellItems []services.MenuItem
 
-    for _, item := range player.Inventory.Items {
-        item := item
+    for _, itm := range player.Inventory.Items {
+        item := itm
         if item.LootValue <= 0 || item.IsLockpickType() {
             continue
         }
@@ -470,7 +470,7 @@ func openSellLootMenu(m services.Engine, player *core.Actor) {
         sellItems = append(sellItems, services.MenuItem{
             Label: fmt.Sprintf("Sell %s (+$%d)", item.Name, value),
             Handler: func() {
-                player.Inventory.RemoveItem(item)
+                player.RemoveItem(item)
                 career.Money += value
                 m.GetGame().PrintMessage(fmt.Sprintf("Sold %s for $%d. Balance: $%d", item.Name, value, career.Money))
                 m.GetGame().UpdateHUD()
@@ -486,7 +486,7 @@ func openSellLootMenu(m services.Engine, player *core.Actor) {
 }
 
 func (d DialogueAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return 'T', common.DefaultStyle.WithBg(common.LegalActionGreen)
+    return 'T', common.DefaultStyle.WithBg(core.CurrentTheme.LegalActionBackground)
 }
 
 func (d DialogueAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {

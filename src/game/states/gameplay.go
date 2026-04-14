@@ -57,6 +57,9 @@ type GameStateGameplay struct {
     padAimPos    geometry.PointF // accumulated gamepad aim cursor position
     padAimActive bool            // true while aiming via gamepad (suppresses mouse-based scope scroll)
 
+    lookModeActive bool            // true while free look cursor is active (Select toggle)
+    lookCursorPos  geometry.PointF // accumulated look cursor position in world space
+
     // timeAccumulator counts Update ticks since the last in-game minute was
     // advanced.  At 60 TPS one real second equals one in-game minute, so a full
     // day/night cycle takes 24 real minutes.
@@ -84,7 +87,7 @@ type GameplayUIState struct {
     Draw      func(con console.CellInterface)
 }
 
-var defaultUIState, aimingUIState, examineUIState GameplayUIState
+var defaultUIState, aimingUIState, examineUIState, lookUIState GameplayUIState
 
 func (g *GameStateGameplay) ToNormalUIState() {
     g.Pager = nil
@@ -136,6 +139,11 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
 
     examineUIState = GameplayUIState{
         ID: 2,
+    }
+
+    lookUIState = GameplayUIState{
+        ID:   3,
+        Draw: g.drawLookCursor,
     }
 
     g.Ui = defaultUIState
@@ -390,7 +398,7 @@ func (g *GameStateGameplay) SpawnPlayer() {
 func (g *GameStateGameplay) drawTargetPath(con console.CellInterface) {
     cam := g.engine.GetGame().GetCamera()
     player := g.engine.GetGame().GetMap().Player
-    pathColor := common.IllegalActionRed
+    pathColor := core.CurrentTheme.LOSBackground
     if player.EquippedItem != nil && player.EquippedItem.Type == core.ItemTypeFlashlight {
         return
     }
@@ -522,6 +530,58 @@ func (g *GameStateGameplay) resetPlayerState() {
     player.InteractionShift = geometry.PointZero
     g.Ui = defaultUIState
     g.padAimActive = false
+    g.lookModeActive = false
+}
+
+// toggleLookMode enters or exits the free look cursor mode.
+func (g *GameStateGameplay) toggleLookMode() {
+    if g.lookModeActive {
+        // Exit look mode
+        g.lookModeActive = false
+        g.Ui = defaultUIState
+        g.clearTooltip()
+        player := g.engine.GetGame().GetMap().Player
+        g.ensureWorldPosInView(player.Pos(), 4)
+        return
+    }
+    // Enter look mode: start cursor at player position
+    player := g.engine.GetGame().GetMap().Player
+    g.lookModeActive = true
+    g.lookCursorPos = player.Pos().ToPointF()
+    g.Ui = lookUIState
+    g.showTooltipForWorldPos(player.Pos())
+}
+
+// moveLookCursor moves the free look cursor by the analog stick deflection.
+func (g *GameStateGameplay) moveLookCursor(xAxis, yAxis float64) {
+    const lookSpeed = 0.18 // tiles per tick at full deflection
+    const deadzone = 0.08
+
+    if math.Abs(xAxis) < deadzone && math.Abs(yAxis) < deadzone {
+        return
+    }
+
+    g.lookCursorPos.X += xAxis * lookSpeed
+    g.lookCursorPos.Y += yAxis * lookSpeed
+
+    worldPos := g.lookCursorPos.ToPointRounded()
+    g.showTooltipForWorldPos(worldPos)
+    g.ensureWorldPosInView(worldPos, 4)
+    g.isDirty = true
+}
+
+// drawLookCursor draws a highlighted cell at the current look cursor position.
+func (g *GameStateGameplay) drawLookCursor(con console.CellInterface) {
+    cam := g.engine.GetGame().GetCamera()
+    worldPos := g.lookCursorPos.ToPointRounded()
+    screenPos := cam.WorldToScreen(worldPos)
+
+    mapWidth, mapHeight := g.engine.MapWindowWidth(), g.engine.MapWindowHeight()
+    if screenPos.X < 0 || screenPos.X >= mapWidth || screenPos.Y < 0 || screenPos.Y >= mapHeight {
+        return
+    }
+    c := con.AtSquare(screenPos)
+    con.SetSquare(screenPos, c.WithStyle(c.Style.WithBg(core.CurrentTheme.LOSBackground)))
 }
 
 func (g *GameStateGameplay) updatePlayerMovementMode(newPosition geometry.Point) {
@@ -582,7 +642,7 @@ func (g *GameStateGameplay) Update(input services.InputInterface) {
     g.isDirty = true
 
     if len(commands) > 0 {
-        if noPointerCmd {
+        if noPointerCmd && !g.lookModeActive {
             g.clearTooltip()
         }
     }
@@ -816,7 +876,7 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
     defaultCellStyle := common.DefaultStyle
     if g.flashPlayerHurt != len(player.DamageTaken) {
         g.flashPlayerHurt++
-        defaultCellStyle = defaultCellStyle.WithBg(core.ColorFromCode(core.ColorBlood))
+        defaultCellStyle = defaultCellStyle.WithBg(core.CurrentTheme.BloodBackground)
     }
     m.GetMap().IterWindow(m.GetCamera().ViewPort, func(p geometry.Point, c gridmap.MapCell[*core.Actor, *core.Item, services.Object]) {
         icon := ' '
@@ -841,7 +901,7 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
             }
             if c.Actor != nil {
                 if _, ok := g.assassinationTargets[*c.Actor]; ok {
-                    style = style.WithBg(common.IllegalActionRed)
+                    style = style.WithBg(core.CurrentTheme.IllegalActionBackground)
                 }
             }
         }
@@ -854,7 +914,7 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
         fovSourcePos := m.GetMap().Player.Pos().Add(m.GetMap().Player.FoVShift)
         screenFovSource := m.GetCamera().WorldToScreen(fovSourcePos)
         currentCell := con.AtSquare(screenFovSource)
-        con.SetSquare(screenFovSource, currentCell.WithStyle(currentCell.Style.WithBg(core.ColorFromCode(core.ColorFoVSource))))
+        con.SetSquare(screenFovSource, currentCell.WithStyle(currentCell.Style.WithBg(core.CurrentTheme.LOSBackground)))
     }
     for _, actor := range m.GetMap().Actors() {
         if !actor.IsPlayer() && actor.AI.SuspicionCounter > 0 {
@@ -893,22 +953,22 @@ func (g *GameStateGameplay) UpdateStatusLine() {
     if player.EquippedItem != nil {
         itemSymbol = string(player.EquippedItem.Icon())
         if !player.EquippedItem.IsLegalForActor(player) {
-            itemStyle = itemStyle.WithFg(core.ColorFromCode(core.ColorBlood))
+            itemStyle = itemStyle.WithFg(core.CurrentTheme.DangerForeground)
         } else if player.EquippedItem.Type == core.ItemTypeEmeticPoison {
-            itemStyle = itemStyle.WithFg(core.ColorFromCode(core.ColorEmetic))
+            itemStyle = itemStyle.WithFg(core.CurrentTheme.EmeticPoisonForeground)
         } else if player.EquippedItem.Type == core.ItemTypeLethalPoison {
-            itemStyle = itemStyle.WithFg(core.ColorFromCode(core.ColorLethal))
+            itemStyle = itemStyle.WithFg(core.CurrentTheme.LethalPoisonForeground)
         }
         if player.EquippedItem.Uses > 0 {
             itemSymbol += fmt.Sprintf(" (%d)", player.EquippedItem.Uses)
         }
     }
     if player.Health <= 1 {
-        hpStyle = hpStyle.WithFg(core.ColorFromCode(core.ColorBlood))
+        hpStyle = hpStyle.WithFg(core.CurrentTheme.DangerForeground)
     } else if player.Health == 2 {
-        hpStyle = hpStyle.WithFg(core.ColorFromCode(core.ColorWarning))
+        hpStyle = hpStyle.WithFg(core.CurrentTheme.HUDWarningForeground)
     } else {
-        hpStyle = hpStyle.WithFg(core.ColorFromCode(core.ColorGood))
+        hpStyle = hpStyle.WithFg(core.CurrentTheme.HUDGoodForeground)
     }
 
     clothingStyle = clothingStyle.WithFg(player.Clothes.FgColor()) //.WithBg(player.Clothes.Color)
@@ -918,10 +978,10 @@ func (g *GameStateGameplay) UpdateStatusLine() {
     zoneInformation := currentMap.ZoneAt(player.Pos()).Name
     if currentMap.IsInHostileZone(player) {
         zoneInformation = "hostile area"
-        detectionStyle = detectionStyle.WithBg(core.ColorFromCode(core.ColorWarning)).WithFg(common.Black)
+        detectionStyle = detectionStyle.WithBg(core.CurrentTheme.HUDDangerBackground).WithFg(common.Black)
     } else if currentMap.IsTrespassing(player) {
         zoneInformation = "trespassing"
-        detectionStyle = detectionStyle.WithBg(core.ColorFromCode(core.ColorWarning)).WithFg(common.Black)
+        detectionStyle = detectionStyle.WithBg(core.CurrentTheme.HUDWarningBackground).WithFg(common.Black)
     }
 
     challengeInformation := ""
@@ -955,8 +1015,8 @@ func (g *GameStateGameplay) UpdateStatusLine() {
         challengeInformation += "@gW@N"
     }
 
-    redStyle := common.DefaultStyle.WithBg(core.ColorFromCode(core.ColorBlood))
-    greenStyle := common.DefaultStyle.WithBg(core.ColorFromCode(core.ColorGood))
+    redStyle := common.DefaultStyle.WithBg(core.CurrentTheme.HUDDangerBackground)
+    greenStyle := common.DefaultStyle.WithBg(core.CurrentTheme.HUDGoodBackground)
     //g.topLabel.SetStyledText(core.Text(fmt.Sprintf("@c%s@N | @h%s@N | %s | @i%s@N | @d%s@N | %s", player.Clothes.Name, healthString, string(player.MovementMode), itemSymbol, zoneInformation, challengeInformation)).
     g.topLabel.SetStyledText(core.Text(fmt.Sprintf("@c%s@N %s@i%s@N | @h%s@N | @d%s@N | %s | %s", player.Clothes.Name, string(player.MovementMode), itemSymbol, healthString, zoneInformation, challengeInformation, currentMap.TimeOfDay.Format("15:04"))).
         WithStyle(common.DefaultStyle).
@@ -1035,7 +1095,7 @@ func (g *GameStateGameplay) drawMovePath(con console.CellInterface) {
     for _, p := range g.targetMovePath {
         c := con.AtSquare(p)
         //con.SetSquare(p, c.WithStyle(c.Style.WithAttrs(AttrReverse)))
-        con.SetSquare(p, c.WithStyle(c.Style.WithBg(core.ColorFromCode(core.ColorMapBackgroundLight))))
+        con.SetSquare(p, c.WithStyle(c.Style.WithBg(core.CurrentTheme.MapBackgroundLight)))
     }
 }
 
@@ -1118,6 +1178,8 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
             g.ensureWorldPosInView(player.Pos(), 4)
             model.GetMap().UpdateFieldOfView(player)
         }
+    case core.ToggleLookMode:
+        g.toggleLookMode()
     }
 }
 
@@ -1183,28 +1245,66 @@ func (g *GameStateGameplay) handleDirectionalInput(directionalCommand core.Direc
     case core.MovementDirection:
         g.playerMovementFromInput(toIntDirection(directionalCommand.XAxis, directionalCommand.YAxis))
     case core.PeekingDirection:
-        g.playerPeekingFromInput(intDirection)
-        g.setAimFromPeekDirection(intDirection)
+        if g.lookModeActive {
+            g.moveLookCursor(directionalCommand.XAxis, directionalCommand.YAxis)
+        } else {
+            g.playerPeekingFromInput(intDirection)
+            g.setAimFromPeekDirection(intDirection)
+        }
     case core.AimingDirection:
         g.AdjustPlayerAimFromPad(directionalCommand.XAxis, directionalCommand.YAxis)
     }
     return
 }
 
+// toIntDirection maps an analog stick vector to one of 9 tile directions
+// {-1,0,1}² by dividing the full 360° into eight equal 45° sectors.
+//
+// Sector boundaries sit at ±22.5° from each cardinal and diagonal axis.
+// tan(22.5°) = √2 − 1 ≈ 0.4142, its reciprocal tan(67.5°) = √2 + 1 ≈ 2.4142.
+//
+//   ratio = |yAxis| / |xAxis|
+//   ratio < tan(22.5°)  → cardinal (horizontal wins)
+//   ratio > tan(67.5°)  → cardinal (vertical wins)
+//   otherwise           → diagonal
 func toIntDirection(xAxis float64, yAxis float64) geometry.Point {
-    x := 0
-    y := 0
-    if xAxis > 0.5 {
-        x = 1
-    } else if xAxis < -0.5 {
-        x = -1
+    const tanOf22_5 = 0.41421356237 // tan(22.5°) = √2 − 1
+    const tanOf67_5 = 2.41421356237 // tan(67.5°) = √2 + 1  (= 1/tanOf22_5)
+
+    absX := math.Abs(xAxis)
+    absY := math.Abs(yAxis)
+
+    sx, sy := 0, 0
+    if xAxis > 0 {
+        sx = 1
+    } else if xAxis < 0 {
+        sx = -1
     }
-    if yAxis > 0.5 {
-        y = 1
-    } else if yAxis < -0.5 {
-        y = -1
+    if yAxis > 0 {
+        sy = 1
+    } else if yAxis < 0 {
+        sy = -1
     }
-    return geometry.Point{X: x, Y: y}
+
+    if absX == 0 && absY == 0 {
+        return geometry.Point{}
+    }
+    if absX == 0 {
+        return geometry.Point{X: 0, Y: sy}
+    }
+    if absY == 0 {
+        return geometry.Point{X: sx, Y: 0}
+    }
+
+    ratio := absY / absX
+    switch {
+    case ratio < tanOf22_5:
+        return geometry.Point{X: sx, Y: 0} // cardinal E / W
+    case ratio > tanOf67_5:
+        return geometry.Point{X: 0, Y: sy} // cardinal N / S
+    default:
+        return geometry.Point{X: sx, Y: sy} // diagonal
+    }
 }
 
 type LightSource struct {
@@ -1464,36 +1564,41 @@ func (g *GameStateGameplay) printTileContentsMessage(position geometry.Point) {
 }
 
 func (g *GameStateGameplay) updateMouseOver() {
-    model := g.engine.GetGame()
-    currentMap := model.GetMap()
-    mouseInWorld := g.MousePositionInWorld
+    g.showTooltipForWorldPos(g.MousePositionInWorld)
+}
+
+// showTooltipForWorldPos inspects the given world position and shows the
+// appropriate tooltip (actor, item, object or special tile). Used by both
+// mouse hover and gamepad peek-look.
+func (g *GameStateGameplay) showTooltipForWorldPos(worldPos geometry.Point) {
+    currentMap := g.engine.GetGame().GetMap()
     userInterface := g.engine.GetUI()
 
     g.isDirty = true
 
-    if !currentMap.Contains(mouseInWorld) || !currentMap.Player.CanSee(mouseInWorld) {
+    if !currentMap.Contains(worldPos) || !currentMap.Player.CanSee(worldPos) {
         if userInterface.TooltipShown() {
             g.clearTooltip()
         }
         return
     }
-    mapCell := currentMap.CellAt(mouseInWorld)
-    if currentMap.IsActorAt(mouseInWorld) {
-        actorAtMouse := currentMap.ActorAt(mouseInWorld)
-        g.showActorTooltip(actorAtMouse)
-    } else if currentMap.IsDownedActorAt(mouseInWorld) {
-        actorAtMouse := currentMap.DownedActorAt(mouseInWorld)
-        g.showActorTooltip(actorAtMouse)
-    } else if currentMap.IsItemAt(mouseInWorld) {
-        itemHere := currentMap.ItemAt(mouseInWorld)
+    mapCell := currentMap.CellAt(worldPos)
+    if currentMap.IsActorAt(worldPos) {
+        actorAtPos := currentMap.ActorAt(worldPos)
+        g.showActorTooltip(actorAtPos)
+    } else if currentMap.IsDownedActorAt(worldPos) {
+        actorAtPos := currentMap.DownedActorAt(worldPos)
+        g.showActorTooltip(actorAtPos)
+    } else if currentMap.IsItemAt(worldPos) {
+        itemHere := currentMap.ItemAt(worldPos)
         if !itemHere.Buried {
             g.showItemTooltip(itemHere)
         }
-    } else if currentMap.IsObjectAt(mouseInWorld) {
-        objectHere := currentMap.ObjectAt(mouseInWorld)
+    } else if currentMap.IsObjectAt(worldPos) {
+        objectHere := currentMap.ObjectAt(worldPos)
         g.showObjectTooltip(objectHere)
     } else if mapCell.TileType.Special != gridmap.SpecialTileDefaultFloor {
-        g.showCellTooltip(mouseInWorld, mapCell)
+        g.showCellTooltip(worldPos, mapCell)
     } else if userInterface.TooltipShown() {
         userInterface.ClearTooltip()
     }
@@ -1509,29 +1614,29 @@ func (g *GameStateGameplay) showActorTooltip(person *core.Actor) {
     if person.Status != "" {
         infoString = fmt.Sprintf("%s / %s / %s", person.Name, person.NameOfClothing(), person.Status)
     }
-    tooltipFontColor := common.Black
+    tooltipFontColor := core.CurrentTheme.TooltipForeground
     if person.Type == core.ActorTypeTarget {
         tooltipFontColor = common.NewRGBColorFromBytes(255, 51, 51)
     }
-    styledText := core.Text(infoString).WithStyle(common.Style{Foreground: tooltipFontColor, Background: common.FourWhite})
+    styledText := core.Text(infoString).WithStyle(common.Style{Foreground: tooltipFontColor, Background: core.CurrentTheme.TooltipBackground})
     screenPos := g.engine.GetGame().GetCamera().WorldToScreen(person.Pos())
     g.showTooltipAt(screenPos, styledText)
 }
 
 func (g *GameStateGameplay) showItemTooltip(item *core.Item) {
-    styledText := core.Text(item.Description()).WithStyle(common.Style{Foreground: common.Black, Background: common.FourWhite})
+    styledText := core.Text(item.Description()).WithStyle(common.Style{Foreground: core.CurrentTheme.TooltipForeground, Background: core.CurrentTheme.TooltipBackground})
     screenPos := g.engine.GetGame().GetCamera().WorldToScreen(item.Pos())
     g.showTooltipAt(screenPos, styledText)
 }
 
 func (g *GameStateGameplay) showObjectTooltip(object services.Object) {
-    styledText := core.Text(object.Description()).WithStyle(common.Style{Foreground: common.Black, Background: common.FourWhite})
+    styledText := core.Text(object.Description()).WithStyle(common.Style{Foreground: core.CurrentTheme.TooltipForeground, Background: core.CurrentTheme.TooltipBackground})
     screenPos := g.engine.GetGame().GetCamera().WorldToScreen(object.Pos())
     g.showTooltipAt(screenPos, styledText)
 }
 func (g *GameStateGameplay) showCellTooltip(pos geometry.Point, cell gridmap.MapCell[*core.Actor, *core.Item, services.Object]) {
     infoString := fmt.Sprintf("%s", cell.TileType.Description())
-    styledText := core.Text(infoString).WithStyle(common.Style{Foreground: common.Black, Background: common.FourWhite})
+    styledText := core.Text(infoString).WithStyle(common.Style{Foreground: core.CurrentTheme.TooltipForeground, Background: core.CurrentTheme.TooltipBackground})
     screenPos := g.engine.GetGame().GetCamera().WorldToScreen(pos)
     g.showTooltipAt(screenPos, styledText)
 }

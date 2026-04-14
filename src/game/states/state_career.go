@@ -134,8 +134,8 @@ func (g *GameStateCareerViewer) getChallengeOverview(mapHash, mapFolder string) 
 	career := g.engine.GetCareer()
 	totalRewards := 0
 	claimedRewards := 0
-	redStyle := common.Style{Foreground: common.Red, Background: common.Black}
-	greenStyle := common.Style{Foreground: common.Green, Background: common.Black}
+	redStyle := common.Style{Foreground: core.CurrentTheme.FailureForeground, Background: common.Black}
+	greenStyle := common.Style{Foreground: core.CurrentTheme.SuccessForeground, Background: common.Black}
 
 	//files := g.engine.GetFiles()
 	//config := g.engine.GetGame().GetConfig()

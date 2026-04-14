@@ -112,11 +112,11 @@ func (m *Model) DrawVisionCone(con console.CellInterface, actor *core.Actor) {
     color = common.Transparent
     susLvl := actor.AI.SuspicionCounter
     if susLvl == 1 {
-        color = core.ColorFromCode(core.ColorMapGreen)
+        color = core.CurrentTheme.SuspicionLowBackground
     } else if susLvl == 2 {
-        color = core.ColorFromCode(core.ColorMapYellow)
+        color = core.CurrentTheme.SuspicionMediumBackground
     } else if susLvl == 3 {
-        color = core.ColorFromCode(core.ColorMapRed)
+        color = core.CurrentTheme.SuspicionHighBackground
     } else {
         println("Suspicion level out of range")
         return
@@ -129,10 +129,10 @@ func (m *Model) DrawVisionCone(con console.CellInterface, actor *core.Actor) {
         }
         cellAt := con.AtSquare(screenPos)
         currBg := cellAt.Style.Background
-        if currBg == core.ColorFromCode(core.ColorMapRed) && susLvl < 3 {
+        if currBg == core.CurrentTheme.SuspicionHighBackground && susLvl < 3 {
             return
         }
-        if currBg == core.ColorFromCode(core.ColorMapYellow) && susLvl < 2 {
+        if currBg == core.CurrentTheme.SuspicionMediumBackground && susLvl < 2 {
             return
         }
         //newBackground := currBg.Multiply(color)

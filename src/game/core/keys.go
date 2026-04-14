@@ -56,8 +56,9 @@ const (
     ContextAction // Cross → context-action / dialogue / pickpocket at peek tile
     BeginMouseAiming
     Assassinate
-    DiveTackle // Circle + active right stick → dive/tackle in peek direction
-    StopAiming // L2 released → exit gamepad aim mode and return to default state
+    DiveTackle     // Circle + active right stick → dive/tackle in peek direction
+    StopAiming     // L2 released → exit gamepad aim mode and return to default state
+    ToggleLookMode // Select → enter/exit free look cursor mode
 )
 
 const (

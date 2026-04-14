@@ -209,13 +209,11 @@ type GlobalMapDataOnDisk struct {
     MaxVisionRange    int
     TimeOfDay         time.Time
     AmbienceSoundCue  string
-    DefaultStyle      common.Style
 }
 
 func (d GlobalMapDataOnDisk) ToString() string {
-    return fmt.Sprintf("Mission Title: %s\nWidth: %d\nHeight: %d\nPlayer Spawn: %s\nAmbient Light: %v\nMax Light Intensity: %f\nMax Vision Range: %d\nTime of Day: %s\nAmbience Sound Cue: %s\nDefault FG: %s\nDefault BG: %s",
-        d.MissionTitle, d.Width, d.Height, d.PlayerSpawn.String(), d.AmbientLight, d.MaxLightIntensity, d.MaxVisionRange, d.TimeOfDay.String(), d.AmbienceSoundCue,
-        d.DefaultStyle.Foreground, d.DefaultStyle.Background)
+    return fmt.Sprintf("Mission Title: %s\nWidth: %d\nHeight: %d\nPlayer Spawn: %s\nAmbient Light: %v\nMax Light Intensity: %f\nMax Vision Range: %d\nTime of Day: %s\nAmbience Sound Cue: %s",
+        d.MissionTitle, d.Width, d.Height, d.PlayerSpawn.String(), d.AmbientLight, d.MaxLightIntensity, d.MaxVisionRange, d.TimeOfDay.String(), d.AmbienceSoundCue)
 }
 
 func (d GlobalMapDataOnDisk) ToRecord() []rec_files.Field {
@@ -229,8 +227,6 @@ func (d GlobalMapDataOnDisk) ToRecord() []rec_files.Field {
         {Name: "Max_Vision_Range", Value: strconv.Itoa(d.MaxVisionRange)},
         {Name: "Time_of_Day", Value: d.TimeOfDay.Format(time.RFC3339)},
         {Name: "Ambience_Sound_Cue", Value: d.AmbienceSoundCue},
-        {Name: "Default_FG", Value: d.DefaultStyle.Foreground.ToRGB().EncodeAsString()},
-        {Name: "Default_BG", Value: d.DefaultStyle.Background.ToRGB().EncodeAsString()},
     }
 }
 func NewGlobalMapFromRecord(record []rec_files.Field) GlobalMapDataOnDisk {
@@ -255,10 +251,8 @@ func NewGlobalMapFromRecord(record []rec_files.Field) GlobalMapDataOnDisk {
             result.TimeOfDay, _ = time.Parse(time.RFC3339, field.Value)
         case "Ambience_Sound_Cue":
             result.AmbienceSoundCue = strings.TrimSpace(field.Value)
-        case "Default_FG":
-            result.DefaultStyle.Foreground = common.NewColorFromString(field.Value).ToRGB()
-        case "Default_BG":
-            result.DefaultStyle.Background = common.NewColorFromString(field.Value).ToRGB()
+        case "Default_FG", "Default_BG":
+            // legacy fields — ignored, colors come from the theme now
         }    }
     return result
 }
@@ -305,7 +299,6 @@ type GridMap[ActorType interface {
 
     NamedLocations   map[string]geometry.Point
     AmbienceSoundCue string
-    DefaultStyle     common.Style
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) AddZone(zone *ZoneInfo) {
@@ -625,7 +618,6 @@ func NewEmptyMap[ActorType interface {
         pathfinder:          pathRange,
         maxLOSRange:         geometry.NewRect(-maxVisionRange, -maxVisionRange, maxVisionRange+1, maxVisionRange+1),
         MaxVisionRange:      maxVisionRange,
-        DefaultStyle:        common.MapDefaultStyle,
     }
     m.Fill(MapCell[ActorType, ItemType, ObjectType]{
         TileType: Tile{

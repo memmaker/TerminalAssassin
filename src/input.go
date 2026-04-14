@@ -424,6 +424,21 @@ func (i *InputState) padMovementButtonIsPressed(padId ebiten.GamepadID, button e
     return inpututil.IsStandardGamepadButtonJustPressed(padId, button) || inpututil.StandardGamepadButtonPressDuration(padId, button)%i.movementDelayInTicks == 1
 }
 
+// isAnalogDiagonal reports whether (x, y) maps to a diagonal direction using
+// the same equal-45°-sector logic as toIntDirection in gameplay.go.
+// Returns true when the ratio |y|/|x| falls in [tan(22.5°), tan(67.5°)].
+func isAnalogDiagonal(x, y float64) bool {
+    const tanOf22_5 = 0.41421356237 // √2 − 1
+    const tanOf67_5 = 2.41421356237 // √2 + 1
+    absX := math.Abs(x)
+    absY := math.Abs(y)
+    if absX == 0 || absY == 0 {
+        return false
+    }
+    ratio := absY / absX
+    return ratio >= tanOf22_5 && ratio <= tanOf67_5
+}
+
 func (i *InputState) movementKeyIsPressed(key ebiten.Key) bool {
 
     return inpututil.IsKeyJustPressed(key) || inpututil.KeyPressDuration(key)%i.movementDelayInTicks == 1
@@ -813,8 +828,7 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
             }
 
             if command.XAxis != 0 || command.YAxis != 0 {
-                // Use the same 0.5 threshold as toIntDirection in gameplay.go.
-                i.lastStepWasDiagonal = math.Abs(command.XAxis) > 0.5 && math.Abs(command.YAxis) > 0.5
+                i.lastStepWasDiagonal = isAnalogDiagonal(command.XAxis, command.YAxis)
                 msgs = append(msgs, command)
                 i.lastMovementAt = time.Now()
             }
@@ -823,6 +837,12 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
         // ── Options (CenterRight) → pause menu ───────────────────────────────
         if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonCenterRight) {
             msgs = append(msgs, core.Cancel)
+        }
+
+        // ── Select (CenterLeft) or R3 (RightStick click) → toggle look cursor mode
+        if inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonCenterLeft) ||
+            inpututil.IsStandardGamepadButtonJustPressed(padId, ebiten.StandardGamepadButtonRightStick) {
+            msgs = append(msgs, core.ToggleLookMode)
         }
     }
     return msgs

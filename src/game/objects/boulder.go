@@ -10,16 +10,15 @@ import (
 )
 
 type Boulder struct {
-	position     geometry.Point
-	symbol       rune
-	Name         string
-	definedStyle common.Style
-	hasFallen    bool
-	key          string
+	position  geometry.Point
+	symbol    rune
+	Name      string
+	hasFallen bool
+	key       string
 }
 
 func (b *Boulder) Style(st common.Style) common.Style {
-	return b.definedStyle
+	return common.Style{Foreground: core.CurrentTheme.ObjectForeground, Background: st.Background}
 }
 
 func (b *Boulder) Action(m services.Engine, person *core.Actor) {
@@ -68,14 +67,6 @@ func (b *Boulder) EncodeAsString() string {
 	return fmt.Sprintf("Boulder: %s", b.Name)
 }
 
-func (b *Boulder) SetStyle(style common.Style) {
-	b.definedStyle = style
-}
-
-func (b *Boulder) GetStyle() common.Style {
-	return b.definedStyle
-}
-
 func (b *Boulder) GetKey() string {
 	return b.key
 }
@@ -95,9 +86,8 @@ func (b *Boulder) Activate(engine services.Engine) {
 }
 func NewBoulder(description string, symbol rune) *Boulder {
 	boulder := &Boulder{
-		symbol:       symbol,
-		Name:         description,
-		definedStyle: common.DefaultStyle.WithBg(common.Transparent),
+		symbol: symbol,
+		Name:   description,
 	}
 	return boulder
 }

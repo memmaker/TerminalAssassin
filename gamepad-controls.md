@@ -24,6 +24,8 @@
 | **D-Pad ↓** | Drop item | — |
 | **D-Pad ←** | Open Inventory | Navigate left |
 | **D-Pad →** | Toggle Sneak | Navigate right |
+| **Select / Back** | Toggle Look mode | — |
+| **R3** *(right stick click)* | Toggle Look mode *(alias)* | — |
 | **Options / Start** | Pause menu | — |
 
 ---
@@ -41,6 +43,13 @@
 - **Right Stick** — Peek in any direction without moving. The camera shifts and
   your FoV cone rotates so you can scout around corners. The peeked tile is also
   used as the target for several actions (see below).
+
+### Look Mode (Free Cursor)
+- **Select / Back** or **R3** *(right stick click)* — Toggle look mode. A cursor appears at your position and a
+  tooltip describes whatever is under it — actors, items, objects, or terrain.
+- **Right Stick** *(while in look mode)* — Moves the look cursor freely across
+  the map (not limited to adjacent tiles). The camera scrolls to follow.
+- **Select / Back** or **R3** again — Exit look mode, return to normal play.
 
 ---
 
