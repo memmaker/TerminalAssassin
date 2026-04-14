@@ -94,15 +94,10 @@ func (g *GameStateEditor) createMenuBar(gridWidth int, gridHeight int) {
             QuickKey: "F12",
         },
         {
-            Label: "Eye dropper (tiles/color)",
+            Label: "Eye dropper (tiles)",
             Handler: func() {
                 g.placeThingIcon = 'e'
                 g.handler.CellsSelected = g.pickTileFromSelection
-                g.updateStatusLine()
-            },
-            ShiftHandler: func() {
-                g.placeThingIcon = 'e'
-                g.handler.CellsSelected = g.pickColorFromSelection
                 g.updateStatusLine()
             },
             Icon:     'e',

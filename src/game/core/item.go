@@ -354,7 +354,6 @@ type Item struct {
     OnCooldown      bool
     IsDestroyed     bool
     Buried          bool
-    DefinedStyle    common.Style
     AudioCue        string
     NoiseRadius     int
     StartPosition   geometry.Point
@@ -394,7 +393,7 @@ func (i *Item) Pos() geometry.Point {
 }
 
 func (i *Item) Style(st common.Style) common.Style {
-    itemStyle := i.DefinedStyle.WithBg(st.Background)
+    itemStyle := common.Style{Foreground: CurrentTheme.ItemForeground, Background: st.Background}
     switch i.Type {
     case ItemTypeEmeticPoison:
         itemStyle = itemStyle.WithFg(CurrentTheme.EmeticPoisonForeground)
@@ -448,7 +447,6 @@ func (i *Item) DeepCopy() *Item {
     newItem.InsteadOfUse = i.InsteadOfUse
     newItem.InsteadOfPickup = i.InsteadOfPickup
     newItem.HeldBy = i.HeldBy
-    newItem.DefinedStyle = i.DefinedStyle
     return &newItem
 }
 
@@ -476,6 +474,11 @@ func (i *Item) IsMeleeWeapon() bool           { return itemTraitsTable[i.Type].i
 func (i *Item) IsObviousWeapon() bool         { return i.IsRangedWeapon() || i.Type == ItemTypeKnife }
 func (i *Item) IsRangedWeapon() bool          { return itemTraitsTable[i.Type].isRangedWeapon }
 func (i *Item) IsAutomaticRangedWeapon() bool { return itemTraitsTable[i.Type].isAutomaticRangedWeapon }
+
+// IsMine returns true for proximity-triggered explosive/poison mines.
+func (i *Item) IsMine() bool {
+    return i.Type == ItemTypeProximityMine || i.Type == ItemTypeLethalPoisonMine || i.Type == ItemTypeSleepPoisonMine
+}
 
 func (i *Item) SetKey(key string) {
     i.KeyString = key
@@ -514,11 +517,11 @@ func (i *Item) ToRecord() []rec_files.Field {
 }
 
 func NewEmptyKey() *Item {
-    return &Item{Name: "Key", DefinedIcon: GlyphKey, Type: ItemTypeKey, DefinedStyle: common.DefaultStyle.Reversed(), Uses: UnlimitedUses}
+    return &Item{Name: "Key", DefinedIcon: GlyphKey, Type: ItemTypeKey, Uses: UnlimitedUses}
 }
 
 func NewEmptyKeyCard() *Item {
-    return &Item{Name: "Key card", DefinedIcon: GlyphKeyCard, Type: ItemTypeKeyCard, DefinedStyle: common.DefaultStyle.Reversed(), Uses: UnlimitedUses}
+    return &Item{Name: "Key card", DefinedIcon: GlyphKeyCard, Type: ItemTypeKeyCard, Uses: UnlimitedUses}
 }
 
 func NewKeyCard(key string) *Item {

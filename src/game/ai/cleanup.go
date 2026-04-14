@@ -81,6 +81,15 @@ func (c *CleanupMovement) gotoDropoff() core.AIUpdate {
 	person := c.Person
 	game := c.Engine.GetGame()
 	currentMap := game.GetMap()
+	if !currentMap.HasDropOffZone() {
+		c.securedItems = []*core.Item{}
+		if person.IsDraggingBody() {
+			person.MovementMode = core.MovementModeWalking
+			person.DraggedBody = nil
+		}
+		person.AI.PopState()
+		return NextUpdateIn(0.1)
+	}
 	dropOffLocation := currentMap.GetNearestDropOffPosition(person.Pos())
 	return person.AI.Movement.Action(dropOffLocation, c)
 }
@@ -115,14 +124,14 @@ func (c *CleanupMovement) performCleanup() core.AIUpdate {
 		return DeferredUpdate(func() bool {
 			return c.cleaningIsDone
 		})
-	} else if c.currentIncident.Type == core.ObservationWeaponFound {
+	} else if c.currentIncident.Type == core.ObservationWeaponFound || c.currentIncident.Type == core.ObservationMineFound {
 		itemAt := game.GetMap().ItemAt(c.currentIncident.Location)
 		if itemAt != nil {
 			game.PickUpItem(person)
 			c.securedItems = append(c.securedItems, itemAt)
 		}
 		return c.cleanupCompleted()
-	} else if c.currentIncident.Type == core.ObservationBodyFound { // TODO: other incident types
+	} else if c.currentIncident.Type == core.ObservationBodyFound {
 		body := game.GetMap().DownedActorAt(c.currentIncident.Location)
 		if body != nil {
 			person.DraggedBody = body

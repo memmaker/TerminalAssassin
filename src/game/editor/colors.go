@@ -1,10 +1,8 @@
 package editor
 
 import (
-    "github.com/memmaker/terminal-assassin/common"
     "github.com/memmaker/terminal-assassin/game/core"
     "github.com/memmaker/terminal-assassin/game/services"
-    "github.com/memmaker/terminal-assassin/geometry"
 )
 
 func (g *GameStateEditor) openColorMenu() {
@@ -25,66 +23,52 @@ func (g *GameStateEditor) openColorMenu() {
 
 // ...existing code...
 
-func (g *GameStateEditor) setBackgroundColorOfTileAt(point geometry.Point, color common.Color) {
-    currentMap := g.engine.GetGame().GetMap()
-    if !currentMap.Contains(point) {
-        return
-    }
-    cellAt := currentMap.GetCell(point)
-    cellAt.TileType = cellAt.TileType.WithBGColor(color)
-    currentMap.SetCell(point, cellAt)
-}
-
-func (g *GameStateEditor) setForegroundColorOfTileAt(point geometry.Point, color common.Color) {
-    currentMap := g.engine.GetGame().GetMap()
-    if !currentMap.Contains(point) {
-        return
-    }
-    cellAt := currentMap.GetCell(point)
-    cellAt.TileType = cellAt.TileType.WithFGColor(color)
-    currentMap.SetCell(point, cellAt)
-}
-
 func (g *GameStateEditor) changeBackgroundColor() {
-    g.bottomMessageLabel.Clear()
+    /*
+       g.bottomMessageLabel.Clear()
 
-    userInterface := g.engine.GetUI()
-    userInterface.HideWidget(g.menuBar)
-    userInterface.HideWidget(g.topStatusLineLabel)
-    userInterface.HideWidget(g.bottomMessageLabel)
-    changed := func(color common.Color) {
-        g.currentBackgroundColor = color
-        g.gridIsDirty = true
-    }
-    closed := func(color common.Color) {
-        changed(color)
-        userInterface.ShowWidget(g.menuBar)
-        userInterface.ShowWidget(g.topStatusLineLabel)
-        userInterface.ShowWidget(g.bottomMessageLabel)
-        g.updateStatusLine()
-        g.clearHUD = true
-    }
-    userInterface.OpenColorPicker(g.currentBackgroundColor, changed, closed)
+       userInterface := g.engine.GetUI()
+       userInterface.HideWidget(g.menuBar)
+       userInterface.HideWidget(g.topStatusLineLabel)
+       userInterface.HideWidget(g.bottomMessageLabel)
+       changed := func(color common.Color) {
+           g.gridIsDirty = true
+       }
+
+       closed := func(color common.Color) {
+           changed(color)
+           userInterface.ShowWidget(g.menuBar)
+           userInterface.ShowWidget(g.topStatusLineLabel)
+           userInterface.ShowWidget(g.bottomMessageLabel)
+           g.updateStatusLine()
+           g.clearHUD = true
+       }
+
+    */
+    //userInterface.OpenColorPicker(g.currentBackgroundColor, changed, closed)
 }
 
 func (g *GameStateEditor) changeForegroundColor() {
-    g.bottomMessageLabel.Clear()
+    /*
+       g.bottomMessageLabel.Clear()
 
-    userInterface := g.engine.GetUI()
-    userInterface.HideWidget(g.menuBar)
-    userInterface.HideWidget(g.topStatusLineLabel)
-    userInterface.HideWidget(g.bottomMessageLabel)
-    changed := func(color common.Color) {
-        g.currentForegroundColor = color
-        g.gridIsDirty = true
-    }
-    closed := func(color common.Color) {
-        changed(color)
-        userInterface.ShowWidget(g.menuBar)
-        userInterface.ShowWidget(g.topStatusLineLabel)
-        userInterface.ShowWidget(g.bottomMessageLabel)
-        g.updateStatusLine()
-        g.clearHUD = true
-    }
-    userInterface.OpenColorPicker(g.currentForegroundColor, changed, closed)
+       userInterface := g.engine.GetUI()
+       userInterface.HideWidget(g.menuBar)
+       userInterface.HideWidget(g.topStatusLineLabel)
+       userInterface.HideWidget(g.bottomMessageLabel)
+       changed := func(color common.Color) {
+           g.currentForegroundColor = color
+           g.gridIsDirty = true
+       }
+       closed := func(color common.Color) {
+           changed(color)
+           userInterface.ShowWidget(g.menuBar)
+           userInterface.ShowWidget(g.topStatusLineLabel)
+           userInterface.ShowWidget(g.bottomMessageLabel)
+           g.updateStatusLine()
+           g.clearHUD = true
+       }
+       userInterface.OpenColorPicker(g.currentForegroundColor, changed, closed)
+
+    */
 }

@@ -41,9 +41,12 @@ func (v *VomitMovement) startVomiting() core.AIUpdate {
 	person := v.Person
 	currentMap := v.AIContext.Engine.GetGame().GetMap()
 	animator := v.AIContext.Engine.GetAnimator()
+	toiletPos := currentMap.GetNeighborWithSpecial(person.Pos(), gridmap.SpecialTileToilet)
+	person.LookAt(toiletPos)
 	previousVomitCount := v.vomitCounter
 	completed := func() {
 		v.vomitCounter++
+		person.IsNauseous = false
 		person.AI.PopState()
 	}
 	aic := v.AIContext.Engine.GetAI()
@@ -51,6 +54,6 @@ func (v *VomitMovement) startVomiting() core.AIUpdate {
 		return previousVomitCount != v.vomitCounter
 	}
 	aic.SetEngaged(person, core.ActorStatusVomiting, until)
-	animator.VomitingAnimation(person, currentMap.GetNeighborWithSpecial(person.Pos(), gridmap.SpecialTileToilet), completed)
+	animator.VomitingAnimation(person, toiletPos, completed)
 	return DeferredUpdate(until)
 }

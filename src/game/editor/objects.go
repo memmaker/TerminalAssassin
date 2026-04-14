@@ -43,7 +43,7 @@ func (g *GameStateEditor) openObjectsMenu() {
                             g.setBrushHandlerWithLightUpdate(addObjectsUI, objectCreator.Icon, func(pos geometry.Point) {
                                 newObject := objects.NewGravestone(inscription)
                                 currentMap.AddObject(newObject, pos)
-                                currentMap.SetTile(pos, defaultFloor.WithBGColor(core.CurrentTheme.MapBackground).WithFGColor(core.CurrentTheme.MapForeground))
+                                currentMap.SetTile(pos, defaultFloor)
                             })()
                         },
                     }
@@ -59,7 +59,7 @@ func (g *GameStateEditor) openObjectsMenu() {
             Handler: g.setBrushHandlerWithLightUpdate(addObjectsUI, 'O', func(pos geometry.Point) {
                 newObject := objectCreator.Create(identifier)
                 currentMap.AddObject(newObject, pos)
-                currentMap.SetTile(pos, defaultFloor.WithBGColor(core.CurrentTheme.MapBackground).WithFGColor(core.CurrentTheme.MapForeground))
+                currentMap.SetTile(pos, defaultFloor)
             }),
         })
     }

@@ -15,6 +15,28 @@ type Movement struct {
 	Person          *core.Actor
 }
 
+// passableForPerson returns a passable predicate that wraps the base safety
+// check. For actors in their default state it additionally rejects tiles that
+// hold a visible (unburied) mine.
+func (m *Movement) passableForPerson() func(geometry.Point) bool {
+	currentMap := m.Engine.GetGame().GetMap()
+	base := currentMap.CurrentlyPassableAndSafeForActor(m.Person)
+	if !m.Person.IsInDefaultState() {
+		return base
+	}
+	return func(p geometry.Point) bool {
+		if !base(p) {
+			return false
+		}
+		if currentMap.IsItemAt(p) {
+			if itemAt := currentMap.ItemAt(p); itemAt.IsMine() && !itemAt.Buried {
+				return false
+			}
+		}
+		return true
+	}
+}
+
 // Action this call will spend this action moving towards the given location
 // if that is not possible, it will call the appropriate callback, expecting the action to be handled there.
 func (m *Movement) Action(location geometry.Point, handler core.MoveHandler) core.AIUpdate {
@@ -23,7 +45,7 @@ func (m *Movement) Action(location geometry.Point, handler core.MoveHandler) cor
 		//println(fmt.Sprintf("%s: new destination %v", m.Person.DebugDisplayName(), location))
 	}
 	targetLocation := *m.desiredLocation
-	if !m.Engine.GetGame().GetMap().CurrentlyPassableAndSafeForActor(m.Person)(*m.desiredLocation) {
+	if !m.passableForPerson()(*m.desiredLocation) {
 		targetLocation = m.Engine.GetGame().GetMap().GetNearestWalkableNeighbor(m.Person.Pos(), *m.desiredLocation)
 	}
 
@@ -50,9 +72,8 @@ func (m *Movement) OnBlockedPath() core.AIUpdate {
 
 func (m *Movement) tryFindPath(onCannotReachDestination func() core.AIUpdate) core.AIUpdate {
 	aic := m.Engine.GetAI()
-	currentMap := m.Engine.GetGame().GetMap()
 	//println(fmt.Sprintf("%s: trying to find path to %v", m.Person.DebugDisplayName(), *m.desiredLocation))
-	if aic.PathSet(m.Person, *m.desiredLocation, currentMap.CurrentlyPassableAndSafeForActor(m.Person)) {
+	if aic.PathSet(m.Person, *m.desiredLocation, m.passableForPerson()) {
 		//println(fmt.Sprintf("%s: found new path to %v", m.Person.DebugDisplayName(), *m.desiredLocation))
 		return aic.MoveOnPath(m.Person)
 	}

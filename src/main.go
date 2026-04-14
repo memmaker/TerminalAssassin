@@ -255,7 +255,7 @@ func main() {
 }
 
 func (g *ConsoleEngine) Init() {
-    g.deviceDPIScale = ebiten.DeviceScaleFactor()
+    g.deviceDPIScale = ebiten.Monitor().DeviceScaleFactor()
     g.AIController = ai.NewAIController(g)
     g.Audio = audio.NewAudioPlayer(g)
     g.Animator = game.NewAnimator(g)

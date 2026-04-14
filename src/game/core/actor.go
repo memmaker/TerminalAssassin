@@ -183,6 +183,7 @@ type Actor struct {
     IsEyeWitness      bool
     IsHidden          bool
     IsBodyBagged      bool
+    IsNauseous        bool
     lastHolsteredItem *Item
 }
 type OrientedLocation struct {
@@ -462,6 +463,10 @@ func (a *Actor) CanPerceive() bool {
 func (a *Actor) CanUseItems() bool {
     return a.IsActive() && !a.IsEngaged() && !a.IsVictimOfEngagement() && a.Status != ActorStatusInCloset
 }
+func (a *Actor) IsInDefaultState() bool {
+    return a.Status == ActorStatusIdle || a.Status == ActorStatusOnSchedule || a.Status == ActorStatusFollowing
+}
+
 func (a *Actor) IsIdle() bool {
     return a.Status == ActorStatusIdle
 }
@@ -600,6 +605,9 @@ func (a *Actor) Style(st common.Style) common.Style {
     if a.IsEyeWitness {
         fg := a.Clothes.FgColor()
         actorStyle = st.WithFg(common.HSVColor{H: fg.H, S: fg.S, V: 4})
+    }
+    if a.IsNauseous {
+        actorStyle = actorStyle.WithFg(CurrentTheme.EmeticPoisonForeground)
     }
     if a.Dialogue.IsCurrentlySpeaking {
         actorStyle = a.ChatStyle()

@@ -43,7 +43,16 @@ func (m *Model) applyLightingToEnvironmentColors(scale float64, light, fg, bg co
     return bgColor, fgColor
 }
 func (m *Model) DrawMapAtPosition(p geometry.Point, c gridmap.MapCell[*core.Actor, *core.Item, services.Object]) (rune, common.Style) {
-    st := c.TileType.Style()
+    return m.drawAtPosition(p, c, false)
+}
+
+func (m *Model) DrawWorldAtPosition(p geometry.Point, c gridmap.MapCell[*core.Actor, *core.Item, services.Object]) (rune, common.Style) {
+    return m.drawAtPosition(p, c, true)
+}
+
+func (m *Model) drawAtPosition(p geometry.Point, c gridmap.MapCell[*core.Actor, *core.Item, services.Object], showEntities bool) (rune, common.Style) {
+    st := core.CurrentTheme.TileStyle(c.TileType)
+
     tileIcon := c.TileType.Icon()
 
     if c.Stimuli != nil && len(c.Stimuli) > 0 {
@@ -57,35 +66,15 @@ func (m *Model) DrawMapAtPosition(p geometry.Point, c gridmap.MapCell[*core.Acto
     switch {
     case !c.IsExplored:
         return ' ', common.DefaultStyle
-    case m.GetMap().IsObjectAt(p):
-        visibleObject := m.GetMap().ObjectAt(p)
-        return visibleObject.Icon(), visibleObject.Style(st)
-    }
-    return tileIcon, c.TileType.Style()
-}
-func (m *Model) DrawWorldAtPosition(p geometry.Point, c gridmap.MapCell[*core.Actor, *core.Item, services.Object]) (rune, common.Style) {
-    st := c.TileType.Style()
-    tileIcon := c.TileType.Icon()
-
-    if c.Stimuli != nil && len(c.Stimuli) > 0 {
-        icon, style := StimDrawInfo(c, st) // this is the most expensive function call in this function
-        st = style
-        if tileIcon == core.GlyphGround {
-            tileIcon = icon
-        }
-    }
-    switch {
-    case !c.IsExplored:
-        return ' ', common.DefaultStyle
-    case m.gridMap.Player != nil && p == m.gridMap.Player.Pos() && m.gridMap.Player.IsVisible():
+    case showEntities && m.gridMap.Player != nil && p == m.gridMap.Player.Pos() && m.gridMap.Player.IsVisible():
         return '@', m.gridMap.Player.Style(st)
-    case c.Actor != nil && (*c.Actor).IsVisible():
+    case showEntities && c.Actor != nil && (*c.Actor).IsVisible():
         return (*c.Actor).Symbol(), (*c.Actor).Style(st)
-    case c.DownedActor != nil && (*c.DownedActor).IsVisible():
+    case showEntities && c.DownedActor != nil && (*c.DownedActor).IsVisible():
         return (*c.DownedActor).Symbol(), (*c.DownedActor).Style(st)
-    case c.Item != nil && !(*c.Item).Buried:
+    case showEntities && c.Item != nil && !(*c.Item).Buried:
         return (*c.Item).Icon(), (*c.Item).Style(st)
-    case c.IsExplored && m.GetMap().IsObjectAt(p):
+    case m.GetMap().IsObjectAt(p):
         visibleObject := m.GetMap().ObjectAt(p)
         return visibleObject.Icon(), visibleObject.Style(st)
     }

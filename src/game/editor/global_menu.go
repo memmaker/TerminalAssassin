@@ -84,8 +84,6 @@ func (g *GameStateEditor) loadMap() {
             return cell
         })
         loadedMap.SetAmbientLight(common.GetAmbientLightFromDayTime(loadedMap.TimeOfDay).ToRGB())
-        g.currentForegroundColor = core.CurrentTheme.MapForeground
-        g.currentBackgroundColor = core.CurrentTheme.MapBackground
         g.gridIsDirty = true
     })
 }
@@ -125,11 +123,6 @@ func (g *GameStateEditor) applyThemeStyleToWholeMap() {
     currentMap := g.engine.GetGame().GetMap()
 
     currentMap.Apply(func(cell gridmap.MapCell[*core.Actor, *core.Item, services.Object]) gridmap.MapCell[*core.Actor, *core.Item, services.Object] {
-        if cell.TileType.IsWalkable {
-            cell.TileType = cell.TileType.WithBGColor(core.CurrentTheme.MapBackground).WithFGColor(core.CurrentTheme.MapForeground)
-        } else {
-            cell.TileType = cell.TileType.WithBGColor(core.CurrentTheme.WallBackground).WithFGColor(core.CurrentTheme.WallForeground)
-        }
         return cell
     })
 

@@ -462,30 +462,18 @@ func (e *ExternalData) LoadListOfCustomItems(files DataSource, dataDir string) [
         item := NewItemFromRecord(record.ToMap(), evalContext)
         definedItems = append(definedItems, item)
     }
-    // sanity check
-    for i := 0; i < len(definedItems); i++ {
-        definedItems[i] = e.SanitizeItem(definedItems[i])
-    }
+
     println(fmt.Sprintf("Loaded %d custom items from %s", len(definedItems), itemFileName))
 
     return definedItems
 }
 func (e *ExternalData) LoadHardCodedTiles() []*gridmap.Tile {
-    groundBG := common.RGBAColor{R: 17 / 255.0, G: 33 / 255.0, B: 219 / 255.0, A: 1.0}
-    monoFG := common.RGBAColor{R: 196 / 255.0, G: 197 / 255.0, B: 215 / 255.0, A: 1.0}
-    brightFG := common.RGBAColor{R: 252 / 255.0, G: 252 / 255.0, B: 255 / 255.0, A: 1.0}
-
-    mapStyle := common.Style{Foreground: monoFG, Background: groundBG}
-    brighterStyle := common.Style{Foreground: brightFG, Background: groundBG}
-
     tileList := []*gridmap.Tile{
-
         {
             DefinedIcon:        '¢',
             DefinedDescription: "a brick wall",
             IsWalkable:         false,
             IsTransparent:      false,
-            DefinedStyle:       brighterStyle.Reversed(),
         },
         {
             DefinedIcon:        '˚',
@@ -493,7 +481,6 @@ func (e *ExternalData) LoadHardCodedTiles() []*gridmap.Tile {
             IsWalkable:         true,
             IsTransparent:      true,
             Special:            gridmap.SpecialTilePlayerExit,
-            DefinedStyle:       mapStyle,
         },
         {
             DefinedIcon:        core.GlyphGround,
@@ -501,7 +488,6 @@ func (e *ExternalData) LoadHardCodedTiles() []*gridmap.Tile {
             IsWalkable:         true,
             IsTransparent:      true,
             Special:            gridmap.SpecialTileDefaultFloor,
-            DefinedStyle:       mapStyle,
         },
         {
             DefinedIcon:        '¡',
@@ -509,7 +495,6 @@ func (e *ExternalData) LoadHardCodedTiles() []*gridmap.Tile {
             IsWalkable:         true,
             IsTransparent:      true,
             Special:            gridmap.SpecialTilePlayerSpawn,
-            DefinedStyle:       mapStyle,
         },
     }
     e.defaultFloor = tileList[2]
@@ -530,7 +515,8 @@ func (e *ExternalData) LoadListOfCustomTiles(files DataSource, dataDir string) [
     tileCounter := 0
     records := rec_files.Read(file)
     for _, record := range records {
-        tileList = append(tileList, gridmap.NewTileFromRecord(record.ToMap()))
+        tile := gridmap.NewTileFromRecord(record.ToMap())
+        tileList = append(tileList, tile)
         tileCounter++
     }
     println(fmt.Sprintf("Loaded %d custom tiles from %s", tileCounter, tileDataFilename))
@@ -577,15 +563,6 @@ func (e *ExternalData) LoadListOfCustomClothing(files DataSource, dataDir string
 func (e *ExternalData) HasItemUnlock(command string) bool {
     _, ok := e.ItemUnlockMap[command]
     return ok
-}
-
-func (e *ExternalData) SanitizeItem(item *core.Item) *core.Item {
-    item.DefinedStyle = common.Style{Foreground: common.HSVColor{
-        H: 242.0 / 360.0,
-        S: 0.07,
-        V: 0.06,
-    }, Background: common.Transparent}
-    return item
 }
 
 func (e *ExternalData) DefaultPlayerClothing() core.Clothing {

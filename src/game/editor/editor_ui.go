@@ -130,29 +130,29 @@ func (g *GameStateEditor) scheduleHasTaskAt(pos geometry.Point) bool {
 }
 
 func (g *GameStateEditor) OpenMenuBarDropDown(title string, xOffset int, items []services.MenuItem) {
-	userInterface := g.engine.GetUI()
-	userInterface.OpenXOffsetAutoCloseMenuWithCallback(xOffset, items, func() {
-		g.gridIsDirty = true
-		g.menuBar.SetDirty()
-		g.topStatusLineLabel.SetDirty()
-	})
+    userInterface := g.engine.GetUI()
+    userInterface.OpenXOffsetAutoCloseMenuWithCallback(xOffset, items, func() {
+        g.gridIsDirty = true
+        g.menuBar.SetDirty()
+        g.topStatusLineLabel.SetDirty()
+    })
 }
 
 // OpenTilePickerDropDown opens a 2-D icon picker modal for the given items.
 // It is the preferred way to present tile / item / object palettes in the editor.
 func (g *GameStateEditor) OpenTilePickerDropDown(title string, items []services.MenuItem) {
-	userInterface := g.engine.GetUI()
-	userInterface.OpenTilePicker(title, items,
-		func(label string) {
-			g.PrintAsMessage(label)
-		},
-		func() {
-			g.PrintAsMessage("")
-			g.gridIsDirty = true
-			g.menuBar.SetDirty()
-			g.topStatusLineLabel.SetDirty()
-		},
-	)
+    userInterface := g.engine.GetUI()
+    userInterface.OpenTilePicker(title, items,
+        func(label string) {
+            g.PrintAsMessage(label)
+        },
+        func() {
+            g.PrintAsMessage("")
+            g.gridIsDirty = true
+            g.menuBar.SetDirty()
+            g.topStatusLineLabel.SetDirty()
+        },
+    )
 }
 
 func (g *GameStateEditor) openContextMenuAtMousePos(items []services.MenuItem) {
@@ -180,8 +180,8 @@ func (g *GameStateEditor) moveCameraOnMap(delta geometry.Point) {
 
 func (g *GameStateEditor) updateStatusLine() {
     statusLine := core.Text(fmt.Sprintf("%s | %s %s | fg:@f @N bg:@b @N", g.handler.Name, string(g.selectionTool.Icon()), string(g.placeThingIcon))).WithMarkups(map[rune]common.Style{
-        'f': common.Style{Foreground: common.White, Background: g.currentForegroundColor},
-        'b': common.Style{Foreground: common.White, Background: g.currentBackgroundColor},
+        'f': common.Style{Foreground: common.White, Background: common.Black},
+        'b': common.Style{Foreground: common.White, Background: common.Black},
     })
     g.topStatusLineLabel.SetStyledText(statusLine)
     g.topStatusLineLabel.SetDirty()

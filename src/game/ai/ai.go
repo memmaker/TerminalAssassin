@@ -158,10 +158,19 @@ func (a *AIController) reportIsInMyZone(person *core.Actor, report core.Incident
     reportZone := currentMap.ZoneAt(report.Location)
     return myHomeZone == reportZone
 }
-func (a *AIController) GetIncidentForCleanup(person *core.Actor) core.IncidentReport {
-    incident := a.blackboard.GetNextIncidentForCleanup(func(report core.IncidentReport) bool {
+func (a *AIController) cleanupFilter(person *core.Actor) func(core.IncidentReport) bool {
+    currentMap := a.engine.GetGame().GetMap()
+    hasDropOff := currentMap.HasDropOffZone()
+    return func(report core.IncidentReport) bool {
+        if report.Type == core.ObservationBodyFound && !hasDropOff {
+            return false
+        }
         return a.reportIsInMyZone(person, report)
-    })
+    }
+}
+
+func (a *AIController) GetIncidentForCleanup(person *core.Actor) core.IncidentReport {
+    incident := a.blackboard.GetNextIncidentForCleanup(a.cleanupFilter(person))
     if incident == core.EmptyReport {
         return incident
     }
@@ -170,9 +179,7 @@ func (a *AIController) GetIncidentForCleanup(person *core.Actor) core.IncidentRe
     return incident
 }
 func (a *AIController) IncidentsNeedCleanup(person *core.Actor) bool {
-    return a.blackboard.IncidentsNeedCleanup(func(report core.IncidentReport) bool {
-        return a.reportIsInMyZone(person, report)
-    })
+    return a.blackboard.IncidentsNeedCleanup(a.cleanupFilter(person))
 }
 
 func (a *AIController) TryPopScripted(person *core.Actor) {
@@ -327,6 +334,7 @@ func (a *AIController) SwitchToVomit(person *core.Actor) {
     if person.IsDowned() {
         return
     }
+    person.IsNauseous = true
     a.pushStateTransition(person, person.Status,
         &VomitMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
     println(fmt.Sprintf("%s is now vomiting", person.DebugDisplayName()))
@@ -450,7 +458,9 @@ func (a *AIController) MoveOnPath(person *core.Actor) core.AIUpdate {
     currentMap := a.engine.GetGame().GetMap()
     moveDelta := p.Sub(person.Pos())
     person.LookDirection = geometry.DirectionVectorToAngleInDegrees(moveDelta)
-    if !currentMap.CurrentlyPassableAndSafeForActor(person)(p) {
+    // Default-state actors also reject tiles with visible (unburied) mines.
+    mineBlocking := person.IsInDefaultState() && currentMap.IsItemAt(p) && currentMap.ItemAt(p).IsMine() && !currentMap.ItemAt(p).Buried
+    if !currentMap.CurrentlyPassableAndSafeForActor(person)(p) || mineBlocking {
         blockingActor := currentMap.ActorAt(p)
         if blockingActor != nil && a.IsFollowingActor(blockingActor, person) {
             person.Path = person.Path[1:]

@@ -6,6 +6,7 @@ import (
     "strings"
 
     "github.com/memmaker/terminal-assassin/common"
+    "github.com/memmaker/terminal-assassin/gridmap"
     rec_files "github.com/memmaker/terminal-assassin/rec-files"
 )
 
@@ -63,17 +64,16 @@ type ColorTheme struct {
     DeviceBrokenForeground common.Color
 
     // ── Interaction / Actions (background only) ──────────────────────────
-    AimingBackground        common.Color
     LegalActionBackground   common.Color
     IllegalActionBackground common.Color
     ExitHighlightBackground common.Color
 
     // ── UI / HUD ─────────────────────────────────────────────────────────
-    MenuBackground         common.Color
-    MenuForeground         common.Color
+    MenuBackground          common.Color
+    MenuForeground          common.Color
     MenuHighlightForeground common.Color // fg: highlighted menu item text
-    TooltipBackground      common.Color
-    TooltipForeground      common.Color
+    TooltipBackground       common.Color
+    TooltipForeground       common.Color
     // HUD traffic-light colors are split into fg and bg variants so that each
     // field is used for exactly one drawing layer.
     HUDGoodForeground    common.Color // fg: healthy HP bar, success badge text
@@ -123,15 +123,23 @@ type ColorTheme struct {
 
 // CurrentTheme is the active color theme.
 // Replace it at any time; the next rendered frame picks it up immediately.
-var CurrentTheme *ColorTheme = DefaultTheme()
+var CurrentTheme *ColorTheme = WhiteTheme()
 
 // SetTheme replaces the active theme.
 func SetTheme(t *ColorTheme) {
     CurrentTheme = t
 }
 
-// DefaultTheme returns the original hardcoded color palette as a ColorTheme.
-func DefaultTheme() *ColorTheme {
+// ToggleTheme switches between WhiteTheme and BlackTheme.
+func ToggleTheme() {
+    if CurrentTheme.Name == "black" {
+        CurrentTheme = WhiteTheme()
+    } else {
+        CurrentTheme = BlackTheme()
+    }
+}
+
+func WhiteTheme() *ColorTheme {
     return &ColorTheme{
         Name:               "default",
         MapBackground:      common.NewHSVColorFromRGBBytes(200, 200, 200),
@@ -158,13 +166,12 @@ func DefaultTheme() *ColorTheme {
         FrenzyPoisonForeground: common.NewRGBColorFromBytes(255, 128, 0),
         LethalPoisonForeground: common.NewHSVColorFromRGBBytes(165, 10, 223),
 
-        DangerForeground:    common.NewHSVColorFromRGBBytes(255, 10, 10),
-        SuccessForeground:   common.RGBAColor{R: 0.0, G: 1.0, B: 0.0, A: 1.0},
-        FailureForeground:   common.RGBAColor{R: 1.0, G: 0.0, B: 0.0, A: 1.0},
+        DangerForeground:       common.NewHSVColorFromRGBBytes(255, 10, 10),
+        SuccessForeground:      common.RGBAColor{R: 0.0, G: 1.0, B: 0.0, A: 1.0},
+        FailureForeground:      common.RGBAColor{R: 1.0, G: 0.0, B: 0.0, A: 1.0},
         DeviceOnForeground:     common.RGBAColor{R: 0.0, G: 1.0, B: 0.0, A: 1.0},
         DeviceBrokenForeground: common.RGBAColor{R: 1.0, G: 0.0, B: 0.0, A: 1.0},
 
-        AimingBackground:        common.RGBAColor{R: 191.0 / 255.0, G: 53.0 / 255.0, B: 29.0 / 255.0, A: 1.0},
         LegalActionBackground:   common.RGBAColor{R: 51.0 / 255.0, G: 255.0 / 255.0, B: 93.0 / 255.0, A: 1.0},
         IllegalActionBackground: common.RGBAColor{R: 191.0 / 255.0, G: 53.0 / 255.0, B: 29.0 / 255.0, A: 1.0},
         ExitHighlightBackground: common.NewHSVColor(137.0/360.0, 1, 0.7),
@@ -180,18 +187,18 @@ func DefaultTheme() *ColorTheme {
         HUDWarningBackground:    common.NewRGBColorFromBytes(255, 203, 51),
         HUDDangerBackground:     common.NewHSVColorFromRGBBytes(255, 10, 10),
 
-        LOSBackground:        common.NewHSVColor(0, 0, 0.80),
-        VisionConeBackground: common.NewHSVColorFromRGBBytes(80, 0, 102),
+        LOSBackground:             common.NewHSVColor(50.0/360.0, 0.25, 0.85),
+        VisionConeBackground:      common.NewHSVColorFromRGBBytes(80, 0, 102),
         SuspicionLowBackground:    common.NewHSVColor(137.0/360.0, 1, 0.7),
         SuspicionMediumBackground: common.NewHSVColor(59.0/360.0, 1, 0.7),
         SuspicionHighBackground:   common.NewHSVColor(8.0/360.0, 1, 0.7),
         MarkedBackground:          common.NewHSVColorFromRGBBytes(98, 182, 176),
         SelectionBackground:       common.NewHSVColorFromRGBBytes(191, 191, 191),
 
-        ObjectForeground:        common.NewHSVColor(0, 0, 0.95),
-        ItemForeground:          common.NewHSVColor(0, 0, 0.95),
-        ObviousWeaponForeground: common.NewHSVColor(10.0/360.0, 1.0, 1.0),
-        TreeForeground:          common.NewRGBColorFromBytes(28, 109, 57),
+        ObjectForeground:          common.NewRGBColorFromBytes(0, 0, 0),
+        ItemForeground:            common.NewRGBColorFromBytes(0, 0, 0),
+        ObviousWeaponForeground:   common.NewHSVColor(10.0/360.0, 1.0, 1.0),
+        TreeForeground:            common.NewRGBColorFromBytes(28, 109, 57),
         ContainerHidingBackground: common.NewHSVColor(0, 0, 0.80),
         ContainerBodyBackground:   common.NewRGBColorFromBytes(255, 203, 51),
 
@@ -209,6 +216,103 @@ func DefaultTheme() *ColorTheme {
 
         ClothingColors: map[ClothingColor]common.HSVColor{
             ClothingColorBlack:   common.NewHSVColorFromRGBBytes(0, 0, 0),
+            ClothingColorRed:     common.NewHSVColor(0.0/360.0, 0.8, 1.0),
+            ClothingColorOrange:  common.NewHSVColor(30.0/360.0, 0.8, 1.0),
+            ClothingColorYellow:  common.NewHSVColor(60.0/360.0, 0.8, 1.0),
+            ClothingColorGreen:   common.NewHSVColor(120.0/360.0, 0.8, 1.0),
+            ClothingColorCyan:    common.NewHSVColor(180.0/360.0, 0.8, 1.0),
+            ClothingColorBlue:    common.NewHSVColor(240.0/360.0, 0.8, 1.0),
+            ClothingColorViolet:  common.NewHSVColor(270.0/360.0, 0.8, 1.0),
+            ClothingColorMagenta: common.NewHSVColor(300.0/360.0, 0.8, 1.0),
+        },
+    }
+}
+
+// BlackTheme returns a classic terminal roguelike palette: white and colored
+// letters on a solid black background.
+func BlackTheme() *ColorTheme {
+    black := common.Black
+    darkGray := common.NewRGBColorFromBytes(30, 30, 30)
+    gray := common.NewRGBColorFromBytes(128, 128, 128)
+    white := common.White
+    brightWhite := common.NewRGBColorFromBytes(220, 220, 220)
+
+    return &ColorTheme{
+        Name:               "black",
+        MapBackground:      black,
+        MapBackgroundLight: darkGray,
+        MapForeground:      gray,
+        WallForeground:     white,
+        WallBackground:     black,
+
+        FireForeground:        common.NewRGBColorFromBytes(255, 100, 0),
+        FireBackground:        common.NewRGBColorFromBytes(139, 0, 0),
+        ExplosionForeground:   common.NewRGBColorFromBytes(255, 200, 0),
+        ExplosionBackground:   common.NewRGBColorFromBytes(139, 0, 0),
+        BloodForeground:       common.NewRGBColorFromBytes(200, 0, 0),
+        BloodBackground:       common.NewRGBColorFromBytes(80, 0, 0),
+        WaterForeground:       common.NewRGBColorFromBytes(80, 120, 255),
+        WaterBackground:       common.NewRGBColorFromBytes(0, 0, 80),
+        OilForeground:         common.NewRGBColorFromBytes(120, 100, 50),
+        OilBackground:         common.NewRGBColorFromBytes(40, 30, 10),
+        ElectricityForeground: common.NewRGBColorFromBytes(255, 255, 0),
+        ElectricityBackground: common.NewRGBColorFromBytes(50, 50, 0),
+
+        SleepPoisonForeground:  common.NewRGBColorFromBytes(0, 200, 200),
+        EmeticPoisonForeground: common.NewRGBColorFromBytes(0, 200, 0),
+        FrenzyPoisonForeground: common.NewRGBColorFromBytes(255, 128, 0),
+        LethalPoisonForeground: common.NewRGBColorFromBytes(200, 0, 255),
+
+        DangerForeground:       common.NewRGBColorFromBytes(255, 0, 0),
+        SuccessForeground:      common.NewRGBColorFromBytes(0, 255, 0),
+        FailureForeground:      common.NewRGBColorFromBytes(255, 0, 0),
+        DeviceOnForeground:     common.NewRGBColorFromBytes(0, 255, 0),
+        DeviceBrokenForeground: common.NewRGBColorFromBytes(255, 0, 0),
+
+        LegalActionBackground:   common.NewRGBColorFromBytes(0, 60, 0),
+        IllegalActionBackground: common.NewRGBColorFromBytes(100, 0, 0),
+        ExitHighlightBackground: common.NewRGBColorFromBytes(0, 80, 0),
+
+        MenuBackground:          black,
+        MenuForeground:          brightWhite,
+        MenuHighlightForeground: common.NewRGBColorFromBytes(255, 255, 0),
+        TooltipBackground:       darkGray,
+        TooltipForeground:       brightWhite,
+        HUDGoodForeground:       common.NewRGBColorFromBytes(0, 255, 0),
+        HUDGoodBackground:       common.NewRGBColorFromBytes(0, 80, 0),
+        HUDWarningForeground:    common.NewRGBColorFromBytes(255, 255, 0),
+        HUDWarningBackground:    common.NewRGBColorFromBytes(80, 80, 0),
+        HUDDangerBackground:     common.NewRGBColorFromBytes(80, 0, 0),
+
+        LOSBackground:             common.NewRGBColorFromBytes(20, 20, 40),
+        VisionConeBackground:      common.NewRGBColorFromBytes(50, 0, 60),
+        SuspicionLowBackground:    common.NewRGBColorFromBytes(0, 50, 0),
+        SuspicionMediumBackground: common.NewRGBColorFromBytes(60, 60, 0),
+        SuspicionHighBackground:   common.NewRGBColorFromBytes(80, 0, 0),
+        MarkedBackground:          common.NewRGBColorFromBytes(0, 60, 60),
+        SelectionBackground:       common.NewRGBColorFromBytes(60, 60, 60),
+
+        ObjectForeground:          white,
+        ItemForeground:            brightWhite,
+        ObviousWeaponForeground:   common.NewRGBColorFromBytes(255, 50, 50),
+        TreeForeground:            common.NewRGBColorFromBytes(0, 180, 0),
+        ContainerHidingBackground: common.NewRGBColorFromBytes(20, 20, 40),
+        ContainerBodyBackground:   common.NewRGBColorFromBytes(80, 60, 0),
+
+        ZoneDropOffBackground:      common.NewRGBColorFromBytes(0, 0, 80),
+        ZoneHighSecurityBackground: common.NewRGBColorFromBytes(80, 0, 0),
+        ZonePublicBackground:       common.NewRGBColorFromBytes(0, 50, 0),
+        ZonePrivateBackground:      common.NewRGBColorFromBytes(50, 0, 50),
+
+        EditorSpawnBackground:      common.NewRGBColorFromBytes(0, 80, 0),
+        EditorVisionConeBackground: common.NewRGBColorFromBytes(0, 80, 0),
+        EditorBuriedItemBackground: common.NewRGBColorFromBytes(60, 40, 20),
+        EditorTaskNumberForeground: common.NewRGBColorFromBytes(255, 50, 50),
+
+        EngagedInTaskBackground: common.NewRGBColorFromBytes(80, 60, 0),
+
+        ClothingColors: map[ClothingColor]common.HSVColor{
+            ClothingColorBlack:   common.NewHSVColorFromRGBBytes(80, 80, 80),
             ClothingColorRed:     common.NewHSVColor(0.0/360.0, 0.8, 1.0),
             ClothingColorOrange:  common.NewHSVColor(30.0/360.0, 0.8, 1.0),
             ClothingColorYellow:  common.NewHSVColor(60.0/360.0, 0.8, 1.0),
@@ -254,7 +358,6 @@ func (t *ColorTheme) ToRecord() rec_files.Record {
         {Name: "FailureForeground", Value: t.FailureForeground.EncodeAsString()},
         {Name: "DeviceOnForeground", Value: t.DeviceOnForeground.EncodeAsString()},
         {Name: "DeviceBrokenForeground", Value: t.DeviceBrokenForeground.EncodeAsString()},
-        {Name: "AimingBackground", Value: t.AimingBackground.EncodeAsString()},
         {Name: "LegalActionBackground", Value: t.LegalActionBackground.EncodeAsString()},
         {Name: "IllegalActionBackground", Value: t.IllegalActionBackground.EncodeAsString()},
         {Name: "ExitHighlightBackground", Value: t.ExitHighlightBackground.EncodeAsString()},
@@ -300,10 +403,38 @@ func (t *ColorTheme) ToRecord() rec_files.Record {
     return fields
 }
 
+func (t *ColorTheme) MapStyle() common.Style {
+    return common.Style{Foreground: t.MapForeground, Background: t.MapBackground}
+}
+
+// TileStyle adjusts a base style for a specific tile type.
+// Walls get WallForeground/WallBackground. Certain special tile types override
+// the foreground color.
+func (t *ColorTheme) TileStyle(tile gridmap.Tile) common.Style {
+    var baseStyle common.Style
+
+    if tile.IsWalkable {
+        baseStyle = t.MapStyle()
+    } else {
+        baseStyle = common.Style{Foreground: t.WallForeground, Background: t.WallBackground}
+    }
+    if tile.Special == gridmap.SpecialTileDefaultFloor {
+        return baseStyle
+    }
+    switch tile.Special {
+    case gridmap.SpecialTileTreeLike:
+        return baseStyle.WithFg(t.TreeForeground)
+    case gridmap.SpecialTileLethal:
+        return baseStyle.WithFg(t.LethalPoisonForeground)
+    }
+
+    return baseStyle.WithFg(t.ObjectForeground)
+}
+
 // ThemeFromRecord deserializes a ColorTheme from a rec_files record.
 // Missing fields fall back to DefaultTheme values.
 func ThemeFromRecord(record rec_files.Record) *ColorTheme {
-    t := DefaultTheme()
+    t := WhiteTheme()
     for _, field := range record {
         switch field.Name {
         case "Name":
@@ -361,8 +492,6 @@ func ThemeFromRecord(record rec_files.Record) *ColorTheme {
             t.DeviceOnForeground = common.NewColorFromString(field.Value)
         case "DeviceBrokenForeground", "DeviceOffForeground":
             t.DeviceBrokenForeground = common.NewColorFromString(field.Value)
-        case "AimingBackground":
-            t.AimingBackground = common.NewColorFromString(field.Value)
         case "LegalActionBackground":
             t.LegalActionBackground = common.NewColorFromString(field.Value)
         case "IllegalActionBackground":
@@ -457,7 +586,7 @@ func ThemeFromRecord(record rec_files.Record) *ColorTheme {
 func LoadThemeFromFile(file fs.File) (*ColorTheme, error) {
     records := rec_files.Read(file)
     if len(records) == 0 {
-        return DefaultTheme(), nil
+        return WhiteTheme(), nil
     }
     return ThemeFromRecord(records[0]), nil
 }

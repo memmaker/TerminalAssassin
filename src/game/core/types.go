@@ -58,6 +58,7 @@ const (
     ObservationWearingCompromisedDisguise Observation = "wearing compromised disguise"
     ObservationDeviceDistraction          Observation = "device distraction"
     ObservationDownedSpeaker              Observation = "DLG_downed_speaker_00"
+    ObservationMineFound                  Observation = "mine found"
 )
 
 type IncidentReport struct {
@@ -101,6 +102,7 @@ var (
         ObservationCombatSeen:  {},
         ObservationDeath:       {},
         ObservationUnconscious: {},
+        ObservationMineFound:   {},
     }
     observationSuspiciousActors = map[Observation]struct{}{
         ObservationIllegalAction: {},
@@ -123,6 +125,7 @@ var (
         ObservationBodyFound:   {},
         ObservationBloodFound:  {},
         ObservationWeaponFound: {},
+        ObservationMineFound:   {},
     }
     observationIllegal = map[Observation]struct{}{
         ObservationTrespassing:       {},

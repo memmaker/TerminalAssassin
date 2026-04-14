@@ -706,9 +706,13 @@ func (m *Model) ActorEnteredCell(person *core.Actor, oldPosition geometry.Point,
     // Proximity trigger: fire any item on this cell that reacts to actor contact
     // (e.g. a placed mine). The player is excluded so they can retrieve their
     // own mines. Downed/dragged bodies are also excluded.
+    // Guards investigating or cleaning up mines disarm them on contact.
     if !person.IsDowned() && currentMap.IsItemAt(newPosition) {
         itemAt := currentMap.ItemAt(newPosition)
-        if !itemAt.IsDestroyed {
+        guardHandlingMine := person.Type == core.ActorTypeGuard &&
+            (person.Status == core.ActorStatusInvestigating || person.Status == core.ActorStatusCleanup) &&
+            itemAt.IsMine()
+        if !itemAt.IsDestroyed && !guardHandlingMine {
             m.SendTriggerStimuli(person, itemAt, newPosition, core.TriggerOnActorContact)
         }
     }
@@ -919,12 +923,10 @@ func (m *Model) InsteadOfPickingUpClothes(actor *core.Actor, item *core.Item) {
     aic.SetEngaged(actor, core.ActorStatusEngaged, until)
     completed := func() {
         animationCompleted = true
-        oldClothesFg := actor.Clothes.FgColor()
         oldClothesName := actor.Clothes.Name
         actor.Clothes = clothesFromItem
 
         item.Name = oldClothesName
-        item.DefinedStyle = common.Style{Foreground: oldClothesFg, Background: common.Black}
         m.UpdateHUD()
     }
     cancelled := func() {
@@ -1065,7 +1067,7 @@ func (m *Model) SwitchClothesWith(taker *core.Actor, provider *core.Actor) {
 }
 
 func (m *Model) SpawnClothingItem(pos geometry.Point, clothing core.Clothing) {
-    newClothes := &core.Item{Name: clothing.Name, DefinedIcon: core.GlyphClothing, Type: core.ItemTypeClothing, DefinedStyle: common.Style{Foreground: clothing.FgColor()}}
+    newClothes := &core.Item{Name: clothing.Name, DefinedIcon: core.GlyphClothing, Type: core.ItemTypeClothing}
     spawnPos := m.GetValidItemPlacementPosition(pos, newClothes)
     m.forceDropItemAt(nil, newClothes, spawnPos)
 }
@@ -1138,10 +1140,11 @@ func (m *Model) GetContextActionAt(position geometry.Point) services.ContextActi
     }
 
     // for solid walls (non-walkable, no special type), allow knocking to attract enemies
-    knockAction := KnockOnWallAction{}
-    if knockAction.IsActionPossible(m.engine, player, position) {
-        return knockAction
-    }
+    /*knockAction := KnockOnWallAction{}
+      if knockAction.IsActionPossible(m.engine, player, position) {
+          return knockAction
+      }
+    */
 
     return action
 }
@@ -1237,8 +1240,13 @@ func (m *Model) createIncidentsForSuspiciousActivity(person *core.Actor, p geome
 
     if currentMap.IsItemAt(p) {
         itemAt := currentMap.ItemAt(p)
-        if itemAt.IsObviousWeapon() && itemAt.WasMoved() {
-            aic.ReportIncident(person, p, core.ObservationWeaponFound)
+        if !itemAt.Buried {
+            if itemAt.IsObviousWeapon() && itemAt.WasMoved() {
+                aic.ReportIncident(person, p, core.ObservationWeaponFound)
+            }
+            if person.IsInDefaultState() && itemAt.IsMine() {
+                aic.ReportIncident(person, p, core.ObservationMineFound)
+            }
         }
     }
 

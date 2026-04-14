@@ -32,7 +32,7 @@ func (g *GameStateEditor) prefabFromSelection() {
     bounds := geometry.NewRect(minX, minY, maxX+1, maxY+1)
 
     // create prefab
-    prefab := gridmap.NewPrefabFromMap[*core.Actor, *core.Item, services.Object](g.engine.GetGame().GetMap(), bounds)
+    prefab := gridmap.NewPrefabFromMap[*core.Actor, *core.Item, services.Object](g.engine.GetGame().GetMap(), bounds, core.CurrentTheme.MapStyle())
 
     g.currentPrefab = prefab
     g.changeUIStateTo(placePrefabUI)

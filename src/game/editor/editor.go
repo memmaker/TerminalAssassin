@@ -7,7 +7,6 @@ import (
     "github.com/memmaker/terminal-assassin/game/services"
     "github.com/memmaker/terminal-assassin/geometry"
 
-    "github.com/memmaker/terminal-assassin/common"
     "github.com/memmaker/terminal-assassin/game/core"
     "github.com/memmaker/terminal-assassin/gridmap"
     "github.com/memmaker/terminal-assassin/ui"
@@ -21,8 +20,6 @@ type GameStateEditor struct {
     selectedWorldPositions []geometry.Point
     menuBar                *ui.MenuBar
     placeThingIcon         rune
-    currentBackgroundColor common.Color
-    currentForegroundColor common.Color
     clearHUD               bool
 
     CurrentRune rune
@@ -46,9 +43,9 @@ type GameStateEditor struct {
     boxEnd                geometry.Point
     MousePositionOnScreen geometry.Point
     MousePositionInWorld  geometry.Point
-    currentPrefab              *gridmap.Prefab[*core.Actor, *core.Item, services.Object]
-    taskPreviewFov             *geometry.FOV
-    pendingLookDir             float64
+    currentPrefab         *gridmap.Prefab[*core.Actor, *core.Item, services.Object]
+    taskPreviewFov        *geometry.FOV
+    pendingLookDir        float64
 }
 
 func (g *GameStateEditor) ClearOverlay() {
@@ -79,15 +76,8 @@ func (g *GameStateEditor) ResizeAndClearMap(newWidth, newHeight int) {
     currentMap := game.GetMap()
     currentMap.Apply(func(cell gridmap.MapCell[*core.Actor, *core.Item, services.Object]) gridmap.MapCell[*core.Actor, *core.Item, services.Object] {
         cell.IsExplored = true
-        if cell.TileType.IsWalkable {
-            cell.TileType = cell.TileType.WithBGColor(core.CurrentTheme.MapBackground).WithFGColor(core.CurrentTheme.MapForeground)
-        } else {
-            cell.TileType = cell.TileType.WithBGColor(core.CurrentTheme.WallBackground).WithFGColor(core.CurrentTheme.WallForeground)
-        }
         return cell
     })
-    g.currentForegroundColor = core.CurrentTheme.MapForeground
-    g.currentBackgroundColor = core.CurrentTheme.MapBackground
     currentMap.ApplyAmbientLight()
     currentMap.UpdateBakedLights()
     currentMap.UpdateDynamicLights()
@@ -569,8 +559,6 @@ func (g *GameStateEditor) pickTileFromSelection() {
     pos := g.selectedWorldPositions[0]
     cell := g.engine.GetGame().GetMap().CellAt(pos)
     tileCopy := cell.TileType
-    g.currentBackgroundColor = tileCopy.DefinedStyle.Background
-    g.currentForegroundColor = tileCopy.DefinedStyle.Foreground
     g.updateStatusLine()
 
     g.setBrushHandlerWithLightUpdate(editMapUI, tileCopy.Icon(), func(pos geometry.Point) {
@@ -582,23 +570,6 @@ func (g *GameStateEditor) pickTileFromSelection() {
     		g.setForegroundColorOfTileAt(point, g.currentForegroundColor)
     	})()
     */
-}
-
-func (g *GameStateEditor) pickColorFromSelection() {
-    if g.selectedWorldPositions == nil || len(g.selectedWorldPositions) == 0 {
-        return
-    }
-    pos := g.selectedWorldPositions[0]
-    cell := g.engine.GetGame().GetMap().CellAt(pos)
-    tileCopy := cell.TileType
-    g.currentBackgroundColor = tileCopy.DefinedStyle.Background
-    g.currentForegroundColor = tileCopy.DefinedStyle.Foreground
-    g.updateStatusLine()
-
-    g.setBrushHandlerWithLightUpdate(setColorUI, core.GlyphPalette, func(point geometry.Point) {
-        g.setBackgroundColorOfTileAt(point, g.currentBackgroundColor)
-        g.setForegroundColorOfTileAt(point, g.currentForegroundColor)
-    })()
 }
 
 func (g *GameStateEditor) setKeyOfSelectedObject() {

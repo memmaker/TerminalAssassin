@@ -58,6 +58,11 @@ func (p *Projectile) Update() {
 
     p.tickCounter = 1
 
+    if p.currentPathIndex >= len(p.travelPath) {
+        p.isDead = true
+        return
+    }
+
     currentPos := p.travelPath[p.currentPathIndex]
     game := p.engine.GetGame()
     currentMap := game.GetMap()
@@ -135,9 +140,9 @@ func (p *Projectile) Draw(con console.CellInterface) {
         return
     }
     cellAt := con.AtSquare(screenPos)
-    projectileStyle := cellAt.Style.WithFg(common.Black)
+    projectileStyle := cellAt.Style.WithFg(core.CurrentTheme.ItemForeground)
     if !p.ItemIsWeapon {
-        projectileStyle = cellAt.Style.WithFg(p.WrappedItem.DefinedStyle.Foreground)
+        projectileStyle = p.WrappedItem.Style(cellAt.Style)
     }
     con.SetSquare(screenPos, common.Cell{Rune: symbol, Style: projectileStyle})
 }

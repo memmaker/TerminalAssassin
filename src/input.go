@@ -785,10 +785,14 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
         l1Held := ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonFrontTopLeft)
         var baseStepDelayMs int64
         switch {
-        case i.padSneaking:
-            baseStepDelayMs = int64(core.SneakStepDelayMs)
         case l1Held:
             baseStepDelayMs = int64(core.RunningStepDelayMs)
+            if i.padSneaking {
+                i.padSneaking = false
+                msgs = append(msgs, core.StopSneaking)
+            }
+        case i.padSneaking:
+            baseStepDelayMs = int64(core.SneakStepDelayMs)
         default:
             baseStepDelayMs = int64(core.WalkStepDelayMs)
         }

@@ -1,17 +1,17 @@
 package services
 
 import (
-	"fmt"
-	"os"
-	"path"
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"time"
+    "fmt"
+    "os"
+    "path"
+    "path/filepath"
+    "regexp"
+    "strconv"
+    "time"
 
-	"github.com/memmaker/terminal-assassin/common"
-	"github.com/memmaker/terminal-assassin/game/core"
-	"github.com/memmaker/terminal-assassin/gridmap"
+    "github.com/memmaker/terminal-assassin/common"
+    "github.com/memmaker/terminal-assassin/game/core"
+    "github.com/memmaker/terminal-assassin/gridmap"
 )
 
 func NewFactory(engine Engine) *ItemFactory {
@@ -26,18 +26,17 @@ func (f ItemFactory) CreateRemoteDetonator(source *core.Actor, item *core.Item) 
     detonateItem := func() {
         f.engine.GetGame().SendTriggerStimuli(source, item, item.Pos(), core.TriggerOnRemoteControl)
     }
-    remote := &core.Item{Name: "remote detonator", DefinedIcon: core.GlyphLockpickElectronic, Type: core.ItemTypeTool, InsteadOfUse: detonateItem, Uses: 1, DefinedStyle: item.DefinedStyle}
+    remote := &core.Item{Name: "remote detonator", DefinedIcon: core.GlyphLockpickElectronic, Type: core.ItemTypeTool, InsteadOfUse: detonateItem, Uses: 1}
     remote.OnCooldown = true
     return remote
 }
 
 func (f ItemFactory) CreateEmptyPieceOfPaper() *core.Item {
-	pieceOfPaperItem := &core.Item{
-		Name:         "Note",
-        Type:         core.ItemTypeMessage,
-        DefinedIcon:  core.GlyphFilledSquare,
-        DefinedStyle: common.DefaultStyle.Reversed(),
-        Uses:         -1,
+    pieceOfPaperItem := &core.Item{
+        Name:        "Note",
+        Type:        core.ItemTypeMessage,
+        DefinedIcon: core.GlyphFilledSquare,
+        Uses:        -1,
     }
     var paperCache []string
     engine := f.engine
@@ -70,7 +69,7 @@ func (f ItemFactory) ItemFromNameAndKey(name string, key string) *core.Item {
         return &result
     }
     if key != "" {
-		if name == "Note" {
+        if name == "Note" {
             return f.CreatePieceOfPaper(name, key)
         } else if name == "Key card" {
             return core.NewKeyCard(key)
@@ -83,52 +82,52 @@ func (f ItemFactory) ItemFromNameAndKey(name string, key string) *core.Item {
 }
 
 func (f ItemFactory) DecodeStringToItem(name string) core.Item {
-	externalData := f.engine.GetData()
-	keyPattern := regexp.MustCompile(`^Key\((.*)\)$`)
-	keyCardPattern := regexp.MustCompile(`^KeyCard\((.*)\)$`)
-	paperPattern := regexp.MustCompile(`^Message\((.*)\): (.*)$`)
-	lockpickPattern := regexp.MustCompile(`^Lockpick\((\d+)\)$`)
-	lockpickElectronicPattern := regexp.MustCompile(`^LockpickElectronic\((\d+)\)$`)
-	if keyPattern.MatchString(name) {
-		submatches := keyPattern.FindStringSubmatch(name)
-		keyString := submatches[1]
-		return *core.NewKey(keyString)
-	} else if keyCardPattern.MatchString(name) {
-		submatches := keyCardPattern.FindStringSubmatch(name)
-		keyString := submatches[1]
-		return *core.NewKeyCard(keyString)
-	} else if paperPattern.MatchString(name) {
-		submatches := paperPattern.FindStringSubmatch(name)
-		textFilename := submatches[1]
-		paperName := submatches[2]
-		paper := f.CreatePieceOfPaper(paperName, textFilename)
-		return *paper
-	} else if lockpickPattern.MatchString(name) {
-		submatches := lockpickPattern.FindStringSubmatch(name)
-		uses, _ := strconv.Atoi(submatches[1])
-		if item, ok := externalData.ItemByName("Lockpick"); ok {
-			result := *item
-			result.Uses = uses
-			f.applyItemBehavior(&result)
-			return result
-		}
-	} else if lockpickElectronicPattern.MatchString(name) {
-		submatches := lockpickElectronicPattern.FindStringSubmatch(name)
-		uses, _ := strconv.Atoi(submatches[1])
-		if item, ok := externalData.ItemByName("Lockpick (electronic)"); ok {
-			result := *item
-			result.Uses = uses
-			f.applyItemBehavior(&result)
-			return result
-		}
-	}
-	if item, ok := externalData.ItemByName(name); ok {
-		result := *item
-		f.applyItemBehavior(&result)
-		return result
-	}
-	println("WARNING: Could not find item with name " + name)
-	return core.Item{}
+    externalData := f.engine.GetData()
+    keyPattern := regexp.MustCompile(`^Key\((.*)\)$`)
+    keyCardPattern := regexp.MustCompile(`^KeyCard\((.*)\)$`)
+    paperPattern := regexp.MustCompile(`^Message\((.*)\): (.*)$`)
+    lockpickPattern := regexp.MustCompile(`^Lockpick\((\d+)\)$`)
+    lockpickElectronicPattern := regexp.MustCompile(`^LockpickElectronic\((\d+)\)$`)
+    if keyPattern.MatchString(name) {
+        submatches := keyPattern.FindStringSubmatch(name)
+        keyString := submatches[1]
+        return *core.NewKey(keyString)
+    } else if keyCardPattern.MatchString(name) {
+        submatches := keyCardPattern.FindStringSubmatch(name)
+        keyString := submatches[1]
+        return *core.NewKeyCard(keyString)
+    } else if paperPattern.MatchString(name) {
+        submatches := paperPattern.FindStringSubmatch(name)
+        textFilename := submatches[1]
+        paperName := submatches[2]
+        paper := f.CreatePieceOfPaper(paperName, textFilename)
+        return *paper
+    } else if lockpickPattern.MatchString(name) {
+        submatches := lockpickPattern.FindStringSubmatch(name)
+        uses, _ := strconv.Atoi(submatches[1])
+        if item, ok := externalData.ItemByName("Lockpick"); ok {
+            result := *item
+            result.Uses = uses
+            f.applyItemBehavior(&result)
+            return result
+        }
+    } else if lockpickElectronicPattern.MatchString(name) {
+        submatches := lockpickElectronicPattern.FindStringSubmatch(name)
+        uses, _ := strconv.Atoi(submatches[1])
+        if item, ok := externalData.ItemByName("Lockpick (electronic)"); ok {
+            result := *item
+            result.Uses = uses
+            f.applyItemBehavior(&result)
+            return result
+        }
+    }
+    if item, ok := externalData.ItemByName(name); ok {
+        result := *item
+        f.applyItemBehavior(&result)
+        return result
+    }
+    println("WARNING: Could not find item with name " + name)
+    return core.Item{}
 }
 func (f ItemFactory) StringsToItems(inventory []string) []*core.Item {
     items := make([]*core.Item, len(inventory))
@@ -156,18 +155,18 @@ func (f ItemFactory) CreatePieceOfPaper(name string, filename string) *core.Item
 
 // need a way to convert items to strings
 func EncodeItemAsString(item *core.Item) string {
-	if item.Type == core.ItemTypeKeyCard {
-		return fmt.Sprintf("KeyCard(%s)", item.KeyString)
-	} else if item.Type == core.ItemTypeKey {
-		return fmt.Sprintf("Key(%s)", item.KeyString)
-	} else if item.Type == core.ItemTypeMessage {
-		return fmt.Sprintf("Message(%s): %s", item.KeyString, item.Name)
-	} else if item.Type == core.ItemTypeMechanicalLockpick {
-		return fmt.Sprintf("Lockpick(%d)", item.Uses)
-	} else if item.Type == core.ItemTypeElectronicLockpick {
-		return fmt.Sprintf("LockpickElectronic(%d)", item.Uses)
-	}
-	return item.Name
+    if item.Type == core.ItemTypeKeyCard {
+        return fmt.Sprintf("KeyCard(%s)", item.KeyString)
+    } else if item.Type == core.ItemTypeKey {
+        return fmt.Sprintf("Key(%s)", item.KeyString)
+    } else if item.Type == core.ItemTypeMessage {
+        return fmt.Sprintf("Message(%s): %s", item.KeyString, item.Name)
+    } else if item.Type == core.ItemTypeMechanicalLockpick {
+        return fmt.Sprintf("Lockpick(%d)", item.Uses)
+    } else if item.Type == core.ItemTypeElectronicLockpick {
+        return fmt.Sprintf("LockpickElectronic(%d)", item.Uses)
+    }
+    return item.Name
 }
 
 // applyItemBehavior wires up engine-bound runtime behaviour (InsteadOfUse etc.)
@@ -184,8 +183,8 @@ func (f ItemFactory) applyItemBehavior(item *core.Item) {
 }
 
 // applyShovelBehavior wires up the shovel's InsteadOfUse action.
-// When used, it searches for buried items at the player's FoV source position
-// and uncovers the first one found.
+// When used, it toggles the buried state of an item at the player's FoV source
+// position: buried items are uncovered, visible items are buried.
 func (f ItemFactory) applyShovelBehavior(item *core.Item) {
     engine := f.engine
     item.InsteadOfUse = func() {
@@ -198,12 +197,16 @@ func (f ItemFactory) applyShovelBehavior(item *core.Item) {
             return
         }
         itemAtPos := currentMap.ItemAt(digPos)
-        if itemAtPos == nil || !itemAtPos.Buried {
+        if itemAtPos == nil {
             engine.GetGame().PrintMessage("Nothing to find here.")
             return
         }
-        itemAtPos.Buried = false
-        engine.GetGame().PrintMessage("You uncover " + itemAtPos.Name + ".")
+        itemAtPos.Buried = !itemAtPos.Buried
+        if itemAtPos.Buried {
+            engine.GetGame().PrintMessage("You bury " + itemAtPos.Name + ".")
+        } else {
+            engine.GetGame().PrintMessage("You uncover " + itemAtPos.Name + ".")
+        }
         engine.GetGame().UpdateHUD()
     }
 }

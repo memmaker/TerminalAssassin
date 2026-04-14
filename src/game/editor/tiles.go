@@ -37,7 +37,5 @@ func (g *GameStateEditor) placeTileAtPos(tile gridmap.Tile, pos geometry.Point) 
         return
     }
 
-    tile = tile.WithBGColor(g.currentBackgroundColor).WithFGColor(g.currentForegroundColor)
-
     currentMap.SetTile(pos, tile)
 }

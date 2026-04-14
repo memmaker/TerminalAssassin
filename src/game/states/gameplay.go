@@ -685,6 +685,8 @@ func (g *GameStateGameplay) handleKeyCommands(command core.KeyCommand) {
         g.adjustTimeOfDay(-30 * time.Minute)
     case "F5":
         g.adjustTimeOfDay(30 * time.Minute)
+    case "F6":
+        core.ToggleTheme()
     case "t":
         g.openWaitMenu()
     }
@@ -1359,6 +1361,7 @@ func (g *GameStateGameplay) contextAction() {
             g.UpdateHUD()
         }
     }
+
 }
 
 // playerDiveTackle performs the Dive & Tackle action in the given direction.

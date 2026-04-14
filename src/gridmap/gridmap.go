@@ -253,7 +253,8 @@ func NewGlobalMapFromRecord(record []rec_files.Field) GlobalMapDataOnDisk {
             result.AmbienceSoundCue = strings.TrimSpace(field.Value)
         case "Default_FG", "Default_BG":
             // legacy fields — ignored, colors come from the theme now
-        }    }
+        }
+    }
     return result
 }
 
@@ -623,7 +624,6 @@ func NewEmptyMap[ActorType interface {
         TileType: Tile{
             DefinedIcon:        ' ',
             DefinedDescription: "empty space",
-            DefinedStyle:       common.Style{Foreground: common.White, Background: common.Blue},
             IsWalkable:         true,
             IsTransparent:      true,
             Special:            SpecialTileNone,
@@ -1074,6 +1074,16 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) GetNearestDropOffPosition(pos
         }
     }
     return nearestLocation
+}
+
+// HasDropOffZone returns true if at least one drop-off zone exists on this map.
+func (m *GridMap[ActorType, ItemType, ObjectType]) HasDropOffZone() bool {
+    for _, zone := range m.ListOfZones {
+        if zone.IsDropOff() {
+            return true
+        }
+    }
+    return false
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) FindNearestItem(pos geometry.Point, predicate func(item ItemType) bool) ItemType {
