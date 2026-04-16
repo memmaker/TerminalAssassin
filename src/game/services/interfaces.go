@@ -247,6 +247,7 @@ type AIInterface interface {
     SwitchToInvestigation(person *core.Actor, incidentReport core.IncidentReport)
     SwitchToCombat(person *core.Actor, target *core.Actor)
     SwitchToVomit(person *core.Actor)
+    SwitchToFrenzy(person *core.Actor)
     SwitchToSnitch(person *core.Actor)
     SwitchToCleanup(person *core.Actor)
     SwitchToPanic(person *core.Actor, dangerLocations []geometry.Point)

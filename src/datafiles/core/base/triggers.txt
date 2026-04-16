@@ -68,3 +68,6 @@ on_actor_contact: SleepPoisonAreaStims($RADIUS, $DURATION)
 Signature: LethalPoisonTripMineTrigger($RADIUS, $DURATION)
 on_actor_contact: LethalPoisonAreaStims($RADIUS, $DURATION)
 
+Signature: FrenzyDartTrigger($POWER)
+on_ranged_shot_hit: FrenzyStims($POWER)
+

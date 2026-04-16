@@ -157,6 +157,9 @@ Name: Trip Mine (sleep poison)
 ItemAt: (72,31)
 Name: Shovel
 
+ItemAt: (72,41)
+Name: Dart Gun (frenzy)
+
 ItemAt: (72,48)
 Name: Flashlight
 

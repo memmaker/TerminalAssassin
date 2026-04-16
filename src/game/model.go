@@ -443,6 +443,8 @@ func (m *Model) ApplyStimulusToActor(a *core.Actor, source core.EffectSource, st
         m.TakeInducedSleep(a, source, stim.Force())
     case stimuli.StimulusHighVoltage:
         m.TakeElectricalDamage(a, source, stim.Force())
+    case stimuli.StimulusFrenzy:
+        m.TakeFrenzyEffect(a, source, stim.Force())
     default:
         damageTaken = false
     }
@@ -519,6 +521,16 @@ func (m *Model) TakeElectricalDamage(a *core.Actor, source core.EffectSource, fo
     } else {
         m.SendToSleep(a)
     }
+}
+
+func (m *Model) TakeFrenzyEffect(a *core.Actor, source core.EffectSource, force int) {
+    if a.IsPlayer() {
+        return // frenzy only affects AI-controlled actors
+    }
+    randomDelay := rand.Float64() * 2
+    m.engine.ScheduleGameTime(randomDelay, func() {
+        m.engine.GetAI().SwitchToFrenzy(a)
+    })
 }
 
 func ActorMovedOrIncapacitated(person *core.Actor) func() bool {
@@ -1244,7 +1256,7 @@ func (m *Model) createIncidentsForSuspiciousActivity(person *core.Actor, p geome
             if itemAt.IsObviousWeapon() && itemAt.WasMoved() {
                 aic.ReportIncident(person, p, core.ObservationWeaponFound)
             }
-            if person.IsInDefaultState() && itemAt.IsMine() {
+            if itemAt.IsMine() {
                 aic.ReportIncident(person, p, core.ObservationMineFound)
             }
         }

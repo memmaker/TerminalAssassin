@@ -113,6 +113,7 @@ const (
     ActorStatusPanic              ActorState = "panic"
     ActorStatusInCloset           ActorState = "in closet"
     ActorStatusSnitching          ActorState = "snitching"
+    ActorStatusFrenzy             ActorState = "frenzy"
 )
 
 type DamageInfo struct {
@@ -496,6 +497,9 @@ func (a *Actor) IsFollowing() bool {
 func (a *Actor) IsInCombat() bool {
     return a.Status == ActorStatusCombat
 }
+func (a *Actor) IsFrenzied() bool {
+    return a.Status == ActorStatusFrenzy
+}
 func (a *Actor) IsDead() bool {
     return a.Status == ActorStatusDead
 }
@@ -558,6 +562,8 @@ func (a *Actor) MoveDelay() AIMoveDelay {
     case a.Status == ActorStatusFollowing:
         return MoveDelayBodyguardSpeed
     case a.IsInCombat():
+        return MoveDelayRunning
+    case a.IsFrenzied():
         return MoveDelayRunning
     case a.Status == ActorStatusSnitching:
         return MoveDelayRunning

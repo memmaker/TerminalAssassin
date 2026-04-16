@@ -93,6 +93,14 @@ projectile_range: 10
 trigger_effects: EmeticDartTrigger
 loot_value: 250
 
+name: Dart Gun (frenzy)
+icon: ١
+type: dart_gun
+uses: 2
+projectile_range: 10
+trigger_effects: FrenzyDartTrigger(80)
+loot_value: 400
+
 name: Taser
 icon: ١
 type: taser

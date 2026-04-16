@@ -318,11 +318,3 @@ It will first use the CurrentVisibility() method on the actor
 and add the VisibilityModifier() of the actors map location and return the result.
 
 What should be taken into account????
-
-# Frenzy Status
-
-I want to add another status effect to the game, alongside sleeping, etc. This is probably an ActorState.
-Let's call it "frenzy".
-When an actor is in the frenzy state, he will blindly attack the nearest reachable actor.
-If he has a ranged weapon he will use that, otherwise melee attacks are used.
-Add this actorstate and also a dart gun that will apply the frenzy state to any actor that is shot with it.

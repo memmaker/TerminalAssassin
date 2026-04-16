@@ -56,3 +56,6 @@ Pressure: $DURATION
 DestroyOnApplication: true
 lethal_poison: 100
 
+Signature: FrenzyStims($POWER)
+frenzy: $POWER
+

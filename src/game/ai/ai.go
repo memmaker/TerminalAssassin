@@ -340,6 +340,15 @@ func (a *AIController) SwitchToVomit(person *core.Actor) {
     println(fmt.Sprintf("%s is now vomiting", person.DebugDisplayName()))
 }
 
+func (a *AIController) SwitchToFrenzy(person *core.Actor) {
+    if person.IsDowned() || person.IsFrenzied() {
+        return
+    }
+    a.pushStateTransition(person, core.ActorStatusFrenzy,
+        &FrenzyMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
+    println(fmt.Sprintf("%s is now frenzied", person.DebugDisplayName()))
+}
+
 func (a *AIController) IsFollowingActor(follower *core.Actor, leader *core.Actor) bool {
     if follower.AI == nil || follower.AI.GetState() == nil {
         return false
@@ -461,12 +470,13 @@ func (a *AIController) MoveOnPath(person *core.Actor) core.AIUpdate {
     // Default-state actors also reject tiles with visible (unburied) mines.
     mineBlocking := person.IsInDefaultState() && currentMap.IsItemAt(p) && currentMap.ItemAt(p).IsMine() && !currentMap.ItemAt(p).Buried
     if !currentMap.CurrentlyPassableAndSafeForActor(person)(p) || mineBlocking {
+        if !currentMap.IsActorAt(p) || (currentMap.ActorAt(p) == nil || !a.IsFollowingActor(currentMap.ActorAt(p), person)) {
+            return a.HandleBlockedPath(person, moveDelta)
+        }
         blockingActor := currentMap.ActorAt(p)
         if blockingActor != nil && a.IsFollowingActor(blockingActor, person) {
             person.Path = person.Path[1:]
             currentMap.SwapPositions(person, blockingActor)
-        } else {
-            return a.HandleBlockedPath(person, moveDelta)
         }
     }
     ai := person.AI
@@ -535,7 +545,7 @@ func (a *AIController) UpdateAI(person *core.Actor) float64 {
 // Hostile Actor     - very high -> combat / snitch
 
 func (a *AIController) SwitchStateBecauseOfNewKnowledge(person *core.Actor) {
-    if !person.IsActive() || person.IsInCombat() || person.Status == core.ActorStatusPanic || person.Status == core.ActorStatusSnitching {
+    if !person.IsActive() || person.IsInCombat() || person.IsFrenzied() || person.Status == core.ActorStatusPanic || person.Status == core.ActorStatusSnitching {
         return
     }
     if a.ReactToDangerousActor(person) {
