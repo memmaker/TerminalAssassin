@@ -70,7 +70,6 @@ The menu bar at the bottom switches the editor between major modes. Each mode ch
 | `F3` | **Objects** | Places / removes objects |
 | `F4` | **Actors** | Selects or edits actors |
 | `F5` | **Schedule** | Adds patrol tasks to the selected actor |
-| `F6` | **Clothes** | Places clothing items or dresses actors |
 | `F7` | **Zones** | Paints zone regions |
 | `F8` | **Stimuli** | Paints persistent stimuli onto tiles |
 | `F9` | **Lights** | Places and edits baked light sources |

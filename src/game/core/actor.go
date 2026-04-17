@@ -126,7 +126,6 @@ type ActorType string
 const (
     ActorTypeCivilian ActorType = "civilian"
     ActorTypeGuard    ActorType = "guard"
-    ActorTypeEnforcer ActorType = "enforcer"
     ActorTypeTarget   ActorType = "target"
     ActorTypeFence    ActorType = "fence"
 )
@@ -174,10 +173,10 @@ type Actor struct {
     DamageTaken       []DamageInfo
     FoVinDegrees      float64
     Type              ActorType
+    Team              string
     MovementMode      MovementMode
     DebugFlag         bool
     DraggedBody       *Actor
-    Clothes           Clothing
     MaxVisionRange    int
     AI                *AIComponent
     Script            *ScriptComponent
@@ -193,7 +192,6 @@ type OrientedLocation struct {
 }
 
 type IndividualKnowledge struct {
-    CompromisedDisguises          mapset.Set[string]
     LastSightingOfDangerousActor  IncidentReport
     LastSightingOfSuspiciousActor IncidentReport
 }
@@ -210,11 +208,8 @@ func (k *IndividualKnowledge) AddSightingOfDangerousActor(witness, dangerMan *Ac
         RegisteredHandler: nil,
         KnownBy:           inTheKnow,
     }
-    if dangerMan.IsPlayer() {
-        k.CompromisedDisguises.Add(dangerMan.NameOfClothing())
-    }
     if noSightingBeforeThis {
-        println(fmt.Sprintf("%s saw a hostile person wearing '%s' doing '%s' at %s", witness.DebugDisplayName(), dangerMan.NameOfClothing(), observedBehavior, dangerMan.Pos()))
+        println(fmt.Sprintf("%s saw a hostile person doing '%s' at %s", witness.DebugDisplayName(), observedBehavior, dangerMan.Pos()))
     }
 }
 func (k *IndividualKnowledge) AddSightingOfSuspiciousActor(witness *Actor, location geometry.Point, observedBehavior Observation, atTick uint64) {
@@ -322,18 +317,15 @@ func (a *AIComponent) IsUpdateAllowed() bool {
 
 func NewEmptyAIComponent() *AIComponent {
     aiBehaviour := &AIComponent{
-        Knowledge: &IndividualKnowledge{
-            CompromisedDisguises: mapset.NewSet[string](),
-        },
+        Knowledge: &IndividualKnowledge{},
     }
     return aiBehaviour
 }
 
-func NewActor(name string, clothing Clothing) *Actor {
+func NewActor(name string) *Actor {
     newActor := &Actor{
         Name:           name,
         Type:           ActorTypeCivilian,
-        Clothes:        clothing,
         MovementMode:   MovementModeWalking,
         AutoMoveSpeed:  3,
         FoVinDegrees:   90,
@@ -394,36 +386,6 @@ func (a *Actor) SetPos(point geometry.Point) {
 // Type of enemy (especially targets, guards and enforcers)
 // stateStack of enemy (sleeping, dead, engaged, etc)
 // Environmental hazards (fire, water, etc) - Must: Background Color, Optional: Foreground Color & icon
-
-type Clothing struct {
-    Name  string
-    Color ClothingColor
-}
-
-// FgColor returns the foreground colour for this clothing from the active theme's palette.
-func (c Clothing) FgColor() common.HSVColor {
-	if col, ok := CurrentTheme.ClothingColors[c.Color]; ok {
-		return col
-	}
-	if fallback, ok := CurrentTheme.ClothingColors[ClothingColorBlack]; ok {
-		return fallback
-	}
-	return common.NewHSVColorFromRGBBytes(200, 200, 200)
-}
-
-func (c Clothing) EncodeAsString() string {
-    return fmt.Sprintf("%s\t%s", c.Name, c.Color)
-}
-
-func NewClothingFromString(encoded string) *Clothing {
-    parts := strings.Split(encoded, "\t")
-    name := strings.TrimSpace(parts[0])
-    color := ClothingColorBlack
-    if len(parts) >= 2 {
-        color = ClothingColor(strings.TrimSpace(parts[1]))
-    }
-    return &Clothing{Name: name, Color: color}
-}
 
 func mustParseFloat(s string) float64 {
     f, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
@@ -607,9 +569,9 @@ func (a *Actor) runeFromDirection() rune {
 }
 
 func (a *Actor) Style(st common.Style) common.Style {
-    actorStyle := st.WithFg(a.Clothes.FgColor())
+    actorStyle := st.WithFg(CurrentTheme.ActorTypeColor(a.Type))
     if a.IsEyeWitness {
-        fg := a.Clothes.FgColor()
+        fg := CurrentTheme.ActorTypeColor(a.Type)
         actorStyle = st.WithFg(common.HSVColor{H: fg.H, S: fg.S, V: 4})
     }
     if a.IsNauseous {
@@ -621,7 +583,7 @@ func (a *Actor) Style(st common.Style) common.Style {
     if a.DebugFlag {
         actorStyle = st.WithBg(common.Yellow)
     }
-    return actorStyle // WithBg(a.Clothes.Color)
+    return actorStyle
 }
 
 func (a *Actor) CanSee(p geometry.Point) bool {
@@ -729,7 +691,7 @@ func (a *Actor) StrList() []string {
     for _, state := range a.AI.stateStack {
         charSheet = append(charSheet, fmt.Sprintf("  %T", state))
     }
-    charSheet = append(charSheet, fmt.Sprintf("Damage Taken:"))
+    charSheet = append(charSheet, "Damage Taken:")
     for _, damage := range a.DamageTaken {
         charSheet = append(charSheet, fmt.Sprintf("  %d of %s damage", damage.Amount, damage.Type))
     }
@@ -982,10 +944,6 @@ func (a *Actor) VisionRange() int {
     }
     return a.MaxVisionRange
 }
-func (a *Actor) NameOfClothing() string {
-    return a.Clothes.Name
-}
-
 func (a *Actor) HasScopedItemEquipped() bool {
     if a.EquippedItem == nil {
         return false
@@ -1021,6 +979,10 @@ func (a *Actor) IsPlayer() bool {
     return a.AI == nil
 }
 
+func (a *Actor) GetTeam() string {
+    return a.Team
+}
+
 func (a *Actor) SetNextUtterance(text Utterance) {
     a.Dialogue.NextUtterance = text
 }
@@ -1034,7 +996,7 @@ func (a *Actor) StartDialogue(name string) {
     }
 }
 func (a *Actor) ChatStyle() common.Style {
-    fg := a.Clothes.FgColor()
+    fg := CurrentTheme.ActorTypeColor(a.Type)
     return common.Style{
         Foreground: fg.WithV(fg.V + 2),
         Background: common.Black,
@@ -1057,9 +1019,9 @@ func (a *Actor) TooltipText() string {
 
 type ActorOnDisk struct {
     Name          string
-    Clothing      string
     Inventory     []string
     ActorType     ActorType
+    Team          string
     MoveSpeed     int
     FoVinDegrees  float64
     VisionRange   int
@@ -1071,14 +1033,13 @@ func (d ActorOnDisk) ToRecord() []rec_files.Field {
     record := []rec_files.Field{
         {Name: "Name", Value: d.Name},
         {Name: "ActorType", Value: string(d.ActorType)},
+        {Name: "Team", Value: d.Team},
         {Name: "Position", Value: d.Position.String()},
         {Name: "LookDirection", Value: strconv.FormatFloat(d.LookDirection, 'f', 2, 64)},
-        {Name: "Clothing", Value: d.Clothing},
         {Name: "MoveSpeed", Value: strconv.Itoa(d.MoveSpeed)},
         {Name: "FoVinDegrees", Value: strconv.FormatFloat(d.FoVinDegrees, 'f', 2, 64)},
         {Name: "VisionRange", Value: strconv.Itoa(d.VisionRange)},
     }
-    //		{Name: "Inventory", Value: d.Inventory},
     for _, item := range d.Inventory {
         record = append(record, rec_files.Field{Name: "Inventory", Value: item})
     }
@@ -1092,12 +1053,12 @@ func ActorOnDiskFromRecord(record []rec_files.Field) ActorOnDisk {
             actor.Name = strings.TrimSpace(field.Value)
         case "ActorType":
             actor.ActorType = ActorType(field.Value)
+        case "Team":
+            actor.Team = strings.TrimSpace(field.Value)
         case "Position":
             actor.Position, _ = geometry.NewPointFromString(field.Value)
         case "LookDirection":
             actor.LookDirection, _ = strconv.ParseFloat(field.Value, 64)
-        case "Clothing":
-            actor.Clothing = strings.TrimSpace(field.Value)
         case "MoveSpeed":
             actor.MoveSpeed, _ = strconv.Atoi(field.Value)
         case "FoVinDegrees":

@@ -1,6 +1,6 @@
 $HOTELIER = ActorWithName(Hotelier)
 
-## DIALOGUE-PLAYER(Suit): player_hotel_reservation
+## DIALOGUE-PLAYER: player_hotel_reservation
 
 $HOTELIER: Welcome to the Himmapan Hotel, sir.
 

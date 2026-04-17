@@ -74,7 +74,6 @@ TA Testplan:
 [X] Only one civilian will report a suspicion and only one guard will react
 [ ] Guards will search an area after hostile activity and loss of LoS
 [X] Guards will carry corpses and weapons to the security area
-[ ] Changing clothes unseen will clear the suspicions
 
 # Systemic interactions
 [X] Liquid leaking

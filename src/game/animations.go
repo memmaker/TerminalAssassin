@@ -139,19 +139,70 @@ func (a *Animator) ActorEngagedAnimation(person *core.Actor, r rune, actionPosit
     a.addAnimation(animation)
 }
 
-func (a *Animator) PlayerChangeClothesAnimation(actionPosition geometry.Point, otherClothes core.Clothing, finishedCallback, cancelCallback func()) {
-	missionMap := a.engine.GetGame().GetMap()
-	player := missionMap.Player
-	otherClothesColor := otherClothes.FgColor()
-	onFinish := func() {
-		oldClothing := player.Clothes // still old before finishedCallback runs
-		finishedCallback()
-		a.engine.PublishEvent(services.PlayerChangedClothesEvent{
-			OldClothing: oldClothing,
-			NewClothing: otherClothes,
-		})
+// ActorEngagedAnimationWithCancel is like ActorEngagedAnimation but cancels when
+// person moves or is incapacitated. cancelCallback is called on cancel (no outcome applied).
+func (a *Animator) ActorEngagedAnimationWithCancel(person *core.Actor, r rune, actionPosition geometry.Point, timeNeededInSeconds float64, finishedCallback func(), cancelCallback func()) {
+	drawFunc := func(grid console.CellInterface, frameIndex int) {
+		game := a.engine.GetGame()
+		if !game.IsOnScreen(actionPosition) {
+			return
+		}
+		cellAt := a.cellOnScreen(grid, actionPosition)
+		style := cellAt.Style
+		if frameIndex%2 == 0 {
+			a.drawWorldToScreen(grid, actionPosition, common.Cell{Rune: r, Style: style})
+		}
 	}
-	a.engagedWithSoundAnimation(player, actionPosition, "get-dressed", core.GlyphClothing, otherClothesColor, onFinish, cancelCallback)
+	frameDelayInSeconds := 0.5
+	frameDelayInTicks := uint64(utils.SecondsToTicks(frameDelayInSeconds))
+	advanceToNextFrame := func(frameIndex int, ticksAlive uint64) bool {
+		return ticksAlive >= frameDelayInTicks
+	}
+	animation := &ActiveAnimation{
+		nextFrame:        advanceToNextFrame,
+		DrawFrame:        drawFunc,
+		frameCount:       int(timeNeededInSeconds / frameDelayInSeconds),
+		FinishedCallback: finishedCallback,
+		CancelCondition:  ActorMovedOrIncapacitated(person),
+		CancelCallback:   cancelCallback,
+	}
+	a.addAnimation(animation)
+}
+
+// ActorEngagedIllegalAnimationForPlayer cancels when EITHER the victim moves/is incapacitated
+// OR the player moves. Used for player-initiated illegal engagements.
+func (a *Animator) ActorEngagedIllegalAnimationForPlayer(player, victim *core.Actor, r rune, actionPosition geometry.Point, timeNeededInSeconds float64, finishedCallback func(), cancelCallback func()) {
+	drawFunc := func(grid console.CellInterface, frameIndex int) {
+		game := a.engine.GetGame()
+		if !game.IsOnScreen(actionPosition) {
+			return
+		}
+		cellAt := a.cellOnScreen(grid, actionPosition)
+		style := cellAt.Style
+		if frameIndex%2 == 0 {
+			style.Foreground = core.CurrentTheme.DangerForeground
+		}
+		a.drawWorldToScreen(grid, actionPosition, common.Cell{Rune: r, Style: style})
+	}
+	frameDelayInSeconds := 0.5
+	frameDelayInTicks := uint64(utils.SecondsToTicks(frameDelayInSeconds))
+	nextFrameFunc := func(frameIndex int, ticksAlive uint64) bool {
+		return ticksAlive >= frameDelayInTicks
+	}
+	victimCancel := ActorMovedOrIncapacitated(victim)
+	playerCancel := ActorMovedOrIncapacitated(player)
+	combinedCancel := func() bool {
+		return victimCancel() || playerCancel()
+	}
+	animation := &ActiveAnimation{
+		nextFrame:        nextFrameFunc,
+		DrawFrame:        drawFunc,
+		frameCount:       int(timeNeededInSeconds / frameDelayInSeconds),
+		FinishedCallback: finishedCallback,
+		CancelCondition:  combinedCancel,
+		CancelCallback:   cancelCallback,
+	}
+	a.addAnimation(animation)
 }
 
 func (a *Animator) ActorEngagedIllegalAnimation(person *core.Actor, r rune, actionPosition geometry.Point, timeNeededInSeconds float64, finishedCallback func(), cancelCallback func()) {

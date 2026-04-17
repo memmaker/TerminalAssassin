@@ -39,7 +39,7 @@ func (g *GameStateEditor) openItemMenu() {
             }),
         })
     }
-	g.OpenTilePickerDropDown("Choose item", menuItems)
+    g.OpenTilePickerDropDown("Choose item", menuItems)
     return
 }
 
@@ -101,7 +101,7 @@ func (g *GameStateEditor) placeItemAtPos(item core.Item, pos geometry.Point) {
     } else if currentMap.IsObjectAt(pos) {
         if holder, ok := currentMap.ObjectAt(pos).(services.ContentHolder); ok {
             holder.SetContents(append(holder.GetContents(), item.Name))
-            g.PrintAsMessage(fmt.Sprintf("Added '%s' to safe at %s", item.Name, pos.String()))
+            g.PrintAsMessage(fmt.Sprintf("Added '%s' to container at %s", item.Name, pos.String()))
             return
         }
     }

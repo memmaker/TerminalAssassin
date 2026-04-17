@@ -248,11 +248,6 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
         stats.AddKill(e.Victim, e.CauseOfDeath, e.Position, utils.UTicksToSeconds(g.engine.CurrentTick()))
         return true
     }))
-    g.engine.SubscribeToEvents(services.NewFilter(func(e services.PlayerChangedClothesEvent) bool {
-        stats.DisguisesWorn.Add(e.NewClothing.Name)
-        return true
-    }))
-
     // Ambience sound — reacts to zone changes instead of running in playerEnteredCell.
     g.engine.SubscribeToEvents(services.NewFilter(func(e services.ActorEnteredZoneEvent) bool {
         if e.Actor != g.engine.GetGame().GetMap().Player {
@@ -351,20 +346,14 @@ func (g *GameStateGameplay) initCamera() {
 }
 
 func (g *GameStateGameplay) SpawnPlayer() {
-    planning := g.engine.GetGame().GetMissionPlan()
-    data := g.engine.GetData()
     career := g.engine.GetCareer()
-    clothes := data.DefaultPlayerClothing()
-    startLocation, _ := planning.Location()
-    if planning.Clothes() != nil {
-        clothes = *planning.Clothes()
-    }
+    currentMap := g.engine.GetGame().GetMap()
+    startLocation := currentMap.PlayerSpawn
     visionRange := 90
     player := &core.Actor{
         Name:           career.PlayerName,
         AutoMoveSpeed:  3,
         MaxVisionRange: visionRange,
-        Clothes:        clothes,
         FoVinDegrees:   90,
         Health:         3,
         MovementMode:   core.MovementModeWalking,
@@ -374,23 +363,6 @@ func (g *GameStateGameplay) SpawnPlayer() {
     player.Inventory = &core.InventoryComponent{Items: make([]*core.Item, 0)}
     player.Dialogue = &core.DialogueComponent{Conversations: make(map[string]*core.Conversation), SpokenSpeech: mapset.NewSet[string](), HeardSpeech: mapset.NewSet[string]()}
 
-    weapon := planning.Weapon()
-    if weapon != nil {
-        player.Inventory.AddItem(weapon)
-        weapon.HeldBy = player
-    }
-    gearOne := planning.GearOne()
-    if gearOne != nil {
-        player.Inventory.AddItem(gearOne)
-        gearOne.HeldBy = player
-    }
-    gearTwo := planning.GearTwo()
-    if gearTwo != nil {
-        player.Inventory.AddItem(gearTwo)
-        gearTwo.HeldBy = player
-    }
-
-    currentMap := g.engine.GetGame().GetMap()
     currentMap.Player = player
     currentMap.AddActor(player, startLocation)
     currentMap.UpdateFieldOfView(player)
@@ -947,7 +919,6 @@ func (g *GameStateGameplay) UpdateStatusLine() {
     itemSymbol := string(core.GlyphEmptyHand)
     itemStyle := common.DefaultStyle
     hpStyle := common.DefaultStyle
-    clothingStyle := common.DefaultStyle
     detectionStyle := common.DefaultStyle
     currentMap := m.GetMap()
     player := currentMap.Player
@@ -972,8 +943,6 @@ func (g *GameStateGameplay) UpdateStatusLine() {
     } else {
         hpStyle = hpStyle.WithFg(core.CurrentTheme.HUDGoodForeground)
     }
-
-    clothingStyle = clothingStyle.WithFg(player.Clothes.FgColor()) //.WithBg(player.Clothes.Color)
 
     healthString := createHealthBar(player.Health)
 
@@ -1003,11 +972,6 @@ func (g *GameStateGameplay) UpdateStatusLine() {
             challengeInformation += "@gB@N"
         }
 
-        if stats.DisguisesWorn.Cardinality() > 0 {
-            challengeInformation += "@rC@N"
-        } else {
-            challengeInformation += "@gC@N"
-        }
     }
 
     witnessCount := g.witnessCount()
@@ -1019,10 +983,8 @@ func (g *GameStateGameplay) UpdateStatusLine() {
 
     redStyle := common.DefaultStyle.WithBg(core.CurrentTheme.HUDDangerBackground)
     greenStyle := common.DefaultStyle.WithBg(core.CurrentTheme.HUDGoodBackground)
-    //g.topLabel.SetStyledText(core.Text(fmt.Sprintf("@c%s@N | @h%s@N | %s | @i%s@N | @d%s@N | %s", player.Clothes.Name, healthString, string(player.MovementMode), itemSymbol, zoneInformation, challengeInformation)).
-    g.topLabel.SetStyledText(core.Text(fmt.Sprintf("@c%s@N %s@i%s@N | @h%s@N | @d%s@N | %s | %s", player.Clothes.Name, string(player.MovementMode), itemSymbol, healthString, zoneInformation, challengeInformation, currentMap.TimeOfDay.Format("15:04"))).
+    g.topLabel.SetStyledText(core.Text(fmt.Sprintf("%s@i%s@N | @h%s@N | @d%s@N | %s | %s", string(player.MovementMode), itemSymbol, healthString, zoneInformation, challengeInformation, currentMap.TimeOfDay.Format("15:04"))).
         WithStyle(common.DefaultStyle).
-        WithMarkup('c', clothingStyle).
         WithMarkup('i', itemStyle).
         WithMarkup('d', detectionStyle).
         WithMarkup('h', hpStyle).
@@ -1338,6 +1300,12 @@ func (g *GameStateGameplay) contextAction() {
         return
     }
 
+    // Pressing the context action button while dragging a body drops it.
+    if player.IsDraggingBody() {
+        player.DraggedBody = nil
+        return
+    }
+
     targetPos := player.InteractSource()
     direction := player.InteractionShift
 
@@ -1435,6 +1403,12 @@ func (g *GameStateGameplay) playerUseItem() {
     actions := game.GetActions()
 
     if !player.CanUseActions() {
+        return
+    }
+
+    // Using an item cancels body dragging.
+    if player.IsDraggingBody() {
+        player.DraggedBody = nil
         return
     }
 
@@ -1613,9 +1587,9 @@ func (g *GameStateGameplay) showTooltipAt(screenPos geometry.Point, styledText c
 }
 
 func (g *GameStateGameplay) showActorTooltip(person *core.Actor) {
-    infoString := fmt.Sprintf("%s / %s", person.Name, person.NameOfClothing())
+    infoString := fmt.Sprintf("%s / %s", person.Name, person.Type)
     if person.Status != "" {
-        infoString = fmt.Sprintf("%s / %s / %s", person.Name, person.NameOfClothing(), person.Status)
+        infoString = fmt.Sprintf("%s / %s / %s", person.Name, person.Type, person.Status)
     }
     tooltipFontColor := core.CurrentTheme.TooltipForeground
     if person.Type == core.ActorTypeTarget {

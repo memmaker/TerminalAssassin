@@ -66,7 +66,7 @@ func (h UIHandler) WithTextHandler(textReceivedHandler func(text string)) UIHand
     return h
 }
 
-var placePrefabUI, setColorUI, createPrefabUI, editLightsUI, editNamedLocationUI, addObjectsUI, quickAddActorsUI, editMapUI, addStimuliUI, addZonesUI, addTasksUI, addActorsUI, editActorUI, editTaskUI, editScheduleUI, addClothesUI, addItemsUI UIHandler
+var placePrefabUI, createPrefabUI, editLightsUI, editNamedLocationUI, addObjectsUI, quickAddActorsUI, editMapUI, addStimuliUI, addZonesUI, addTasksUI, addActorsUI, editActorUI, editTaskUI, editScheduleUI, addItemsUI UIHandler
 
 var globalKeyPresses map[core.Key]func()
 
@@ -116,10 +116,16 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 QuickKey: "p",
             },
             {
-                Label:    "Open Clothes Menu",
-                Handler:  g.openClothesMenuForZone,
-                Icon:     'c',
-                QuickKey: "c",
+                Label:    "Allow Team",
+                Handler:  g.addAllowedTeamToZone,
+                Icon:     'T',
+                QuickKey: "T",
+            },
+            {
+                Label:    "Remove Team",
+                Handler:  g.removeAllowedTeamFromZone,
+                Icon:     'R',
+                QuickKey: "R",
             },
         },
         CellsSelected: g.selectAtMousePos,
@@ -151,13 +157,6 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 QuickKey: "e",
             },
         },
-    }
-    setColorUI = UIHandler{
-        Name: "set color",
-        KeyPressed: map[core.Key]func(){
-            "o": g.changeBackgroundColor,
-        },
-        CellsSelected: g.selectAtMousePos,
     }
     editLightsUI = UIHandler{
         Name: "edit lights",
@@ -283,13 +282,6 @@ func (g *GameStateEditor) Init(engine services.Engine) {
         KeyPressed:    map[core.Key]func(){},
         CellsSelected: g.addActor,
     }
-    addClothesUI = UIHandler{
-        Name: "add clothes",
-        KeyPressed: map[core.Key]func(){
-            core.KeySpace: g.openClothesMenu,
-        },
-        CellsSelected: g.selectAtMousePos,
-    }
     quickAddActorsUI = UIHandler{
         Name:          "quick add actors",
         KeyPressed:    map[core.Key]func(){},
@@ -353,6 +345,12 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 QuickKey: "d",
             },
             {
+                Label:    "Set Team",
+                Handler:  g.setTeamForActor,
+                Icon:     'T',
+                QuickKey: "T",
+            },
+            {
                 Label:    "Delete Actor",
                 Handler:  g.deleteActor,
                 Icon:     'x',
@@ -401,6 +399,19 @@ func (g *GameStateEditor) Init(engine services.Engine) {
                 Handler:  g.setKeyOfSelectedObject,
                 Icon:     'k',
                 QuickKey: "k",
+            },
+            {
+                Label:    "Set Inscription",
+                Handler:  g.setInscriptionOfSelectedObject,
+                Icon:     core.GlyphWrench,
+                QuickKey: "i",
+                Condition: func() bool {
+                    if g.selectedObject == nil {
+                        return false
+                    }
+                    _, ok := g.selectedObject.(services.Textable)
+                    return ok
+                },
             },
             {
                 Label:    "Set Lock Difficulty",

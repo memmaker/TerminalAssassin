@@ -66,10 +66,12 @@ func performMechanicalPickLock(
 		done := false
 		aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
 		game.IllegalActionAt(lockPos, core.ObservationIllegalAction)
-		animator.ActorEngagedAnimation(person, core.GlyphLockpick, lockPos, pickTime, func() {
+		animator.ActorEngagedAnimationWithCancel(person, core.GlyphLockpick, lockPos, pickTime, func() {
 			done = true
 			person.ConsumeItemsFromInventory(core.ItemTypeMechanicalLockpick, needed)
 			onPick()
+		}, func() {
+			done = true
 		})
 
 	case hasCrowbar:
@@ -78,10 +80,12 @@ func performMechanicalPickLock(
 		game.IllegalActionAt(lockPos, core.ObservationIllegalAction)
 		done := false
 		aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
-		animator.ActorEngagedAnimation(person, core.GlyphCrowbar, lockPos, crowbarTime, func() {
+		animator.ActorEngagedAnimationWithCancel(person, core.GlyphCrowbar, lockPos, crowbarTime, func() {
 			done = true
 			person.ConsumeItemsFromInventory(core.ItemTypeCrowbar, 1)
 			onCrowbar()
+		}, func() {
+			done = true
 		})
 
 	default:
@@ -116,10 +120,12 @@ func performElectronicPickLock(
 	done := false
 	aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
 	game.IllegalActionAt(lockPos, core.ObservationIllegalAction)
-	animator.ActorEngagedAnimation(person, core.GlyphLockpickElectronic, lockPos, pickTime, func() {
+	animator.ActorEngagedAnimationWithCancel(person, core.GlyphLockpickElectronic, lockPos, pickTime, func() {
 		done = true
 		person.ConsumeItemsFromInventory(core.ItemTypeElectronicLockpick, needed)
 		onSuccess()
+	}, func() {
+		done = true
 	})
 }
 

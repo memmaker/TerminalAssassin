@@ -17,10 +17,6 @@ func (g *GameStateMainMenu) openBriefingMenu() {
     userInterface := g.engine.GetUI()
     game := g.engine.GetGame()
 
-    currentMap := game.GetMap()
-    gear := game.GetMissionPlan()
-    gear.SetDefaultStartLocation(currentMap.PlayerSpawn)
-
     files := g.engine.GetFiles()
     audioPlayer := g.engine.GetAudio()
 
@@ -49,10 +45,6 @@ func (g *GameStateMainMenu) openBriefingMenu() {
             Condition: func() bool {
                 return files.FileExists(g.getBriefingFilePath())
             },
-        },
-        {
-            Label:   "Planning",
-            Handler: g.openPlanningMenu,
         },
         {
             Label: "Back",

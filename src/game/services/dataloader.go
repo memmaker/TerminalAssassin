@@ -1,7 +1,6 @@
 package services
 
 import (
-    "bufio"
     "fmt"
     "github.com/memmaker/terminal-assassin/game/core"
 
@@ -39,14 +38,10 @@ type ExternalData struct {
     items                  []*core.Item
     itemsByName            map[string]*core.Item
     tiles                  []*gridmap.Tile
-    clothing               []*core.Clothing
     defaultFloor           *gridmap.Tile
-    defaultClothing        *core.Clothing
-    defaultPlayerClothing  *core.Clothing
     defaultWeapon          *core.Item
     defaultItem            *core.Item
     ItemUnlockMap          map[string][]*core.Item
-    noClothing             *core.Clothing
     definedStims           map[string]ParametrizedStimuliRecord
     definedTrigger         map[string]ParametrizedTriggerRecord
     definedReactionTrigger map[string]ParametrizedTriggerRecord
@@ -60,9 +55,6 @@ func (e *ExternalData) WallTile() gridmap.Tile {
     return *e.defaultFloor
 }
 
-func (e *ExternalData) NoClothing() core.Clothing {
-    return *e.noClothing
-}
 
 func (e *ExternalData) NewEmptyCell() *gridmap.MapCell[*core.Actor, *core.Item, Object] {
     return &gridmap.MapCell[*core.Actor, *core.Item, Object]{
@@ -75,7 +67,6 @@ func (e *ExternalData) NewEmptyCell() *gridmap.MapCell[*core.Actor, *core.Item, 
 
 func (e *ExternalData) LoadCoreData(files DataSource) {
     e.tiles = e.LoadHardCodedTiles()
-    e.clothing = e.LoadHardCodedClothing()
 
     coreDir := path.Join("datafiles", "core")
     baseDir := path.Join(coreDir, "base")
@@ -120,7 +111,6 @@ func (e *ExternalData) loadCoreDataFromDirectory(files DataSource, dataFilesSubD
     e.definedReactionTrigger = merge(e.definedReactionTrigger, e.LoadCustomReactionTriggers(files, dataFilesSubDir))
     e.items = append(e.items, e.LoadListOfCustomItems(files, dataFilesSubDir)...)
     e.tiles = append(e.tiles, e.LoadListOfCustomTiles(files, dataFilesSubDir)...)
-    e.clothing = append(e.clothing, e.LoadListOfCustomClothing(files, dataFilesSubDir)...)
 }
 
 func (e *ExternalData) LoadCustomReactionTriggers(files DataSource, dataDir string) map[string]ParametrizedTriggerRecord {
@@ -524,50 +514,12 @@ func (e *ExternalData) LoadListOfCustomTiles(files DataSource, dataDir string) [
     return tileList
 }
 
-func (e *ExternalData) LoadHardCodedClothing() []*core.Clothing {
-    clothes := []*core.Clothing{
-        {Name: "naked", Color: core.ClothingColorBlack},
-        {Name: "Suit", Color: core.ClothingColorRed},
-        {Name: "a jacket", Color: core.ClothingColorOrange},
-    }
-    e.noClothing = clothes[0]
-    e.defaultPlayerClothing = clothes[1]
-    e.defaultClothing = clothes[2]
-    return clothes
-}
-func (e *ExternalData) LoadListOfCustomClothing(files DataSource, dataDir string) []*core.Clothing {
-    clothingDataFilename := filepath.Join(dataDir, "clothing.txt")
-    var clothes []*core.Clothing
-
-    file, err := files.Open(clothingDataFilename)
-    if err != nil {
-        println("Could not open custom clothing data file: " + err.Error())
-        return clothes
-    }
-    defer file.Close()
-    loadedCounter := 0
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
-        line := scanner.Text()
-        if len(line) == 0 {
-            continue
-        }
-        clothesFromLine := core.NewClothingFromString(line)
-        clothes = append(clothes, clothesFromLine)
-        loadedCounter++
-    }
-    println(fmt.Sprintf("Loaded %d custom clothing items from %s", loadedCounter, clothingDataFilename))
-    return clothes
-}
 
 func (e *ExternalData) HasItemUnlock(command string) bool {
     _, ok := e.ItemUnlockMap[command]
     return ok
 }
 
-func (e *ExternalData) DefaultPlayerClothing() core.Clothing {
-    return *e.defaultPlayerClothing
-}
 
 func (e *ExternalData) DefaultWeapon() *core.Item {
     return e.defaultWeapon
@@ -575,9 +527,6 @@ func (e *ExternalData) DefaultWeapon() *core.Item {
 
 func (e *ExternalData) DefaultItem() *core.Item {
     return e.defaultItem
-}
-func (e *ExternalData) Clothing() []*core.Clothing {
-    return e.clothing
 }
 func (e *ExternalData) Items() []*core.Item {
     return e.items
@@ -597,9 +546,6 @@ func (e *ExternalData) Tiles() []*gridmap.Tile {
     return e.tiles
 }
 
-func (e *ExternalData) DefaultClothing() core.Clothing {
-    return *e.defaultClothing
-}
 func (e *ExternalData) TileFromIcon(icon rune) gridmap.Tile {
     for _, tile := range e.tiles {
         if tile.DefinedIcon == icon {
@@ -608,22 +554,14 @@ func (e *ExternalData) TileFromIcon(icon rune) gridmap.Tile {
     }
     return *e.defaultFloor
 }
-func (e *ExternalData) NameToClothing(name string) core.Clothing {
-    for _, clothing := range e.clothing {
-        if clothing.Name == name {
-            return *clothing
-        }
-    }
-    return *e.noClothing
-}
 
 func (e *ExternalData) NewActorFromDisk(factory *ItemFactory, diskData core.ActorOnDisk) *core.Actor {
     newActor := &core.Actor{
         Name:           diskData.Name,
         Type:           diskData.ActorType,
+        Team:           diskData.Team,
         MapPos:         diskData.Position,
         LastPos:        diskData.Position,
-        Clothes:        e.ClothingFromName(diskData.Clothing),
         MovementMode:   core.MovementModeWalking,
         AutoMoveSpeed:  diskData.MoveSpeed,
         FoVinDegrees:   diskData.FoVinDegrees,
@@ -648,17 +586,6 @@ func newInventory(actor *core.Actor, items []*core.Item) *core.InventoryComponen
     }
 }
 
-func (e *ExternalData) ClothingFromName(clothing string) core.Clothing {
-    if clothing == "" {
-        return *e.defaultClothing
-    }
-    for _, c := range e.Clothing() {
-        if c.Name == clothing {
-            return *c
-        }
-    }
-    return *e.defaultClothing
-}
 
 func EncodeItems(inventory *core.InventoryComponent) []string {
     names := make([]string, len(inventory.Items))

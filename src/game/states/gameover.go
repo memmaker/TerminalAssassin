@@ -124,7 +124,7 @@ func (g *GameStateGameOver) createDebriefingMessage(success bool) []core.StyledT
             message = append(message, core.Text(""))
             message = append(message, core.Text("Direct Kills:"))
             for _, kill := range directKills {
-                message = append(message, core.Text(fmt.Sprintf("%s (%s) %s (%s)", kill.VictimName, kill.VictimType, kill.CauseOfDeath.WithoutKiller(), kill.KillerClothingDuringKill)))
+                message = append(message, core.Text(fmt.Sprintf("%s (%s) %s", kill.VictimName, kill.VictimType, kill.CauseOfDeath.WithoutKiller())))
             }
         }
         if len(indirectKills) > 0 {
@@ -217,17 +217,12 @@ func (g *GameStateGameOver) checkForUnlocks(oldPercentage float64, newPercentage
 
 func (g *GameStateGameOver) ApplyUnlocks(unlocks []Unlockable) {
     career := g.engine.GetCareer()
-    data := g.engine.GetData()
     for _, unlock := range unlocks {
         switch unlock.UnlockType {
         case "Start":
             currentMap := g.engine.GetGame().GetMap()
             mapHash := currentMap.MapHash()
             career.AddUnlockedLocation(mapHash, unlock.Unlockable)
-        case "Clothing":
-            clothingName := unlock.Unlockable
-            unlockedClothes := data.NameToClothing(clothingName)
-            career.UnlockedClothes[clothingName] = &unlockedClothes
         case "Item":
             career.UnlockedItems.Add(unlock.Unlockable)
         }

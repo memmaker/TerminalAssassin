@@ -145,22 +145,6 @@ func (a PoisonAction) Description(services.Engine, *core.Actor, geometry.Point) 
     return core.GlyphPoison, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
 }
 
-type ChangeClothesAction struct{}
-
-func (c ChangeClothesAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
-    return core.GlyphClothing, common.DefaultStyle.WithBg(core.CurrentTheme.IllegalActionBackground)
-}
-
-func (c ChangeClothesAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
-    m.GetGame().SwitchClothesWith(person, m.GetGame().GetMap().DownedActorAt(position))
-}
-
-func (c ChangeClothesAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
-    noClothes := m.GetData().NoClothing()
-    currentMap := m.GetGame().GetMap()
-    return currentMap.IsDownedActorAt(actionAt) && currentMap.DownedActorAt(actionAt).Clothes != noClothes && person.Pos() == actionAt
-}
-
 type SnapNeckAction struct{}
 
 func (s SnapNeckAction) Description(services.Engine, *core.Actor, geometry.Point) (rune, common.Style) {
@@ -260,6 +244,7 @@ func (d DrownAction) Action(m services.Engine, person *core.Actor, position geom
     }
     cancelled := func() {
         animationCompleted = true
+        triggerEscapeReaction(m, victim, person)
     }
     m.GetAnimator().ActorEngagedIllegalAnimationWithSound(person, 'd', position, "drowning", completed, cancelled)
 }
@@ -279,9 +264,16 @@ func (s PianoWire) Description(services.Engine, *core.Actor, geometry.Point) (ru
 }
 
 func (s PianoWire) Action(m services.Engine, person *core.Actor, position geometry.Point) {
-    m.GetGame().IllegalPlayerEngagementWithActorAtPos(position, core.GlyphPianoWire, func() {
-        m.GetGame().Kill(m.GetGame().GetMap().ActorAt(position), core.NewCauseOfDeath(core.CoDStrangledWithWire, person))
-    }, nil)
+	victim := m.GetGame().GetMap().ActorAt(position)
+	if victim == nil {
+		return
+	}
+	const pianoWireTime = meleeEngagementTime / 3.0
+	m.GetGame().IllegalPlayerEngagementWithActorAtPos(position, core.GlyphPianoWire, pianoWireTime, func() {
+		m.GetGame().Kill(victim, core.NewCauseOfDeath(core.CoDStrangledWithWire, person))
+	}, func() {
+		triggerEscapeReaction(m, victim, person)
+	})
 }
 
 func (s PianoWire) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
@@ -295,6 +287,24 @@ func (s PianoWire) IsActionPossible(m services.Engine, person *core.Actor, actio
     isNotInCombat := !actorAt.IsInCombat()
     isActiveAndUnsuspicious := isActive && isNotInvestigating && isNotInCombat
     return isActiveAndUnsuspicious && currentMap.ActorAt(actionAt) != person && person.EquippedItem != nil && person.EquippedItem.Type == core.ItemTypePianoWire
+}
+
+// meleeEngagementTime is the base duration in seconds for a melee takedown.
+const meleeEngagementTime = 4.0
+
+// triggerEscapeReaction puts the victim into the appropriate hostile state when
+// a player-initiated engagement is cancelled (victim escaped). Guards enter combat
+// against the attacker; civilians and targets panic.
+func triggerEscapeReaction(m services.Engine, victim *core.Actor, attacker *core.Actor) {
+	if victim == nil || victim.IsDowned() {
+		return
+	}
+	aic := m.GetAI()
+	if victim.Type == core.ActorTypeGuard {
+		aic.SwitchToCombat(victim, attacker)
+	} else {
+		aic.SwitchToPanic(victim, []geometry.Point{attacker.Pos()})
+	}
 }
 
 type MeleeTakedown struct{}
@@ -315,10 +325,11 @@ func (k MeleeTakedown) Action(m services.Engine, person *core.Actor, position ge
         m.GetGame().SoundEventAt(position, core.ObservationMeleeNoises, 5)
     }
     println(fmt.Sprintf("Melee TAKEDOWN on %s", victim.DebugDisplayName()))
-    // cancel gets triggered, meaning the victim was downed or moved..
-    game.IllegalPlayerEngagementWithActorAtPos(position, core.GlyphEmptyHand, func() {
+    game.IllegalPlayerEngagementWithActorAtPos(position, core.GlyphEmptyHand, meleeEngagementTime, func() {
         game.SendToSleep(victim)
-    }, nil)
+    }, func() {
+        triggerEscapeReaction(m, victim, person)
+    })
 }
 
 func (k MeleeTakedown) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {

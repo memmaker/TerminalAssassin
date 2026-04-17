@@ -585,7 +585,10 @@ func (a *AIController) ReactToDangerousActor(person *core.Actor) bool {
     if contactReport.Tick > 0 && !contactReport.FinishedHandling {
         currentMap := a.engine.GetGame().GetMap()
         dangerMan, isActorHere := currentMap.TryGetActorAt(contactReport.Location)
-        if isActorHere && person.AI.Knowledge.CompromisedDisguises.Contains(dangerMan.NameOfClothing()) && person.CanSeeActor(dangerMan) {
+        if !isActorHere || a.engine.GetGame().AreAllies(person, dangerMan) {
+            return false
+        }
+        if person.CanSeeActor(dangerMan) {
             //a.RaiseSuspicionAt(person, dangerMan, 200)
             if person.Type == core.ActorTypeGuard {
                 a.SwitchToCombat(person, dangerMan)
@@ -742,14 +745,6 @@ func (a *AIController) IsNearGuards(pos geometry.Point) bool {
 }
 
 func (a *AIController) TransferKnowledge(one *core.Actor, two *core.Actor) {
-    oneDisguises := one.AI.Knowledge.CompromisedDisguises.ToSlice()
-    twoDisguises := two.AI.Knowledge.CompromisedDisguises.ToSlice()
-    for _, disguise := range oneDisguises {
-        two.AI.Knowledge.CompromisedDisguises.Add(disguise)
-    }
-    for _, disguise := range twoDisguises {
-        one.AI.Knowledge.CompromisedDisguises.Add(disguise)
-    }
     if one.AI.Knowledge.LastSightingOfDangerousActor.Tick > 0 && one.AI.Knowledge.LastSightingOfDangerousActor.Tick > two.AI.Knowledge.LastSightingOfDangerousActor.Tick {
         lastSighting := one.AI.Knowledge.LastSightingOfDangerousActor
         lastSighting.KnownBy.Add(one)

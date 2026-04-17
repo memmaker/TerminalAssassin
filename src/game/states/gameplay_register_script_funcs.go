@@ -189,10 +189,6 @@ func (g *GameStateGameplay) registerPredicateAndAssignmentFunctions(parser Parse
 	parser.RegisterPredicate("IsPlayerTrespassing", func(args ...any) bool {
 		return currentMap.IsTrespassing(currentMap.Player)
 	})
-	parser.RegisterPredicate("HasNotPlayerChangedClothes", func(args ...any) bool {
-		stats := g.engine.GetGame().GetStats()
-		return stats.DisguisesWorn.Cardinality() == 0
-	})
 	// PlayerHasLineOfSightToActors(actor1, actor2, ...) — returns true when the
 	// player has direct line of sight to every listed actor AND every actor is
 	// inside the currently rendered viewport.  All actors must satisfy both

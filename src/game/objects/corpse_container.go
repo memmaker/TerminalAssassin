@@ -74,7 +74,6 @@ func (cc *CorpseContainer) PutDraggedBodyInContainer(m services.Engine, holder *
 	cc.ContainedActor = actorToContain
 	cc.ContainedActor.IsHidden = true
 	currentMap.MoveDownedActor(actorToContain, cc.Pos())
-	cc.dropClothes(m, actorToContain)
 }
 
 func (cc *CorpseContainer) IsActionAllowed(m services.Engine, person *core.Actor) bool {
@@ -134,14 +133,3 @@ func (cc *CorpseContainer) removePerson(person *core.Actor) {
 	}
 }
 
-func (cc *CorpseContainer) dropClothes(m services.Engine, actorToContain *core.Actor) {
-	data := m.GetData()
-	game := m.GetGame()
-	if actorToContain.Clothes == data.NoClothing() {
-		return
-	}
-	clothesToSpawn := actorToContain.Clothes
-	actorToContain.Clothes = data.NoClothing()
-	game.SpawnClothingItem(cc.Pos(), clothesToSpawn)
-	game.UpdateHUD()
-}

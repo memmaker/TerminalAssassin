@@ -16,7 +16,6 @@ import (
     "github.com/memmaker/terminal-assassin/game/stimuli"
     "github.com/memmaker/terminal-assassin/geometry"
     "github.com/memmaker/terminal-assassin/gridmap"
-    "github.com/memmaker/terminal-assassin/mapset"
     "github.com/memmaker/terminal-assassin/ui"
 )
 
@@ -766,16 +765,20 @@ func (m *Model) handleDragging(dragger *core.Actor, oldPosition geometry.Point) 
     }
 
     isSneaking := dragger.MovementMode == core.MovementModeSneaking
+    isWalking := dragger.MovementMode == core.MovementModeWalking
+    isRunning := dragger.MovementMode == core.MovementModeRunning
+    hasPianoWire := dragger.EquippedItem != nil && dragger.EquippedItem.Type == core.ItemTypePianoWire
+    canDrag := isSneaking || (isWalking && hasPianoWire)
     noBigItem := dragger.EquippedItem == nil || !dragger.EquippedItem.IsBig
 
-    if (!isSneaking) && dragger.IsDraggingBody() { // stop dragging
+    if isRunning && dragger.IsDraggingBody() { // stop dragging when running
         dragger.DraggedBody = nil
         return
     }
 
     actorAt, isActorAt := currentMap.TryGetDownedActorAt(oldPosition)
 
-    if isSneaking && noBigItem && isActorAt && !dragger.IsDraggingBody() { // start dragging
+    if canDrag && noBigItem && isActorAt && !dragger.IsDraggingBody() { // start dragging
         dragger.DraggedBody = actorAt
     }
 
@@ -880,11 +883,6 @@ func (m *Model) PickUpItemAt(person *core.Actor, pos geometry.Point) {
         return
     }
 
-    // NEVER PICK UP CLOTHING ITEMS
-    if itemHere.Type == core.ItemTypeClothing {
-        m.InsteadOfPickingUpClothes(person, itemHere)
-        return
-    }
     m.GetMap().RemoveItem(itemHere)
 
     equippedItem := person.EquippedItem
@@ -923,30 +921,6 @@ func (m *Model) PickUpItemAt(person *core.Actor, pos geometry.Point) {
     m.engine.PublishEvent(services.ItemPickedUpEvent{Item: itemHere, Actor: person})
 }
 
-func (m *Model) InsteadOfPickingUpClothes(actor *core.Actor, item *core.Item) {
-    animator := m.engine.GetAnimator()
-
-    clothesFromItem := m.engine.GetData().NameToClothing(item.Name)
-    aic := m.engine.GetAI()
-    animationCompleted := false
-    until := func() bool {
-        return animationCompleted
-    }
-    aic.SetEngaged(actor, core.ActorStatusEngaged, until)
-    completed := func() {
-        animationCompleted = true
-        oldClothesName := actor.Clothes.Name
-        actor.Clothes = clothesFromItem
-
-        item.Name = oldClothesName
-        m.UpdateHUD()
-    }
-    cancelled := func() {
-        animationCompleted = true
-    }
-    animator.PlayerChangeClothesAnimation(item.Pos(), clothesFromItem, completed, cancelled)
-    return
-}
 func (m *Model) DropEquippedItem(person *core.Actor) {
     m.dropInventoryItemAt(person, person.EquippedItem, person.Pos().Add(person.FoVShift))
     person.EquippedItem = nil
@@ -1024,8 +998,7 @@ func (m *Model) PrintMessage(text string) {
     m.engine.PublishEvent(services.PrintMessageEvent{Text: text})
 }
 
-func (m *Model) IllegalPlayerEngagementWithActorAtPos(position geometry.Point, icon rune, engagementFinishedAction func(), engagementCancelledAction func()) {
-    const InteractionTime = 4
+func (m *Model) IllegalPlayerEngagementWithActorAtPos(position geometry.Point, icon rune, timeInSeconds float64, engagementFinishedAction func(), engagementCancelledAction func()) {
     animator := m.engine.GetAnimator()
     currentMap := m.GetMap()
     actorAt := currentMap.ActorAt(position)
@@ -1049,39 +1022,11 @@ func (m *Model) IllegalPlayerEngagementWithActorAtPos(position geometry.Point, i
             engagementCancelledAction()
         }
     }
-    animator.ActorEngagedIllegalAnimation(actorAt, icon, position, InteractionTime, completed, cancelled)
+    animator.ActorEngagedIllegalAnimationForPlayer(currentMap.Player, actorAt, icon, position, timeInSeconds, completed, cancelled)
 }
 
 func (m *Model) ApplyStimulusToObject(object services.Object, stim stimuli.Stimulus) {
     object.ApplyStimulus(m.engine, stim)
-}
-
-func (m *Model) SwitchClothesWith(taker *core.Actor, provider *core.Actor) {
-    animator := m.engine.GetAnimator()
-    aic := m.engine.GetAI()
-    animationCompleted := false
-    until := func() bool {
-        return animationCompleted
-    }
-    aic.SetEngaged(taker, core.ActorStatusEngaged, until)
-    onChangingFinished := func() {
-        animationCompleted = true
-        clothesToSpawn := taker.Clothes
-        taker.Clothes = provider.Clothes
-        provider.Clothes = m.engine.GetData().NoClothing()
-        m.SpawnClothingItem(taker.Pos(), clothesToSpawn)
-        m.UpdateHUD()
-    }
-    onChangingCancelled := func() {
-        animationCompleted = true
-    }
-    animator.PlayerChangeClothesAnimation(provider.Pos(), provider.Clothes, onChangingFinished, onChangingCancelled)
-}
-
-func (m *Model) SpawnClothingItem(pos geometry.Point, clothing core.Clothing) {
-    newClothes := &core.Item{Name: clothing.Name, DefinedIcon: core.GlyphClothing, Type: core.ItemTypeClothing}
-    spawnPos := m.GetValidItemPlacementPosition(pos, newClothes)
-    m.forceDropItemAt(nil, newClothes, spawnPos)
 }
 
 var actorActions = []services.ContextAction{
@@ -1094,7 +1039,6 @@ var actorActions = []services.ContextAction{
 
 var downedActorActions = []services.ContextAction{
     SnapNeckAction{},
-    ChangeClothesAction{},
 }
 
 var tileActions = map[gridmap.SpecialTileType]services.ContextAction{
@@ -1230,10 +1174,6 @@ func (m *Model) GetDangerObservation(person *core.Actor, dangerActor *core.Actor
         return core.ObservationCombatSeen
     }
 
-    if person.AI.Knowledge.CompromisedDisguises.Contains(dangerActor.NameOfClothing()) {
-        return core.ObservationWearingCompromisedDisguise
-    }
-
     return core.ObservationNull
 }
 
@@ -1297,11 +1237,7 @@ func (m *Model) InitActor(a *core.Actor) {
     a.Health = m.engine.GetGame().GetConfig().ActorDefaultHealth
     a.MovementMode = core.MovementModeWalking
     if a.AI != nil {
-        startZone := m.gridMap.ZoneAt(a.Pos())
-        startZone.AllowedClothing.Add(a.NameOfClothing())
-        a.AI.Knowledge = &core.IndividualKnowledge{
-            CompromisedDisguises: mapset.NewSet[string](),
-        }
+        a.AI.Knowledge = &core.IndividualKnowledge{}
         a.AI.StartPosition = a.Pos()
         a.AI.StartLookDirection = a.LookDirection
         a.AI.Movement = &actions.Movement{Person: a, Engine: m.engine}
@@ -1323,17 +1259,7 @@ func (m *Model) AreAllies(actorOne, actorTwo *core.Actor) bool {
     if actorOne == actorTwo {
         return true
     }
-    clothesOne := actorOne.NameOfClothing()
-    clothesTwo := actorTwo.NameOfClothing()
-
-    if clothesOne == clothesTwo {
-        return true
-    }
-
-    startZoneOne := m.gridMap.ZoneAt(actorOne.AI.StartPosition)
-    startZoneTwo := m.gridMap.ZoneAt(actorTwo.AI.StartPosition)
-
-    return startZoneOne == startZoneTwo || startZoneOne.AllowedClothing.Contains(clothesTwo) || startZoneTwo.AllowedClothing.Contains(clothesOne)
+    return actorOne.Team == actorTwo.Team
 }
 
 func (m *Model) checkActorOnBurningTile(actor *core.Actor) {

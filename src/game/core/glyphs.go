@@ -22,7 +22,6 @@ const (
     GlyphLockpickElectronic   = '´'
     GlyphLocker               = 'ʬ'
     GlyphCabinet              = 'ʭ'
-    GlyphClothing             = '˯' //'ˢ' //'ˡ' //'ˠ'
     GlyphEmptyHand            = '¾'
     GlyphSmartphone           = '±'
     GlyphFireOne              = '˝'
@@ -83,4 +82,7 @@ const (
     GlyphShovel               = 'ư'
     GlyphFlashlight           = 'Ƴ'
     GlyphCrowbar              = 'ˉ'
+    GlyphChestOfDrawers       = 'ɥ'
+    GlyphDrawers              = 'ɦ'
+    GlyphDesk                 = 'ɧ'
 )

@@ -44,7 +44,7 @@ type MapActor interface {
     FoVMode() FoVMode
     FoVSource() geometry.Point
     VisionRange() int
-    NameOfClothing() string
+    GetTeam() string
 }
 type MapObjectWithProperties[ActorType interface {
     comparable
@@ -126,10 +126,10 @@ const (
 )
 
 type ZoneInfo struct {
-    Name            string
-    Type            ZoneType
-    AmbienceCue     string
-    AllowedClothing mapset.Set[string]
+    Name         string
+    Type         ZoneType
+    AmbienceCue  string
+    AllowedTeams []string
 }
 
 const PublicZoneName = "Public Space"
@@ -156,10 +156,8 @@ func (i ZoneInfo) ToRecord() []rec_files.Field {
         {Name: "Type", Value: i.Type.ToString()},
         {Name: "Ambience_Cue", Value: i.AmbienceCue},
     }
-    clothingList := i.AllowedClothing.ToSlice()
-    sort.Strings(clothingList)
-    for _, clothing := range clothingList {
-        fields = append(fields, rec_files.Field{Name: "Allowed_Clothing", Value: clothing})
+    for _, team := range i.AllowedTeams {
+        fields = append(fields, rec_files.Field{Name: "Allowed_Team", Value: team})
     }
     return fields
 }
@@ -168,9 +166,7 @@ func (i ZoneInfo) ToString() string {
     return fmt.Sprintf("%s (%s)", i.Name, i.Type.ToString())
 }
 func NewZoneFromRecord(record []rec_files.Field) *ZoneInfo {
-    newZone := &ZoneInfo{
-        AllowedClothing: mapset.NewSet[string](),
-    }
+    newZone := &ZoneInfo{}
     for _, field := range record {
         switch field.Name {
         case "Name":
@@ -179,23 +175,24 @@ func NewZoneFromRecord(record []rec_files.Field) *ZoneInfo {
             newZone.Type = NewZoneTypeFromString(strings.TrimSpace(field.Value))
         case "Ambience_Cue":
             newZone.AmbienceCue = strings.TrimSpace(field.Value)
-        case "Allowed_Clothing":
-            newZone.AllowedClothing.Add(strings.TrimSpace(field.Value))
+        case "Allowed_Team":
+            team := strings.TrimSpace(field.Value)
+            if team != "" {
+                newZone.AllowedTeams = append(newZone.AllowedTeams, team)
+            }
         }
     }
     return newZone
 }
 func NewZone(name string) *ZoneInfo {
     return &ZoneInfo{
-        Name:            name,
-        AllowedClothing: mapset.NewSet[string](),
+        Name: name,
     }
 }
 func NewPublicZone(name string) *ZoneInfo {
     return &ZoneInfo{
-        Name:            name,
-        AllowedClothing: mapset.NewSet[string](),
-        Type:            ZoneTypePublic,
+        Name: name,
+        Type: ZoneTypePublic,
     }
 }
 
@@ -857,13 +854,28 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) UpdateFieldOfView(person Acto
     }
 }
 
+func (i ZoneInfo) IsTeamAllowed(team string) bool {
+    if len(i.AllowedTeams) == 0 {
+        return false // no teams configured = access controlled by zone type only
+    }
+    for _, t := range i.AllowedTeams {
+        if t == team {
+            return true
+        }
+    }
+    return false
+}
+
 func (m *GridMap[ActorType, ItemType, ObjectType]) IsTrespassing(person ActorType) bool {
     ourPos := person.Pos()
     zoneAt := m.ZoneAt(ourPos)
     if zoneAt == nil || zoneAt.IsPublic() {
         return false
     }
-    return !zoneAt.AllowedClothing.Contains(person.NameOfClothing())
+    if zoneAt.IsTeamAllowed(person.GetTeam()) {
+        return false
+    }
+    return zoneAt.IsPrivate() || zoneAt.IsHighSecurity()
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) IsInHostileZone(person ActorType) bool {
@@ -872,7 +884,10 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) IsInHostileZone(person ActorT
     if zoneAt == nil || zoneAt.IsPublic() {
         return false
     }
-    return !zoneAt.AllowedClothing.Contains(person.NameOfClothing()) && zoneAt.IsHighSecurity()
+    if zoneAt.IsTeamAllowed(person.GetTeam()) {
+        return false
+    }
+    return zoneAt.IsHighSecurity()
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) CurrentlyPassableForActor(person ActorType) func(p geometry.Point) bool {

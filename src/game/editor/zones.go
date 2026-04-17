@@ -47,26 +47,6 @@ func (g *GameStateEditor) openZoneMenu() {
     return
 }
 
-func (g *GameStateEditor) openClothesMenuForZone() {
-    data := g.engine.GetData()
-    allItems := data.Clothing()
-    menuItems := make([]services.MenuItem, 0)
-    for _, i := range allItems {
-        if g.SelectedZone.AllowedClothing.Contains(i.Name) {
-            continue
-        }
-        item := i
-        menuItem := services.MenuItem{
-            Label: item.Name,
-            Handler: func() {
-                g.SelectedZone.AllowedClothing.Add(item.Name)
-            },
-        }
-        menuItems = append(menuItems, menuItem)
-    }
-    g.OpenMenuBarDropDown("Add allowed clothes", (2*6)-2, menuItems)
-}
-
 func (g *GameStateEditor) setZoneAtPos(pos geometry.Point) {
     currentMap := g.engine.GetGame().GetMap()
     if g.SelectedZone == nil {
@@ -211,7 +191,82 @@ func (g *GameStateEditor) bfsPrivateZone(currentMap *gridmap.GridMap[*core.Actor
     return result
 }
 
-// isDoorOrWindow reports whether the given map object is a Door or Window.
+func (g *GameStateEditor) addAllowedTeamToZone() {
+    if g.SelectedZone == nil {
+        return
+    }
+    currentMap := g.engine.GetGame().GetMap()
+    existingTeams := collectTeams(currentMap.Actors())
+    if len(existingTeams) == 0 {
+        g.promptNewTeamForZone()
+        return
+    }
+    menuItems := make([]services.MenuItem, 0, len(existingTeams)+1)
+    for _, team := range existingTeams {
+        t := team
+        menuItems = append(menuItems, services.MenuItem{
+            Label: t,
+            Handler: func() {
+                addTeamToZone(g.SelectedZone, t)
+                g.PrintAsMessage(fmt.Sprintf("Zone '%s' allows team: %s", g.SelectedZone.Name, t))
+            },
+        })
+    }
+    menuItems = append(menuItems, services.MenuItem{
+        Label:   "(new team...)",
+        Handler: g.promptNewTeamForZone,
+    })
+    g.OpenMenuBarDropDown("Allow team", 0, menuItems)
+}
+
+func (g *GameStateEditor) promptNewTeamForZone() {
+    g.handler = UIHandler{Name: "enter team name", TextReceived: func(name string) {
+        if name == "" || g.SelectedZone == nil {
+            return
+        }
+        addTeamToZone(g.SelectedZone, name)
+        g.PrintAsMessage(fmt.Sprintf("Zone '%s' allows team: %s", g.SelectedZone.Name, name))
+    }}
+    g.showTextInput("Team name: ", "")
+}
+
+func (g *GameStateEditor) removeAllowedTeamFromZone() {
+    if g.SelectedZone == nil || len(g.SelectedZone.AllowedTeams) == 0 {
+        g.PrintAsMessage("Zone has no allowed teams")
+        return
+    }
+    menuItems := make([]services.MenuItem, len(g.SelectedZone.AllowedTeams))
+    for i, team := range g.SelectedZone.AllowedTeams {
+        t := team
+        menuItems[i] = services.MenuItem{
+            Label: t,
+            Handler: func() {
+                removeTeamFromZone(g.SelectedZone, t)
+                g.PrintAsMessage(fmt.Sprintf("Zone '%s' removed team: %s", g.SelectedZone.Name, t))
+            },
+        }
+    }
+    g.OpenMenuBarDropDown("Remove team", 0, menuItems)
+}
+
+func addTeamToZone(zone *gridmap.ZoneInfo, team string) {
+    for _, t := range zone.AllowedTeams {
+        if t == team {
+            return
+        }
+    }
+    zone.AllowedTeams = append(zone.AllowedTeams, team)
+}
+
+func removeTeamFromZone(zone *gridmap.ZoneInfo, team string) {
+    teams := zone.AllowedTeams[:0]
+    for _, t := range zone.AllowedTeams {
+        if t != team {
+            teams = append(teams, t)
+        }
+    }
+    zone.AllowedTeams = teams
+}
 func (g *GameStateEditor) isDoorOrWindow(obj services.Object) bool {
     _, isDoor := obj.(*objects.Door)
     _, isWindow := obj.(*objects.Window)

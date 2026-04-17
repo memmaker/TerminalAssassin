@@ -52,13 +52,6 @@ func (g *GameStateEditor) createMenuBar(gridWidth int, gridHeight int) {
             QuickKey:  "F5",
         },
         {
-            Label:     "Clothes",
-            Handler:   g.openClothesMenu,
-            Icon:      core.GlyphClothing,
-            Highlight: g.isState(addClothesUI),
-            QuickKey:  "F6",
-        },
-        {
             Label:     "Zones",
             Handler:   g.openZoneMenu,
             Icon:      'ç',
@@ -86,12 +79,6 @@ func (g *GameStateEditor) createMenuBar(gridWidth int, gridHeight int) {
             Icon:      core.GlyphStreetLight,
             Highlight: g.isState(editLightsUI),
             QuickKey:  "F9",
-        },
-        {
-            Label:    "Color",
-            Handler:  g.openColorMenu,
-            Icon:     core.GlyphPalette,
-            QuickKey: "F12",
         },
         {
             Label: "Eye dropper (tiles)",

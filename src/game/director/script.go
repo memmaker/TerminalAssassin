@@ -19,7 +19,7 @@ type DialogueInfo struct {
 	Utterances       map[*core.Actor]map[string]core.Utterance
 	LastSpeechCode   string
 	LastSpeaker      *core.Actor
-	RequiredClothing string
+	RequiredPartner string
 	Name             string
 	InitialSpeaker   *core.Actor
 	Participants     *mapset.MapSet[*core.Actor]

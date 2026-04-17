@@ -1,16 +1,16 @@
 Name: Loading Area
 Type: Private
 Ambience_Cue: 
-Allowed_Clothing: Mechanic
-Allowed_Clothing: a jacket
+Allowed_Team: Mechanic
+Allowed_Team: a jacket
 
 Name: The Boat
 Type: Private
 Ambience_Cue: 
-Allowed_Clothing: Boat Crew
-Allowed_Clothing: Boat Security
-Allowed_Clothing: Mechanic
-Allowed_Clothing: a jacket
+Allowed_Team: Boat Crew
+Allowed_Team: Boat Security
+Allowed_Team: Mechanic
+Allowed_Team: a jacket
 
 Name: Bridge
 Type: Public

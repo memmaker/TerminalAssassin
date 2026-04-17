@@ -2,7 +2,7 @@ Name: Hermes
 ActorType: fence
 Position: (14,56)
 LookDirection: 39.81
-Clothing: a jacket
+Team: a jacket
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 12
@@ -14,7 +14,7 @@ Name: Shop Guard 1
 ActorType: guard
 Position: (31,11)
 LookDirection: 26.57
-Clothing: a jacket
+Team: a jacket
 MoveSpeed: 3
 FoVinDegrees: 90.00
 VisionRange: 12

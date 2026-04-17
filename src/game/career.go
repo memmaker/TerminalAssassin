@@ -4,7 +4,6 @@ import (
     "encoding/gob"
     "os"
 
-    "github.com/memmaker/terminal-assassin/game/core"
     "github.com/memmaker/terminal-assassin/game/services"
     "github.com/memmaker/terminal-assassin/mapset"
 )
@@ -27,7 +26,6 @@ func NewCareerFromFile(data *services.ExternalData) *services.CareerData {
 }
 
 func NewEmptyCareer(data *services.ExternalData) *services.CareerData {
-    defaultClothes := data.DefaultPlayerClothing()
     defaultWeapon := *data.DefaultWeapon()
     defaultItem := *data.DefaultItem()
     unlockedItems := mapset.NewSet[string]()
@@ -37,7 +35,6 @@ func NewEmptyCareer(data *services.ExternalData) *services.CareerData {
     return &services.CareerData{
         ExperiencePoints: 0,
         MapStatistics:    make(map[string]*services.MapStatistics),
-        UnlockedClothes:  map[string]*core.Clothing{defaultClothes.Name: &defaultClothes},
         UnlockedItems:    *unlockedItems,
 		UnlockedSkills:   services.PlayerSkills{DoubleAssassination: true},
     }

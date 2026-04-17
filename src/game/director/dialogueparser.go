@@ -27,7 +27,7 @@ func (p *DialogueParser) LoadDialogForActors(dialogue *DialogueInfo) {
 			}
 		}
 		if speaker != p.Player {
-			speaker.Dialogue.Conversations[dialogue.Name].RequiredClothing = dialogue.RequiredClothing
+			speaker.Dialogue.Conversations[dialogue.Name].RequiredPartner = dialogue.RequiredPartner
 		}
 		speaker.Dialogue.SpeakInState = func(state core.ActorState) bool {
 			return state == core.ActorStatusIdle || state == core.ActorStatusScripted || state == core.ActorStatusOnSchedule
@@ -82,16 +82,13 @@ func (p *DialogueParser) parse(content string) *DialogueInfo {
 		} else if strings.HasPrefix(line, "## DIALOGUE:") {
 			preambleState = false
 			newDialogue.Name = strings.TrimSpace(line[12:])
-			newDialogue.RequiredClothing = ""
+			newDialogue.RequiredPartner = ""
 			println("NPC MapConversations found: " + newDialogue.Name)
-		} else if strings.HasPrefix(line, "## DIALOGUE-PLAYER") {
+		} else if strings.HasPrefix(line, "## DIALOGUE-PLAYER:") {
 			preambleState = false
-			//## DIALOGUE-PLAYER(Blue Lotus Leader): weapons_deal_blue_player
-			pattern := regexp.MustCompile(`^## DIALOGUE-PLAYER\((.+)\): (.+)$`)
-			matches := pattern.FindStringSubmatch(line)
-			newDialogue.RequiredClothing = strings.TrimSpace(matches[1])
-			newDialogue.Name = strings.TrimSpace(matches[2])
-			println(fmt.Sprintf("Player MapConversations found: %s, clothing: %s", newDialogue.Name, newDialogue.RequiredClothing))
+			newDialogue.RequiredPartner = "player"
+			newDialogue.Name = strings.TrimSpace(line[19:])
+			println(fmt.Sprintf("Player MapConversations found: %s", newDialogue.Name))
 		}
 	}
 	newDialogue.LastSpeechCode = currentSpeechCode

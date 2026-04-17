@@ -2,15 +2,11 @@ package editor
 
 import (
     "fmt"
-    "strings"
 
     "github.com/memmaker/terminal-assassin/game/core"
-    "github.com/memmaker/terminal-assassin/game/objects"
     "github.com/memmaker/terminal-assassin/game/services"
     "github.com/memmaker/terminal-assassin/geometry"
 )
-
-const gravestonePrefix = "gravestone|"
 
 func (g *GameStateEditor) openObjectsMenu() {
     currentMap := g.engine.GetGame().GetMap()
@@ -31,32 +27,10 @@ func (g *GameStateEditor) openObjectsMenu() {
         objectCreator := o
         identifier := objectCreator.Name
 
-        if strings.HasPrefix(identifier, gravestonePrefix) {
-            // Gravestones need a unique inscription — prompt before placing.
-            menuItems = append(menuItems, services.MenuItem{
-                Label: "gravestone (inscription)",
-                Icon:  objectCreator.Icon,
-                Handler: func() {
-                    g.handler = UIHandler{
-                        Name: "gravestone inscription",
-                        TextReceived: func(inscription string) {
-                            g.setBrushHandlerWithLightUpdate(addObjectsUI, objectCreator.Icon, func(pos geometry.Point) {
-                                newObject := objects.NewGravestone(inscription)
-                                currentMap.AddObject(newObject, pos)
-                                currentMap.SetTile(pos, defaultFloor)
-                            })()
-                        },
-                    }
-                    g.showTextInput("Inscription:", "")
-                },
-            })
-            continue
-        }
-
         menuItems = append(menuItems, services.MenuItem{
             Label: identifier,
             Icon:  objectCreator.Icon,
-            Handler: g.setBrushHandlerWithLightUpdate(addObjectsUI, 'O', func(pos geometry.Point) {
+            Handler: g.setBrushHandlerWithLightUpdate(addObjectsUI, objectCreator.Icon, func(pos geometry.Point) {
                 newObject := objectCreator.Create(identifier)
                 currentMap.AddObject(newObject, pos)
                 currentMap.SetTile(pos, defaultFloor)
@@ -145,6 +119,24 @@ func (g *GameStateEditor) openContentsMenuAt(holder services.ContentHolder, menu
         g.menuBar.SetDirty()
         g.topStatusLineLabel.SetDirty()
     })
+}
+
+// setInscriptionOfSelectedObject prompts for a new inscription text for
+// the selected gravestone (or any Textable object).
+func (g *GameStateEditor) setInscriptionOfSelectedObject() {
+    textable, ok := g.selectedObject.(services.Textable)
+    if !ok {
+        return
+    }
+    g.handler = UIHandler{
+        Name: "set inscription",
+        TextReceived: func(text string) {
+            textable.SetText(text)
+            g.PrintAsMessage(fmt.Sprintf("Inscription set to: %s", text))
+            g.SetDirty()
+        },
+    }
+    g.showTextInput("Inscription:", textable.GetText())
 }
 
 // setDifficultyOfSelectedObject opens a small menu to choose Easy / Medium /

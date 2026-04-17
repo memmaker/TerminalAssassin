@@ -23,7 +23,6 @@ type CareerData struct {
     ExperiencePoints      uint64
     MapStatistics         map[string]*MapStatistics
     UnlockedItems         mapset.MapSet[string]
-    UnlockedClothes       map[string]*core.Clothing
     Money                 uint64
     UnlockedSkills        PlayerSkills
 }
@@ -103,11 +102,6 @@ func (c *CareerData) registerChallengePredicates(parser *ChallengeParser, engine
         return deathZone.Name == zoneName
     })
 
-    parser.RegisterPredicate("DisguiseWorn", func(args ...any) bool {
-        nameOfDisguise := args[0].(string)
-        return stats.DisguisesWorn.Contains(nameOfDisguise)
-    })
-
     parser.RegisterPredicate("TargetKilledBeforeTime", func(args ...any) bool {
         time, _ := strconv.ParseFloat(args[0].(string), 64)
         return targetKill.AtSecond < time
@@ -123,14 +117,13 @@ func (c *CareerData) registerChallengePredicates(parser *ChallengeParser, engine
     parser.RegisterPredicate("KillDetails", func(args ...any) bool {
         nameOfVictim := args[0].(string)
         typeOfItem := args[1].(string)
-        nameOfClothing := args[2].(string)
+        // Optional legacy 3rd arg ("clothing") is accepted but ignored.
         for _, kill := range stats.Kills {
             if kill.CauseOfDeath.Source.Item == nil {
                 continue
             }
             isMatch := kill.VictimName == nameOfVictim &&
-                kill.CauseOfDeath.Source.Item.Type.ToString() == typeOfItem &&
-                kill.KillerClothingDuringKill == nameOfClothing
+                kill.CauseOfDeath.Source.Item.Type.ToString() == typeOfItem
             if isMatch {
                 return true
             }

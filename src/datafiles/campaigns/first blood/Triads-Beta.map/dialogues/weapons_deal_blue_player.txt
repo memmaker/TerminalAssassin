@@ -1,6 +1,6 @@
 $RD_LEADER = ActorWithName(Red Dragon Leader)
 
-## DIALOGUE-PLAYER(Blue Lotus Leader): weapons_deal_blue_player
+## DIALOGUE-PLAYER: weapons_deal_blue_player
 
 $RD_LEADER: Let's get this over with. I have places to be.
 

@@ -1,39 +1,39 @@
 Name: Warehouse
 High_Security: false
-Allowed_Clothing: Mechanic
+Allowed_Team: Mechanic
 
 Name: Hotel Rooms
 High_Security: false
-Allowed_Clothing: Red jacket
-Allowed_Clothing: Green jacket
-Allowed_Clothing: Tuxedo
+Allowed_Team: Red jacket
+Allowed_Team: Green jacket
+Allowed_Team: Tuxedo
 
 Name: Private
 High_Security: false
-Allowed_Clothing: Bodyguard
-Allowed_Clothing: Medic
-Allowed_Clothing: Guard
-Allowed_Clothing: Tech crew
+Allowed_Team: Bodyguard
+Allowed_Team: Medic
+Allowed_Team: Guard
+Allowed_Team: Tech crew
 
 Name: Red Dragon HQ
 High_Security: true
-Allowed_Clothing: Red dragon
-Allowed_Clothing: Red dragon leader
+Allowed_Team: Red dragon
+Allowed_Team: Red dragon leader
 
 Name: Dragon drop-off
 High_Security: false
 
 Name: Park
 High_Security: false
-Allowed_Clothing: Mechanic
-Allowed_Clothing: Red dragon
-Allowed_Clothing: Red dragon leader
-Allowed_Clothing: Bodyguard
-Allowed_Clothing: Medic
-Allowed_Clothing: Guard
-Allowed_Clothing: Tech crew
-Allowed_Clothing: Red jacket
-Allowed_Clothing: Green jacket
-Allowed_Clothing: Tuxedo
-Allowed_Clothing: Blue lotus
+Allowed_Team: Mechanic
+Allowed_Team: Red dragon
+Allowed_Team: Red dragon leader
+Allowed_Team: Bodyguard
+Allowed_Team: Medic
+Allowed_Team: Guard
+Allowed_Team: Tech crew
+Allowed_Team: Red jacket
+Allowed_Team: Green jacket
+Allowed_Team: Tuxedo
+Allowed_Team: Blue lotus
 

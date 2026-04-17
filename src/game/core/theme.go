@@ -3,7 +3,6 @@ package core
 import (
     "io/fs"
     "os"
-    "strings"
 
     "github.com/memmaker/terminal-assassin/common"
     "github.com/memmaker/terminal-assassin/gridmap"
@@ -107,6 +106,12 @@ type ColorTheme struct {
     // ── Animation (background only) ──────────────────────────────────────
     EngagedInTaskBackground common.Color // bg: NPC task-animation flash
 
+    // ── Actors (foreground only) ──────────────────────────────────────────
+    // ActorCivilianForeground is the default actor color for civilians and
+    // any ActorType not covered by a specific entry. Black on the white theme,
+    // white on the black theme.
+    ActorCivilianForeground common.HSVColor
+
     // ── Objects & Items (foreground only) ─────────────────────────────────
     // These are available for data-file tile/item definitions.
     ObjectForeground        common.Color
@@ -116,9 +121,6 @@ type ColorTheme struct {
     // Container state backgrounds — indicate the contents of a CorpseContainer.
     ContainerHidingBackground common.Color // bg: player is hiding inside
     ContainerBodyBackground   common.Color // bg: a body has been stashed
-
-    // ── Clothing palette (foreground only) ───────────────────────────────
-    ClothingColors map[ClothingColor]common.HSVColor
 }
 
 // CurrentTheme is the active color theme.
@@ -212,19 +214,8 @@ func WhiteTheme() *ColorTheme {
         EditorBuriedItemBackground: common.NewRGBColorFromBytes(101, 67, 33),
         EditorTaskNumberForeground: common.NewHSVColorFromRGBBytes(255, 10, 10),
 
-        EngagedInTaskBackground: common.NewHSVColorFromRGBBytes(255, 203, 51),
-
-        ClothingColors: map[ClothingColor]common.HSVColor{
-            ClothingColorBlack:   common.NewHSVColorFromRGBBytes(0, 0, 0),
-            ClothingColorRed:     common.NewHSVColor(0.0/360.0, 0.8, 1.0),
-            ClothingColorOrange:  common.NewHSVColor(30.0/360.0, 0.8, 1.0),
-            ClothingColorYellow:  common.NewHSVColor(60.0/360.0, 0.8, 1.0),
-            ClothingColorGreen:   common.NewHSVColor(120.0/360.0, 0.8, 1.0),
-            ClothingColorCyan:    common.NewHSVColor(180.0/360.0, 0.8, 1.0),
-            ClothingColorBlue:    common.NewHSVColor(240.0/360.0, 0.8, 1.0),
-            ClothingColorViolet:  common.NewHSVColor(270.0/360.0, 0.8, 1.0),
-            ClothingColorMagenta: common.NewHSVColor(300.0/360.0, 0.8, 1.0),
-        },
+        EngagedInTaskBackground:  common.NewHSVColorFromRGBBytes(255, 203, 51),
+        ActorCivilianForeground:  common.NewHSVColorFromRGBBytes(0, 0, 0),
     }
 }
 
@@ -309,24 +300,10 @@ func BlackTheme() *ColorTheme {
         EditorBuriedItemBackground: common.NewRGBColorFromBytes(60, 40, 20),
         EditorTaskNumberForeground: common.NewRGBColorFromBytes(255, 50, 50),
 
-        EngagedInTaskBackground: common.NewRGBColorFromBytes(80, 60, 0),
-
-        ClothingColors: map[ClothingColor]common.HSVColor{
-            ClothingColorBlack:   common.NewHSVColorFromRGBBytes(80, 80, 80),
-            ClothingColorRed:     common.NewHSVColor(0.0/360.0, 0.8, 1.0),
-            ClothingColorOrange:  common.NewHSVColor(30.0/360.0, 0.8, 1.0),
-            ClothingColorYellow:  common.NewHSVColor(60.0/360.0, 0.8, 1.0),
-            ClothingColorGreen:   common.NewHSVColor(120.0/360.0, 0.8, 1.0),
-            ClothingColorCyan:    common.NewHSVColor(180.0/360.0, 0.8, 1.0),
-            ClothingColorBlue:    common.NewHSVColor(240.0/360.0, 0.8, 1.0),
-            ClothingColorViolet:  common.NewHSVColor(270.0/360.0, 0.8, 1.0),
-            ClothingColorMagenta: common.NewHSVColor(300.0/360.0, 0.8, 1.0),
-        },
+        EngagedInTaskBackground:  common.NewRGBColorFromBytes(80, 60, 0),
+        ActorCivilianForeground:  common.NewHSVColorFromRGBBytes(200, 200, 200),
     }
 }
-
-// clothingPrefix is the rec-file field prefix for clothing colors.
-const clothingPrefix = "Clothing_"
 
 // ToRecord serializes the theme to a single rec_files record.
 func (t *ColorTheme) ToRecord() rec_files.Record {
@@ -394,12 +371,6 @@ func (t *ColorTheme) ToRecord() rec_files.Record {
         {Name: "EditorTaskNumberForeground", Value: t.EditorTaskNumberForeground.EncodeAsString()},
         {Name: "EngagedInTaskBackground", Value: t.EngagedInTaskBackground.EncodeAsString()},
     }
-    for colorName, hsv := range t.ClothingColors {
-        fields = append(fields, rec_files.Field{
-            Name:  clothingPrefix + string(colorName),
-            Value: hsv.EncodeAsString(),
-        })
-    }
     return fields
 }
 
@@ -429,6 +400,22 @@ func (t *ColorTheme) TileStyle(tile gridmap.Tile) common.Style {
     }
 
     return baseStyle.WithFg(t.ObjectForeground)
+}
+
+// ActorTypeColor returns the foreground color for the given actor type.
+// Guard, Target, and Fence have fixed thematic colors; all other types
+// (civilians, player) use ActorCivilianForeground which varies per theme.
+func (t *ColorTheme) ActorTypeColor(actorType ActorType) common.HSVColor {
+    switch actorType {
+    case ActorTypeGuard:
+        return common.NewHSVColorFromRGBBytes(0, 120, 255)
+    case ActorTypeTarget:
+        return common.NewHSVColorFromRGBBytes(255, 40, 40)
+    case ActorTypeFence:
+        return common.NewHSVColorFromRGBBytes(180, 0, 220)
+    default:
+        return t.ActorCivilianForeground
+    }
 }
 
 // ThemeFromRecord deserializes a ColorTheme from a rec_files record.
@@ -571,11 +558,6 @@ func ThemeFromRecord(record rec_files.Record) *ColorTheme {
             t.EditorTaskNumberForeground = common.NewColorFromString(field.Value)
         case "EngagedInTaskBackground", "EngagedInTaskColor":
             t.EngagedInTaskBackground = common.NewColorFromString(field.Value)
-        default:
-            if strings.HasPrefix(field.Name, clothingPrefix) {
-                colorName := ClothingColor(strings.TrimPrefix(field.Name, clothingPrefix))
-                t.ClothingColors[colorName] = common.NewColorFromString(field.Value).ToHSV()
-            }
         }
     }
     return t

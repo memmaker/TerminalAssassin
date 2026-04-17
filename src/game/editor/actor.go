@@ -28,7 +28,11 @@ func (g *GameStateEditor) selectActorAt(pos geometry.Point) {
     if currentActor.Inventory != nil && len(currentActor.Inventory.Items) > 0 {
         itemString = fmt.Sprintf("items: %s", currentActor.Inventory.AsRunes())
     }
-    g.PrintAsMessage(fmt.Sprintf("(S) "+currentActor.Name+" ("+strconv.Itoa(taskCount)+" tasks) - %s", itemString))
+    teamString := ""
+    if currentActor.Team != "" {
+        teamString = fmt.Sprintf(" (%s)", currentActor.Team)
+    }
+    g.PrintAsMessage(fmt.Sprintf(currentActor.Name+teamString+" ("+strconv.Itoa(taskCount)+" tasks) - %s", itemString))
 }
 
 func (g *GameStateEditor) deleteActor() {
@@ -109,8 +113,6 @@ func (g *GameStateEditor) toggleActorType() {
     case core.ActorTypeCivilian:
         g.SelectedActor.Type = core.ActorTypeGuard
     case core.ActorTypeGuard:
-        g.SelectedActor.Type = core.ActorTypeEnforcer
-    case core.ActorTypeEnforcer:
         g.SelectedActor.Type = core.ActorTypeTarget
     case core.ActorTypeTarget:
         g.SelectedActor.Type = core.ActorTypeFence
@@ -123,7 +125,6 @@ func (g *GameStateEditor) toggleActorType() {
 
 func (g *GameStateEditor) quickAddActor() {
     currentMap := g.engine.GetGame().GetMap()
-    data := g.engine.GetData()
 
     pos := g.MousePositionInWorld
     g.LastSelectedPos = pos
@@ -134,7 +135,7 @@ func (g *GameStateEditor) quickAddActor() {
     actorNumber := len(currentMap.Actors()) + 1
     actorName := fmt.Sprintf("actor #%d", actorNumber)
 
-    newActor := core.NewActor(actorName, data.DefaultClothing())
+    newActor := core.NewActor(actorName)
     currentMap.AddActor(newActor, g.LastSelectedPos)
     currentMap.UpdateFieldOfView(newActor)
     g.selectActorAt(g.LastSelectedPos)
@@ -156,15 +157,75 @@ func (g *GameStateEditor) addActor() {
 
 func (g *GameStateEditor) spawnActorWithName(text string) {
     currentMap := g.engine.GetGame().GetMap()
-    data := g.engine.GetData()
     g.changeUIStateTo(addActorsUI)
     if text != "" {
-        newActor := core.NewActor(text, data.DefaultClothing())
+        newActor := core.NewActor(text)
         currentMap.AddActor(newActor, g.LastSelectedPos)
         currentMap.UpdateFieldOfView(newActor)
         g.selectActorAt(g.LastSelectedPos)
         g.adjustLookDirectionForSelectedActor()
     }
+}
+
+func (g *GameStateEditor) setTeamForActor() {
+    if g.SelectedActor == nil {
+        return
+    }
+    currentMap := g.engine.GetGame().GetMap()
+    existingTeams := collectTeams(currentMap.Actors())
+    if len(existingTeams) == 0 {
+        g.promptNewTeam()
+        return
+    }
+    menuItems := make([]services.MenuItem, 0, len(existingTeams)+2)
+    for _, team := range existingTeams {
+        t := team
+        menuItems = append(menuItems, services.MenuItem{
+            Label: t,
+            Handler: func() {
+                g.SelectedActor.Team = t
+                g.PrintAsMessage(fmt.Sprintf("%s team: %s", g.SelectedActor.Name, t))
+                g.changeUIStateTo(editActorUI)
+            },
+        })
+    }
+    menuItems = append(menuItems, services.MenuItem{
+        Label:   "(new team...)",
+        Handler: g.promptNewTeam,
+    })
+    menuItems = append(menuItems, services.MenuItem{
+        Label: "(no team)",
+        Handler: func() {
+            g.SelectedActor.Team = ""
+            g.PrintAsMessage(fmt.Sprintf("%s removed from team", g.SelectedActor.Name))
+            g.changeUIStateTo(editActorUI)
+        },
+    })
+    g.OpenMenuBarDropDown("Set team", 0, menuItems)
+}
+
+func (g *GameStateEditor) promptNewTeam() {
+    g.handler = UIHandler{Name: "enter team name", TextReceived: func(name string) {
+        if name == "" {
+            return
+        }
+        g.SelectedActor.Team = name
+        g.PrintAsMessage(fmt.Sprintf("%s team: %s", g.SelectedActor.Name, name))
+        g.changeUIStateTo(editActorUI)
+    }}
+    g.showTextInput("Team name: ", "")
+}
+
+func collectTeams(actors []*core.Actor) []string {
+    seen := make(map[string]bool)
+    var teams []string
+    for _, a := range actors {
+        if a.Team != "" && !seen[a.Team] {
+            seen[a.Team] = true
+            teams = append(teams, a.Team)
+        }
+    }
+    return teams
 }
 
 func (g *GameStateEditor) adjustLookDirectionForSelectedActor() {

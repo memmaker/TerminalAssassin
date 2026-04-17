@@ -71,15 +71,6 @@ func (g *GameStateCareerViewer) renderCareerData() []core.StyledText {
 		}
 	}
 
-	if len(career.UnlockedClothes) > 0 {
-		lines = append(lines, core.Text("Available Clothes:"))
-		unlockedClothes := toSlice(career.UnlockedClothes)
-		sort.SliceStable(unlockedClothes, utils.NewStringComparer())
-		for _, name := range unlockedClothes {
-			lines = append(lines, core.Text("  "+name))
-		}
-	}
-
 	if len(career.MapStatistics) > 0 {
 		lines = append(lines, core.Text("Missions:"))
 	}
@@ -113,14 +104,6 @@ func (g *GameStateCareerViewer) renderCareerData() []core.StyledText {
 	lines = append(lines, core.Text("Total Play Time: "+totalPlayTime.Round(time.Second).String()))
 	lines = append(lines, core.Text("Total Body Count: "+strconv.Itoa(totalBodyCount)))
 	return lines
-}
-
-func toSlice(clothes map[string]*core.Clothing) []string {
-	result := make([]string, 0)
-	for _, item := range clothes {
-		result = append(result, item.Name)
-	}
-	return result
 }
 
 func ChallengeToString(challenge services.Challenge) string {

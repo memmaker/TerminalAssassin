@@ -196,10 +196,74 @@ func (f ObjectFactory) SimpleObjects() []services.ObjectCreator {
             },
         },
         {
-            Name: gravestonePrefix,
+            Name: "gravestone",
             Icon: core.GlyphGravestone,
             Create: func(name string) services.Object {
-                return NewGravestone("")
+                return NewGravestone("illegible")
+            },
+        },
+        // ── SearchableContainers ─────────────────────────────────────────────
+        {
+            Name: "chest of drawers",
+            Icon: core.GlyphChestOfDrawers,
+            Create: func(name string) services.Object {
+                return newSearchableContainer("chest of drawers", core.GlyphChestOfDrawers)
+            },
+        },
+        {
+            Name: "chest of drawers (locked)",
+            Icon: core.GlyphChestOfDrawers,
+            Create: func(name string) services.Object {
+                return newLockedMechanicalSearchableContainer("chest of drawers", core.GlyphChestOfDrawers)
+            },
+        },
+        {
+            Name: "chest of drawers (electronic)",
+            Icon: core.GlyphChestOfDrawers,
+            Create: func(name string) services.Object {
+                return newLockedElectronicSearchableContainer("chest of drawers", core.GlyphChestOfDrawers)
+            },
+        },
+        {
+            Name: "drawers",
+            Icon: core.GlyphDrawers,
+            Create: func(name string) services.Object {
+                return newSearchableContainer("drawers", core.GlyphDrawers)
+            },
+        },
+        {
+            Name: "drawers (locked)",
+            Icon: core.GlyphDrawers,
+            Create: func(name string) services.Object {
+                return newLockedMechanicalSearchableContainer("drawers", core.GlyphDrawers)
+            },
+        },
+        {
+            Name: "drawers (electronic)",
+            Icon: core.GlyphDrawers,
+            Create: func(name string) services.Object {
+                return newLockedElectronicSearchableContainer("drawers", core.GlyphDrawers)
+            },
+        },
+        {
+            Name: "desk",
+            Icon: core.GlyphDesk,
+            Create: func(name string) services.Object {
+                return newSearchableContainer("desk", core.GlyphDesk)
+            },
+        },
+        {
+            Name: "desk (locked)",
+            Icon: core.GlyphDesk,
+            Create: func(name string) services.Object {
+                return newLockedMechanicalSearchableContainer("desk", core.GlyphDesk)
+            },
+        },
+        {
+            Name: "desk (electronic)",
+            Icon: core.GlyphDesk,
+            Create: func(name string) services.Object {
+                return newLockedElectronicSearchableContainer("desk", core.GlyphDesk)
             },
         },
     }

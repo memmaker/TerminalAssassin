@@ -1,31 +1,29 @@
 Name: Warehouse
 Type: Private
 Ambience_Cue: 
-Allowed_Clothing: Mechanic
+Allowed_Team: Mechanic
 
 Name: Hotel Rooms
 Type: Private
 Ambience_Cue: 
-Allowed_Clothing: Green jacket
-Allowed_Clothing: Red jacket
-Allowed_Clothing: Tuxedo
+Allowed_Team: Green jacket
+Allowed_Team: Red jacket
+Allowed_Team: Tuxedo
 
 Name: Private
 Type: Private
 Ambience_Cue: 
-Allowed_Clothing: Bodyguard
-Allowed_Clothing: Goth Party Outfit
-Allowed_Clothing: Guard
-Allowed_Clothing: Medic
-Allowed_Clothing: Medical Scrubs
-Allowed_Clothing: Stylish Jacket
-Allowed_Clothing: Tech crew
+Allowed_Team: Bodyguard
+Allowed_Team: Goth Party Outfit
+Allowed_Team: Guard
+Allowed_Team: Medic
+Allowed_Team: Medical Scrubs
+Allowed_Team: Stylish Jacket
+Allowed_Team: Tech crew
 
 Name: Red Dragon HQ
 Type: Private
-Ambience_Cue: 
-Allowed_Clothing: Red dragon
-Allowed_Clothing: Red dragon leader
+Ambience_Cue:
 
 Name: Dragon drop-off
 Type: Drop Off
@@ -38,22 +36,22 @@ Ambience_Cue:
 Name: Slaughterhouse
 Type: Private
 Ambience_Cue: slaughter_loop
-Allowed_Clothing: Bodyguard
-Allowed_Clothing: Goth Party Outfit
-Allowed_Clothing: Guard
-Allowed_Clothing: Purple jacket
-Allowed_Clothing: Stylish Jacket
-Allowed_Clothing: Tech crew
-Allowed_Clothing: Tuxedo
+Allowed_Team: Bodyguard
+Allowed_Team: Goth Party Outfit
+Allowed_Team: Guard
+Allowed_Team: Purple jacket
+Allowed_Team: Stylish Jacket
+Allowed_Team: Tech crew
+Allowed_Team: Tuxedo
 
 Name: Night club
 Type: High Security
 Ambience_Cue: blade_loop
-Allowed_Clothing: Bodyguard
-Allowed_Clothing: Goth Party Outfit
-Allowed_Clothing: Guard
-Allowed_Clothing: Purple jacket
-Allowed_Clothing: Stylish Jacket
-Allowed_Clothing: Tech crew
-Allowed_Clothing: Tuxedo
+Allowed_Team: Bodyguard
+Allowed_Team: Goth Party Outfit
+Allowed_Team: Guard
+Allowed_Team: Purple jacket
+Allowed_Team: Stylish Jacket
+Allowed_Team: Tech crew
+Allowed_Team: Tuxedo
 

@@ -55,7 +55,6 @@ const (
     ObservationIllegalAction              Observation = "illegal action"
     ObservationOngoingSuspiciousBehaviour Observation = "ongoing suspicious behaviour"
     ObservationDraggingBody               Observation = "dragging body"
-    ObservationWearingCompromisedDisguise Observation = "wearing compromised disguise"
     ObservationDeviceDistraction          Observation = "device distraction"
     ObservationDownedSpeaker              Observation = "DLG_downed_speaker_00"
     ObservationMineFound                  Observation = "mine found"
@@ -148,7 +147,6 @@ var (
         ObservationDraggingBody:               {},
         ObservationNearActiveIllegalIncident:  {},
         ObservationCombatSeen:                 {},
-        ObservationWearingCompromisedDisguise: {},
     }
 )
 

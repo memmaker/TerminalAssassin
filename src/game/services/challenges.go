@@ -11,8 +11,7 @@ func LoadClassicChallenges(game GameInterface, stats core.MissionStats) []Challe
 		FixedChallenge{id: 4, name: "Someone Could Hurt Themselves", isCompleted: TargetDiedOfAccident(stats), reward: 1000},        // kill target with an environmental hazard/accident
 		FixedChallenge{id: 5, name: "Silent Assassin", isCompleted: SilentAssassin(stats), reward: 5000},                            // only kill targets, no bodies found, not spotted
 		FixedChallenge{id: 6, name: "Sniper Assassin", isCompleted: SniperAssassin(stats), reward: 4000},                            // only kill targets with sniper shots, not spotted
-		FixedChallenge{id: 7, name: "Suit Only", isCompleted: NeverChangedClothes(stats), reward: 5000},                             // do not change clothes
-		FixedChallenge{id: 8, name: "TKEP", isCompleted: AllActorsDead(game), reward: 3000},                                         // kill all actors in the mission
+		FixedChallenge{id: 7, name: "TKEP", isCompleted: AllActorsDead(game), reward: 3000}, // kill all actors in the mission
 	}
 }
 
@@ -25,12 +24,6 @@ func SniperAssassin(statistics core.MissionStats) func() bool {
 func SilentAssassin(statistics core.MissionStats) func() bool {
 	return func() bool {
 		return statistics.OnlyKilledTargets() && !statistics.BodiesFound && !statistics.BeenSpotted
-	}
-}
-
-func NeverChangedClothes(statistics core.MissionStats) func() bool {
-	return func() bool {
-		return statistics.DisguisesWorn.Cardinality() == 0
 	}
 }
 

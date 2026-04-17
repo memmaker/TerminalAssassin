@@ -1,5 +1,5 @@
 # Beta 7 - "Walkie Talkie" Release
- - Moved the core data to text files (tiles, items, clothing, effects, stims, triggers)
+ - Moved the core data to text files (tiles, items, effects, stims, triggers)
  - Better map format, now stable
  - Time tracked for each challenge individually now
  - Added: Custom Scripting for maps
@@ -44,7 +44,6 @@
  - Added: Prodding mechanic
  - Added: Basic zone mechanics (incl. basic editor integration)
  - Career data tracking: Titles, etc.
- - Enabled placement of clothing in the editor
  - Reworked the stimulus & item systems
  - Major: Re-designed the context action HUD
  - New Stimulus: Electricity

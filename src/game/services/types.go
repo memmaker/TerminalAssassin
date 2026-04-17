@@ -38,12 +38,6 @@ type TriggerEvent struct {
 	Key string
 }
 
-// PlayerChangedClothesEvent is published when the player swaps into a new disguise.
-type PlayerChangedClothesEvent struct {
-	OldClothing core.Clothing
-	NewClothing core.Clothing
-}
-
 // PlayerSpottedEvent is published whenever an NPC conclusively identifies the
 // player as suspicious or dangerous (sets BeenSpotted in mission stats).
 type PlayerSpottedEvent struct{}

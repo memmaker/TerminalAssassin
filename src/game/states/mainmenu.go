@@ -21,7 +21,6 @@ type GameStateMainMenu struct {
 	isDirty          bool
 	clearScreen      bool
 	backgroundPixels [][]common.Color
-	showGear         bool
 }
 
 func (g *GameStateMainMenu) ClearOverlay() {
@@ -211,9 +210,6 @@ func (g *GameStateMainMenu) Draw(con console.CellInterface) {
 	}
 	con.ClearConsole()
 	g.drawBackground(con)
-	if g.showGear {
-		g.RenderChosenGear(con)
-	}
 	//con.SquareBlack()
 	//con.HalfWidthTransparent()
 	g.isDirty = false

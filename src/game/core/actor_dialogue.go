@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+
 	"github.com/memmaker/terminal-assassin/mapset"
 	"github.com/memmaker/terminal-assassin/utils"
 )
@@ -13,7 +14,7 @@ type Utterance struct {
 
 type Conversation struct {
 	Responses        map[string]Utterance // response code -> utterance
-	RequiredClothing string
+	RequiredPartner string
 }
 type DialogueComponent struct {
 	LastSpokenAtTick    uint64
@@ -24,7 +25,7 @@ type DialogueComponent struct {
 	Situation           *OrientedLocation
 	SpeakInState        func(ActorState) bool
 	IsCurrentlySpeaking bool
-	Conversations       map[string]*Conversation // clothing -> conversation
+	Conversations       map[string]*Conversation // conversation name -> conversation
 	CurrentDialogue     string
 }
 
@@ -66,10 +67,13 @@ func (c *DialogueComponent) Available(status ActorState) bool {
 }
 
 func (c *DialogueComponent) HasDialogueFor(actor *Actor) string {
-	// actor also needs to wear the right clothes
+	partnerID := actor.Name
+	if actor.IsPlayer() {
+		partnerID = "player"
+	}
 	for conversationName, conversation := range c.Conversations {
-		if conversation.RequiredClothing == actor.NameOfClothing() || conversation.RequiredClothing == "" { // clothing is fine
-			if _, ok := actor.Dialogue.Conversations[conversationName]; ok { // actor has the same conversation
+		if conversation.RequiredPartner == partnerID || conversation.RequiredPartner == "" {
+			if _, ok := actor.Dialogue.Conversations[conversationName]; ok {
 				return conversationName
 			}
 		}

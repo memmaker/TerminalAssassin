@@ -244,9 +244,9 @@ func (g *MapSerializer) SaveActors(currentMap *gridmap.GridMap[*core.Actor, *cor
 func NewActorOnDiskFromActor(person *core.Actor) core.ActorOnDisk {
     return core.ActorOnDisk{
         Name:          person.Name,
-        Clothing:      person.Clothes.Name,
         Inventory:     services.EncodeItems(person.Inventory),
         ActorType:     person.Type,
+        Team:          person.Team,
         MoveSpeed:     person.AutoMoveSpeed,
         FoVinDegrees:  person.FoVinDegrees,
         VisionRange:   person.MaxVisionRange,

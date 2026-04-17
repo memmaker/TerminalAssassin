@@ -39,7 +39,6 @@ var itemTypeNames = map[ItemType]string{
     ItemTypeMechanicalLockpick:  "mechanical_lockpick",
     ItemTypeElectronicLockpick:  "electronic_lockpick",
     ItemTypeCleaner:             "cleaner",
-    ItemTypeClothing:            "clothing",
     ItemTypeKey:                 "key",
     ItemTypeKeyCard:             "key_card",
     ItemTypeLoot:                "loot",
@@ -102,7 +101,6 @@ const (
     ItemTypeMechanicalLockpick
     ItemTypeElectronicLockpick
     ItemTypeCleaner
-    ItemTypeClothing
     ItemTypeKey
     ItemTypeKeyCard
     ItemTypeLoot
@@ -405,7 +403,7 @@ func (i *Item) Style(st common.Style) common.Style {
     return itemStyle
 }
 func (i *Item) IsLegalForActor(actor *Actor) bool {
-    if actor.Type == ActorTypeGuard || actor.Type == ActorTypeEnforcer || actor.Type == ActorTypeTarget {
+    if actor.Type == ActorTypeGuard || actor.Type == ActorTypeTarget {
         return true
     }
     return !i.IsObviousWeapon()
