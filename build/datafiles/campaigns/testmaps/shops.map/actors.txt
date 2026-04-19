@@ -3,9 +3,6 @@ ActorType: fence
 Position: (14,56)
 LookDirection: 39.81
 Team: a jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 12
 Inventory: Pistol (silenced)
 Inventory: Lockpick(5)
 Inventory: LockpickElectronic(5)
@@ -15,9 +12,6 @@ ActorType: guard
 Position: (31,11)
 LookDirection: 26.57
 Team: a jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 12
 Inventory: Flashlight
 Inventory: Pistol
 

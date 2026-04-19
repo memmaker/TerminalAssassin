@@ -780,58 +780,58 @@ func (a *Actor) HasKeyCardInInventory(keyString string) bool {
 // currently carries. For lockpick types the Uses field acts as the stack counter,
 // so all Uses values are summed rather than counting item instances.
 func (a *Actor) CountItemTypeInInventory(itemType ItemType) int {
-	if a.Inventory == nil {
-		return 0
-	}
-	count := 0
-	for _, item := range a.Inventory.Items {
-		if item.Type != itemType {
-			continue
-		}
-		if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
-			if item.Uses > 0 {
-				count += item.Uses
-			}
-		} else {
-			count++
-		}
-	}
-	return count
+    if a.Inventory == nil {
+        return 0
+    }
+    count := 0
+    for _, item := range a.Inventory.Items {
+        if item.Type != itemType {
+            continue
+        }
+        if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
+            if item.Uses > 0 {
+                count += item.Uses
+            }
+        } else {
+            count++
+        }
+    }
+    return count
 }
 
 // ConsumeItemsFromInventory removes up to count units of the given type from
 // the actor's inventory. For lockpick types each unit is one Use; the item is
 // removed from inventory when its Uses reach zero.
 func (a *Actor) ConsumeItemsFromInventory(itemType ItemType, count int) {
-	if a.Inventory == nil {
-		return
-	}
-	if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
-		remaining := count
-		for i := len(a.Inventory.Items) - 1; i >= 0 && remaining > 0; i-- {
-			if a.Inventory.Items[i].Type != itemType {
-				continue
-			}
-			item := a.Inventory.Items[i]
-			if item.Uses <= remaining {
-				remaining -= item.Uses
-				item.HeldBy = nil
-				a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
-			} else {
-				item.Uses -= remaining
-				remaining = 0
-			}
-		}
-		return
-	}
-	consumed := 0
-	for i := len(a.Inventory.Items) - 1; i >= 0 && consumed < count; i-- {
-		if a.Inventory.Items[i].Type == itemType {
-			a.Inventory.Items[i].HeldBy = nil
-			a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
-			consumed++
-		}
-	}
+    if a.Inventory == nil {
+        return
+    }
+    if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
+        remaining := count
+        for i := len(a.Inventory.Items) - 1; i >= 0 && remaining > 0; i-- {
+            if a.Inventory.Items[i].Type != itemType {
+                continue
+            }
+            item := a.Inventory.Items[i]
+            if item.Uses <= remaining {
+                remaining -= item.Uses
+                item.HeldBy = nil
+                a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
+            } else {
+                item.Uses -= remaining
+                remaining = 0
+            }
+        }
+        return
+    }
+    consumed := 0
+    for i := len(a.Inventory.Items) - 1; i >= 0 && consumed < count; i-- {
+        if a.Inventory.Items[i].Type == itemType {
+            a.Inventory.Items[i].HeldBy = nil
+            a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
+            consumed++
+        }
+    }
 }
 
 // RemoveItem removes item from the actor's inventory and clears the equipped
@@ -1005,12 +1005,16 @@ func (a *Actor) ChatStyle() common.Style {
 
 func (a *Actor) EnableDebugTrace() {
     a.DebugFlag = true
-    a.AI.DebugFlag = true
+    if a.AI != nil {
+        a.AI.DebugFlag = true
+    }
 }
 
 func (a *Actor) DisableDebugTrace() {
     a.DebugFlag = false
-    a.AI.DebugFlag = false
+    if a.AI != nil {
+        a.AI.DebugFlag = false
+    }
 }
 
 func (a *Actor) TooltipText() string {
@@ -1022,9 +1026,6 @@ type ActorOnDisk struct {
     Inventory     []string
     ActorType     ActorType
     Team          string
-    MoveSpeed     int
-    FoVinDegrees  float64
-    VisionRange   int
     LookDirection float64
     Position      geometry.Point
 }
@@ -1036,9 +1037,6 @@ func (d ActorOnDisk) ToRecord() []rec_files.Field {
         {Name: "Team", Value: d.Team},
         {Name: "Position", Value: d.Position.String()},
         {Name: "LookDirection", Value: strconv.FormatFloat(d.LookDirection, 'f', 2, 64)},
-        {Name: "MoveSpeed", Value: strconv.Itoa(d.MoveSpeed)},
-        {Name: "FoVinDegrees", Value: strconv.FormatFloat(d.FoVinDegrees, 'f', 2, 64)},
-        {Name: "VisionRange", Value: strconv.Itoa(d.VisionRange)},
     }
     for _, item := range d.Inventory {
         record = append(record, rec_files.Field{Name: "Inventory", Value: item})
@@ -1059,12 +1057,8 @@ func ActorOnDiskFromRecord(record []rec_files.Field) ActorOnDisk {
             actor.Position, _ = geometry.NewPointFromString(field.Value)
         case "LookDirection":
             actor.LookDirection, _ = strconv.ParseFloat(field.Value, 64)
-        case "MoveSpeed":
-            actor.MoveSpeed, _ = strconv.Atoi(field.Value)
-        case "FoVinDegrees":
-            actor.FoVinDegrees, _ = strconv.ParseFloat(field.Value, 64)
-        case "VisionRange":
-            actor.VisionRange, _ = strconv.Atoi(field.Value)
+        case "MoveSpeed", "FoVinDegrees", "VisionRange":
+            // ignored: hardcoded defaults used on load
         case "Inventory":
             actor.Inventory = append(actor.Inventory, strings.TrimSpace(field.Value))
         }

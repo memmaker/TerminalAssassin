@@ -168,7 +168,7 @@ func (g *ActionProvider) TryFeedbackForImpact(audioCue string, source geometry.P
         bloodPos := hitLocation.Add(directionVector.ToPoint())
         currentMap.AddStimulusToTile(bloodPos, stimuli.Stim{StimType: stimuli.StimulusBlood, StimForce: 5})
         g.engine.GetAudio().PlayCue(audioCue)
-        m.IllegalActionAt(hitLocation, core.ObservationPersonAttacked)
+        m.IllegalActionAt(source, core.ObservationPersonAttacked)
         debugMessage = fmt.Sprintf("Impact at %v hitting %s", hitLocation, currentMap.ActorAt(hitLocation).DebugDisplayName())
     }
     println(debugMessage)

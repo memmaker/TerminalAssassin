@@ -247,9 +247,6 @@ func NewActorOnDiskFromActor(person *core.Actor) core.ActorOnDisk {
         Inventory:     services.EncodeItems(person.Inventory),
         ActorType:     person.Type,
         Team:          person.Team,
-        MoveSpeed:     person.AutoMoveSpeed,
-        FoVinDegrees:  person.FoVinDegrees,
-        VisionRange:   person.MaxVisionRange,
         LookDirection: person.LookDirection,
         Position:      person.MapPos,
     }

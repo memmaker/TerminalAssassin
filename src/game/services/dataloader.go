@@ -563,9 +563,9 @@ func (e *ExternalData) NewActorFromDisk(factory *ItemFactory, diskData core.Acto
         MapPos:         diskData.Position,
         LastPos:        diskData.Position,
         MovementMode:   core.MovementModeWalking,
-        AutoMoveSpeed:  diskData.MoveSpeed,
-        FoVinDegrees:   diskData.FoVinDegrees,
-        MaxVisionRange: diskData.VisionRange,
+        AutoMoveSpeed:  3,
+        FoVinDegrees:   90,
+        MaxVisionRange: 12,
         LookDirection:  diskData.LookDirection,
         Path:           make([]geometry.Point, 0),
     }

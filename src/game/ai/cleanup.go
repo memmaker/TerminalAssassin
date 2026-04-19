@@ -25,11 +25,10 @@ func (c *CleanupMovement) OnDestinationReached() core.AIUpdate {
 			c.dropOffItems()
 			droppedStuff = true
 		}
-		if person.IsDraggingBody() {
-			person.MovementMode = core.MovementModeWalking
-			person.DraggedBody = nil
-			droppedStuff = true
-		}
+        if person.IsDraggingBody() {
+            person.DraggedBody = nil
+            droppedStuff = true
+        }
 		if droppedStuff {
 			return NextUpdateIn(0.1)
 		}
@@ -83,10 +82,9 @@ func (c *CleanupMovement) gotoDropoff() core.AIUpdate {
 	currentMap := game.GetMap()
 	if !currentMap.HasDropOffZone() {
 		c.securedItems = []*core.Item{}
-		if person.IsDraggingBody() {
-			person.MovementMode = core.MovementModeWalking
-			person.DraggedBody = nil
-		}
+        if person.IsDraggingBody() {
+            person.DraggedBody = nil
+        }
 		person.AI.PopState()
 		return NextUpdateIn(0.1)
 	}

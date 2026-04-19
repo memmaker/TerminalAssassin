@@ -48,6 +48,12 @@ func (p *Projectile) StartTravel(path []geometry.Point) {
     p.origin = path[0]
     p.travelPath = path[1:]
     p.currentPathIndex = 0
+    game := p.engine.GetGame()
+    currentMap := game.GetMap()
+    collideWithSource := currentMap.IsActorAt(p.origin) && currentMap.ActorAt(p.origin) == p.User
+    if !collideWithSource {
+        p.onTravel(p.origin)
+    }
 }
 
 func (p *Projectile) Update() {

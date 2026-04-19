@@ -303,10 +303,11 @@ func (m *Model) SuspiciousActionAt(pos geometry.Point, kindOfEvent core.Observat
     currentMap := m.GetMap()
     aic := m.engine.GetAI()
     for _, a := range currentMap.Actors() {
-        if a == currentMap.Player || (!a.CanUseItems()) || (!a.CanSeeInVisionCone(pos)) || a.IsInvestigating() || a.IsCriminal() {
+        if a == currentMap.Player || !a.CanSeeInVisionCone(pos) || a.IsInvestigating() || a.IsCriminal() {
             continue
         }
         aic.ReportIncident(a, pos, kindOfEvent)
+        return // only need one report
     }
 }
 func (m *Model) IllegalActionAt(pos geometry.Point, kindOfEvent core.Observation) {
@@ -318,7 +319,7 @@ func (m *Model) IllegalActionAt(pos geometry.Point, kindOfEvent core.Observation
         actorAt = currentMap.Player
     }
     for _, a := range currentMap.Actors() {
-        if a.IsPlayer() || a.IsInCombat() || !a.CanPerceive() || !a.CanSeeInVisionCone(pos) || m.AreAllies(a, actorAt) || a.IsCriminal() {
+        if a == actorAt || a.IsPlayer() || a.IsInCombat() || !a.CanPerceive() || !a.CanSeeInVisionCone(pos) || m.AreAllies(a, actorAt) || a.IsCriminal() {
             continue
         }
         if actorAt != nil {
@@ -562,8 +563,6 @@ func (m *Model) Kill(victim *core.Actor, causeOfDeath core.CauseOfDeath) {
     victim.Status = core.ActorStatusDead
     victim.IsEyeWitness = false
 
-    m.IllegalActionAt(victim.Pos(), core.ObservationDeath)
-
     if causeOfDeath.IsBodyDisappearing() {
         m.DropInventory(victim)
     }
@@ -579,6 +578,7 @@ func (m *Model) Kill(victim *core.Actor, causeOfDeath core.CauseOfDeath) {
         if causeOfDeath.IsBodyDisappearing() {
             m.RemoveDeadActor(victim)
         }
+        m.IllegalActionAt(victim.Pos(), core.ObservationDeath)
     }
 }
 func (m *Model) RemoveDeadActor(victim *core.Actor) {
@@ -766,12 +766,11 @@ func (m *Model) handleDragging(dragger *core.Actor, oldPosition geometry.Point) 
 
     isSneaking := dragger.MovementMode == core.MovementModeSneaking
     isWalking := dragger.MovementMode == core.MovementModeWalking
-    isRunning := dragger.MovementMode == core.MovementModeRunning
     hasPianoWire := dragger.EquippedItem != nil && dragger.EquippedItem.Type == core.ItemTypePianoWire
     canDrag := isSneaking || (isWalking && hasPianoWire)
     noBigItem := dragger.EquippedItem == nil || !dragger.EquippedItem.IsBig
 
-    if isRunning && dragger.IsDraggingBody() { // stop dragging when running
+    if !canDrag && dragger.IsDraggingBody() { // stop dragging when not sneaking (or walking with piano wire)
         dragger.DraggedBody = nil
         return
     }
@@ -824,7 +823,7 @@ func (m *Model) updateVisionForAll(position geometry.Point) {
     currentMap := m.GetMap()
     aic := m.engine.GetAI()
     for _, actor := range currentMap.Actors() {
-        if aic.IsControlledByAI(actor) && actor.CanSeeInVisionCone(position) {
+        if aic.IsControlledByAI(actor) && geometry.DistanceChebyshev(actor.Pos(), position) <= actor.MaxVisionRange {
             aic.UpdateVision(actor)
         }
     }

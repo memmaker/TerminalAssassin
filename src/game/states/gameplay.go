@@ -242,6 +242,7 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
     }))
     g.engine.SubscribeToEvents(services.NewFilter(func(_ services.BodyDiscoveredEvent) bool {
         stats.BodiesFound = true
+        g.UpdateStatusLine()
         return true
     }))
     g.engine.SubscribeToEvents(services.NewFilter(func(e services.ActorKilledEvent) bool {
@@ -358,6 +359,7 @@ func (g *GameStateGameplay) SpawnPlayer() {
         Health:         3,
         MovementMode:   core.MovementModeWalking,
         Status:         core.ActorStatusIdle,
+        Team:           "player",
     }
     player.Fov = geometry.NewFOV(geometry.NewRect(-visionRange, -visionRange, visionRange+1, visionRange+1))
     player.Inventory = &core.InventoryComponent{Items: make([]*core.Item, 0)}
@@ -944,14 +946,14 @@ func (g *GameStateGameplay) UpdateStatusLine() {
         hpStyle = hpStyle.WithFg(core.CurrentTheme.HUDGoodForeground)
     }
 
-    healthString := createHealthBar(player.Health)
+    //healthString := createHealthBar(player.Health)
 
-    zoneInformation := currentMap.ZoneAt(player.Pos()).Name
+    zoneInformation := "P"
     if currentMap.IsInHostileZone(player) {
-        zoneInformation = "hostile area"
+        zoneInformation = "H"
         detectionStyle = detectionStyle.WithBg(core.CurrentTheme.HUDDangerBackground).WithFg(common.Black)
     } else if currentMap.IsTrespassing(player) {
-        zoneInformation = "trespassing"
+        zoneInformation = "P"
         detectionStyle = detectionStyle.WithBg(core.CurrentTheme.HUDWarningBackground).WithFg(common.Black)
     }
 
@@ -983,7 +985,7 @@ func (g *GameStateGameplay) UpdateStatusLine() {
 
     redStyle := common.DefaultStyle.WithBg(core.CurrentTheme.HUDDangerBackground)
     greenStyle := common.DefaultStyle.WithBg(core.CurrentTheme.HUDGoodBackground)
-    g.topLabel.SetStyledText(core.Text(fmt.Sprintf("%s@i%s@N | @h%s@N | @d%s@N | %s | %s", string(player.MovementMode), itemSymbol, healthString, zoneInformation, challengeInformation, currentMap.TimeOfDay.Format("15:04"))).
+    g.topLabel.SetStyledText(core.Text(fmt.Sprintf("%s@i%s@N | @d%s@N%s | %s", string(player.MovementMode), itemSymbol, zoneInformation, challengeInformation, currentMap.TimeOfDay.Format("15:04"))).
         WithStyle(common.DefaultStyle).
         WithMarkup('i', itemStyle).
         WithMarkup('d', detectionStyle).

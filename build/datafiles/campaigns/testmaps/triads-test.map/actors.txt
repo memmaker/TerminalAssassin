@@ -3,9 +3,6 @@ ActorType: guard
 Position: (14,33)
 LookDirection: 0.00
 Team: Blue lotus
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Pistol
 Inventory: Soda Can
 
@@ -14,9 +11,6 @@ ActorType: guard
 Position: (14,37)
 LookDirection: 0.00
 Team: Blue lotus
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Pistol
 Inventory: Cigarette
 
@@ -25,9 +19,6 @@ ActorType: guard
 Position: (15,35)
 LookDirection: 0.00
 Team: Blue lotus
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Pistol
 Inventory: Cigarette
 Inventory: Knife
@@ -37,9 +28,6 @@ ActorType: guard
 Position: (19,18)
 LookDirection: 56.31
 Team: Bodyguard
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: KeyCard(Security Night Club)
 Inventory: Submachine Gun
 
@@ -48,9 +36,6 @@ ActorType: guard
 Position: (19,16)
 LookDirection: 36.87
 Team: Bodyguard
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: KeyCard(Security Night Club)
 Inventory: Submachine Gun
 
@@ -59,9 +44,6 @@ ActorType: guard
 Position: (36,3)
 LookDirection: 90.00
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: KeyCard(Security Night Club)
 Inventory: Submachine Gun
 
@@ -70,9 +52,6 @@ ActorType: guard
 Position: (36,14)
 LookDirection: 270.00
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: KeyCard(Security Night Club)
 Inventory: Submachine Gun
 
@@ -81,9 +60,6 @@ ActorType: guard
 Position: (30,2)
 LookDirection: 104.04
 Team: Purple jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Shotgun
 Inventory: KeyCard(Security Night Club)
 
@@ -92,9 +68,6 @@ ActorType: guard
 Position: (40,8)
 LookDirection: 116.57
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: KeyCard(Security Night Club)
 Inventory: Shotgun
 
@@ -103,144 +76,96 @@ ActorType: civilian
 Position: (23,10)
 LookDirection: 71.57
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron
 ActorType: civilian
 Position: (21,12)
 LookDirection: 281.31
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron
 ActorType: civilian
 Position: (21,5)
 LookDirection: 180.00
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron 1
 ActorType: civilian
 Position: (27,9)
 LookDirection: 288.43
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron 2
 ActorType: civilian
 Position: (30,11)
 LookDirection: 206.57
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron 3
 ActorType: civilian
 Position: (26,3)
 LookDirection: 111.80
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron 4
 ActorType: civilian
 Position: (21,3)
 LookDirection: 63.43
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron 5
 ActorType: civilian
 Position: (26,13)
 LookDirection: 251.57
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron 6
 ActorType: civilian
 Position: (29,13)
 LookDirection: 270.00
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron 7
 ActorType: civilian
 Position: (32,9)
 LookDirection: 270.00
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Club Patron 8
 ActorType: civilian
 Position: (26,7)
 LookDirection: 90.00
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Dennis
 ActorType: civilian
 Position: (67,96)
 LookDirection: 248.20
 Team: Stylish Jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Detective
 ActorType: civilian
 Position: (17,89)
 LookDirection: 90.00
 Team: Bodyguard
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Doc. Brown
 ActorType: civilian
 Position: (63,74)
 LookDirection: 108.43
 Team: Medic
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Homeless man
 ActorType: civilian
 Position: (21,76)
 LookDirection: 206.57
 Team: Red jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Hotel Guest 1
 ActorType: civilian
 Position: (53,48)
 LookDirection: 210.96
 Team: Red jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Key(Room 100)
 
 Name: Hotel Guest 2
@@ -248,9 +173,6 @@ ActorType: civilian
 Position: (48,42)
 LookDirection: 45.00
 Team: Tuxedo
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Key(Room 101)
 
 Name: Hotel Guest 3
@@ -258,18 +180,12 @@ ActorType: civilian
 Position: (44,43)
 LookDirection: 180.00
 Team: Green jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Hotelier
 ActorType: civilian
 Position: (45,52)
 LookDirection: 180.00
 Team: Hotel staff
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Key(Room 102)
 
 Name: Ms. Brown
@@ -277,27 +193,18 @@ ActorType: civilian
 Position: (72,67)
 LookDirection: 270.00
 Team: Tech crew
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Raquel
 ActorType: civilian
 Position: (75,79)
 LookDirection: 248.20
 Team: Goth Party Outfit
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Red Dragon Guard 1
 ActorType: guard
 Position: (42,88)
 LookDirection: 251.57
 Team: Red dragon
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Pistol
 
 Name: Red Dragon Guard 2
@@ -305,9 +212,6 @@ ActorType: guard
 Position: (48,89)
 LookDirection: 306.87
 Team: Red dragon
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Pistol
 
 Name: Red Dragon Guard 3
@@ -315,9 +219,6 @@ ActorType: guard
 Position: (44,92)
 LookDirection: 71.57
 Team: Red dragon
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Pistol
 
 Name: Red Dragon Leader
@@ -325,9 +226,6 @@ ActorType: target
 Position: (61,89)
 LookDirection: 288.43
 Team: Red dragon leader
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 Inventory: Pistol
 
 Name: Tourist 1
@@ -335,43 +233,28 @@ ActorType: civilian
 Position: (37,46)
 LookDirection: 90.00
 Team: Green jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Tourist 2
 ActorType: civilian
 Position: (73,54)
 LookDirection: 146.31
 Team: Purple jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Unsuspecting Tourist
 ActorType: civilian
 Position: (45,78)
 LookDirection: 0.00
 Team: Yellow jacket
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Warehouse Manager
 ActorType: civilian
 Position: (14,69)
 LookDirection: 296.57
 Team: Mechanic
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
 Name: Warehouse Worker
 ActorType: civilian
 Position: (37,69)
 LookDirection: 206.57
 Team: Mechanic
-MoveSpeed: 3
-FoVinDegrees: 90.00
-VisionRange: 10
 
