@@ -38,62 +38,39 @@ type GridConfig struct {
     MaxVisionRange int
 }
 
-// OptimalGridConfig calculates a GridConfig whose TileSize is a common divisor
-// of the primary monitor's logical resolution and as close as possible to targetTileSize.
-// GridWidth and GridHeight are set so that the grid exactly covers the full screen.
+// OptimalGridConfig calculates a GridConfig for the primary monitor.
+// TileSize is set to targetTileSize directly — requiring it to be a divisor of
+// the monitor dimensions is unnecessary because LayoutF scales the view to fit
+// any window size, and the gcd-based divisor approach produced microscopic tile
+// sizes on monitors whose width/height share only a small common factor (e.g. 1
+// or 2), which resulted in tiny default windows.
 func OptimalGridConfig(targetTileSize, maxVisionRange int) GridConfig {
-    monitor := ebiten.Monitor()
-    monW, monH := monitor.Size()
+	monitor := ebiten.Monitor()
+	monW, monH := monitor.Size()
 
-    g := gcd(monW, monH)
-    tileSize := closestDivisor(g, targetTileSize)
+	tileSize := targetTileSize
 
-    cfg := GridConfig{
-        TileSize:       tileSize,
-        GridWidth:      monW / tileSize,
-        GridHeight:     monH / tileSize,
-        MaxVisionRange: maxVisionRange,
-    }
-    log.Printf("[Console] Monitor: %dx%d | GCD: %d | TileSize: %d | Grid: %dx%d",
-        monW, monH, g, tileSize, cfg.GridWidth, cfg.GridHeight)
-    return cfg
-}
+	if monW <= 0 || monH <= 0 {
+		// Monitor not yet available (can happen before RunGame on some platforms).
+		// Return a safe fallback; LoadGraphicsConfig will also use a safe default.
+		log.Printf("[Console] Monitor size unavailable – using fallback grid 32x18 @ %dpx tiles", tileSize)
+		return GridConfig{
+			TileSize:       tileSize,
+			GridWidth:      32,
+			GridHeight:     18,
+			MaxVisionRange: maxVisionRange,
+		}
+	}
 
-func gcd(a, b int) int {
-    for b != 0 {
-        a, b = b, a%b
-    }
-    return a
-}
-
-// closestDivisor returns the divisor of n that is closest to target.
-func closestDivisor(n, target int) int {
-    best := 1
-    bestDist := intAbs(1 - target)
-    for d := 2; d*d <= n; d++ {
-        if n%d == 0 {
-            if dist := intAbs(d - target); dist < bestDist {
-                bestDist = dist
-                best = d
-            }
-            other := n / d
-            if dist := intAbs(other - target); dist < bestDist {
-                bestDist = dist
-                best = other
-            }
-        }
-    }
-    if dist := intAbs(n - target); dist < bestDist {
-        best = n
-    }
-    return best
-}
-
-func intAbs(x int) int {
-    if x < 0 {
-        return -x
-    }
-    return x
+	cfg := GridConfig{
+		TileSize:       tileSize,
+		GridWidth:      monW / tileSize,
+		GridHeight:     monH / tileSize,
+		MaxVisionRange: maxVisionRange,
+	}
+	log.Printf("[Console] Monitor: %dx%d | TileSize: %d | Grid: %dx%d",
+		monW, monH, tileSize, cfg.GridWidth, cfg.GridHeight)
+	return cfg
 }
 
 type Console struct {

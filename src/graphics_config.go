@@ -25,13 +25,17 @@ func LoadGraphicsConfig(tileSize int) GraphicsConfig {
 	monW, monH := ebiten.Monitor().Size()
 
 	// Default windowed size: 32×18 tiles at the chosen tile size, capped at 2/3 of the monitor.
+	// Guard against monW/monH being 0 (monitor not yet initialised before RunGame on some
+	// platforms) – without this the cap arithmetic zeros out the defaults.
 	defW := tileSize * 32
 	defH := tileSize * 18
-	if defW > monW*2/3 {
-		defW = monW * 2 / 3
-	}
-	if defH > monH*2/3 {
-		defH = monH * 2 / 3
+	if monW > 0 && monH > 0 {
+		if defW > monW*2/3 {
+			defW = monW * 2 / 3
+		}
+		if defH > monH*2/3 {
+			defH = monH * 2 / 3
+		}
 	}
 
 	defaults := GraphicsConfig{
