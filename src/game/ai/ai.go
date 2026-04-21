@@ -39,7 +39,6 @@ func DeferredUpdate(predicate func() bool) core.AIUpdate {
 
 type AIController struct {
     engine       services.Engine
-    blackboard   *Blackboard
     travelGroups mapset.Set[mapset.Set[*core.Actor]]
 }
 
@@ -78,19 +77,23 @@ func (a *AIController) GetTravelGroup(person *core.Actor) mapset.Set[*core.Actor
 }
 
 func (a *AIController) IsNearActiveIllegalIncident(person *core.Actor, location geometry.Point) bool {
-    for _, report := range a.blackboard.Filter(func(report core.IncidentReport) bool {
-        return report.KnownBy.Contains(person)
-    }) {
-        if report.Type.IsIllegal() && geometry.DistanceManhattan(location, report.Location) < 7 {
+    for _, r := range person.AI.Knowledge.Incidents {
+        if r.Type.IsIllegal() && geometry.DistanceManhattan(location, r.Location) < 7 {
             return true
         }
     }
     return false
 }
-func (a *AIController) IsNearActiveDangerousIndicator(location geometry.Point) bool {
-    for _, report := range a.blackboard.ReportedIncidents {
-        if report.Type.IsDangerousLocation() && geometry.DistanceManhattan(location, report.Location) < 5 {
-            return true
+
+func (a *AIController) isAlreadyBeingInvestigated(location geometry.Point) bool {
+    for _, actor := range a.engine.GetGame().GetMap().Actors() {
+        if actor.IsPlayer() || !actor.IsActive() || actor.IsInCombat() || actor.Status == core.ActorStatusPanic {
+            continue
+        }
+        if state, ok := actor.AI.GetState().(*InvestigationMovement); ok {
+            if state.Incident.Location == location {
+                return true
+            }
         }
     }
     return false
@@ -99,87 +102,54 @@ func (a *AIController) IsNearActiveDangerousIndicator(location geometry.Point) b
 func NewAIController(engine services.Engine) *AIController {
     return &AIController{
         engine:       engine,
-        blackboard:   NewBlackboard(),
         travelGroups: mapset.NewSet[mapset.Set[*core.Actor]](),
     }
 }
 
-func NewBlackboard() *Blackboard {
-    return &Blackboard{
-        ReportedIncidents: make(map[string]core.IncidentReport),
-    }
-}
 func (a *AIController) ReportIncident(person *core.Actor, location geometry.Point, incidentType core.Observation) core.IncidentReport {
-    report := a.NewIncidentReport(incidentType, location)
-    a.blackboard.AddKnowledge(person, report)
+    report := core.IncidentReport{Type: incidentType, Location: location, Tick: a.engine.CurrentTick()}
+    person.AI.Knowledge.AddIncident(report)
     return report
-}
-func (a *AIController) NewIncidentReport(typeOfIncident core.Observation, location geometry.Point) core.IncidentReport {
-    report := core.IncidentReport{
-        Type:     typeOfIncident,
-        Location: location,
-        Tick:     a.engine.CurrentTick(),
-        KnownBy:  mapset.NewSet[*core.Actor](),
-    }
-    return report
-}
-
-// TryRegisterHandler returns true if the incident was not handled before,
-// and marks it as handled.
-func (a *AIController) TryRegisterHandler(person *core.Actor, incident core.IncidentReport) bool {
-    a.blackboard.AddKnowledge(person, incident)
-    report := a.blackboard.ReportedIncidents[incident.Hash()]
-    if report.FinishedHandling || report.RegisteredHandler != nil {
-        return false
-    }
-    report.RegisteredHandler = person
-    a.blackboard.ReportedIncidents[incident.Hash()] = report
-    println(fmt.Sprintf("%s is now handling %s", a.blackboard.ReportedIncidents[incident.Hash()].RegisteredHandler.DebugDisplayName(), incident.Hash()))
-    return true
-}
-
-func (a *AIController) GetIncidentForSnitching(person *core.Actor) core.IncidentReport {
-    incident := a.blackboard.GetNextIncidentForSnitching(person)
-    if incident == core.EmptyReport {
-        return incident
-    }
-    incident.RegisteredSnitch = person
-    a.blackboard.ReportedIncidents[incident.Hash()] = incident
-    return incident
-}
-func (a *AIController) IsIncidentHandled(person *core.Actor, incident core.IncidentReport) bool {
-    report := a.blackboard.ReportedIncidents[incident.Hash()]
-    return report.FinishedHandling || (report.RegisteredHandler != person && report.HasActiveHandler())
-}
-
-func (a *AIController) reportIsInMyZone(person *core.Actor, report core.IncidentReport) bool {
-    currentMap := a.engine.GetGame().GetMap()
-    myHomeZone := currentMap.ZoneAt(person.AI.StartPosition)
-    reportZone := currentMap.ZoneAt(report.Location)
-    return myHomeZone == reportZone
-}
-func (a *AIController) cleanupFilter(person *core.Actor) func(core.IncidentReport) bool {
-    currentMap := a.engine.GetGame().GetMap()
-    hasDropOff := currentMap.HasDropOffZone()
-    return func(report core.IncidentReport) bool {
-        if report.Type == core.ObservationBodyFound && !hasDropOff {
-            return false
-        }
-        return a.reportIsInMyZone(person, report)
-    }
 }
 
 func (a *AIController) GetIncidentForCleanup(person *core.Actor) core.IncidentReport {
-    incident := a.blackboard.GetNextIncidentForCleanup(a.cleanupFilter(person))
-    if incident == core.EmptyReport {
-        return incident
+    currentMap := a.engine.GetGame().GetMap()
+    hasDropOff := currentMap.HasDropOffZone()
+    myZone := currentMap.ZoneAt(person.AI.StartPosition)
+    incident, exists := person.AI.Knowledge.GetUnhandledIncident(func(r core.IncidentReport) bool {
+        if r.Type == core.ObservationBodyFound && !hasDropOff {
+            return false
+        }
+        return r.Type.NeedsCleanup() && currentMap.ZoneAt(r.Location) == myZone
+    })
+    if !exists {
+        return core.EmptyReport
     }
-    incident.RegisteredCleaner = person
-    a.blackboard.ReportedIncidents[incident.Hash()] = incident
+    person.AI.Knowledge.MarkHandled(incident.Hash())
     return incident
 }
+
 func (a *AIController) IncidentsNeedCleanup(person *core.Actor) bool {
-    return a.blackboard.IncidentsNeedCleanup(a.cleanupFilter(person))
+    currentMap := a.engine.GetGame().GetMap()
+    hasDropOff := currentMap.HasDropOffZone()
+    myZone := currentMap.ZoneAt(person.AI.StartPosition)
+    _, exists := person.AI.Knowledge.GetUnhandledIncident(func(r core.IncidentReport) bool {
+        if r.Type == core.ObservationBodyFound && !hasDropOff {
+            return false
+        }
+        return r.Type.NeedsCleanup() && currentMap.ZoneAt(r.Location) == myZone
+    })
+    return exists
+}
+
+func (a *AIController) GetDangerousIncidents(person *core.Actor) []core.IncidentReport {
+    var result []core.IncidentReport
+    for _, r := range person.AI.Knowledge.Incidents {
+        if r.Type.IsDangerousLocation() {
+            result = append(result, r)
+        }
+    }
+    return result
 }
 
 func (a *AIController) TryPopScripted(person *core.Actor) {
@@ -187,15 +157,17 @@ func (a *AIController) TryPopScripted(person *core.Actor) {
         person.AI.PopState()
     }
 }
-func (a *AIController) MarkAsDone(incident core.IncidentReport) {
-    if report, ok := a.blackboard.ReportedIncidents[incident.Hash()]; ok {
-        report.FinishedHandling = true
-        a.blackboard.ReportedIncidents[incident.Hash()] = report
-        println(fmt.Sprintf("%s MARKED AS DONE -> %s", report.RegisteredHandler.DebugDisplayName(), incident.Hash()))
+func (a *AIController) MarkAsDone(person *core.Actor, incident core.IncidentReport) {
+    if incident.Type.IsContact() {
+        person.AI.Knowledge.LastSightingOfDangerous.HandledByMe = true
+    } else {
+        person.AI.Knowledge.MarkHandled(incident.Hash())
     }
+    println(fmt.Sprintf("%s MARKED AS DONE -> %s", person.DebugDisplayName(), incident.Hash()))
 }
-func (a *AIController) MarkAsCleaned(incident core.IncidentReport) {
-    a.blackboard.RemoveIncidentReport(incident)
+
+func (a *AIController) MarkAsCleaned(person *core.Actor, incident core.IncidentReport) {
+    person.AI.Knowledge.RemoveIncident(incident.Hash())
 }
 func (a *AIController) SwitchToWait(person *core.Actor) {
     a.PushWaitWithStatus(person, person.Status, nil)
@@ -557,21 +529,10 @@ func (a *AIController) SwitchStateBecauseOfNewKnowledge(person *core.Actor) {
     if person.Status == core.ActorStatusWatching {
         return
     }
-    investigatingDangerousLocation := false
-    investigatingSuspiciousLocation := false
-    if investigationState, ok := person.AI.GetState().(*InvestigationMovement); ok {
-        if investigationState.Incident != core.EmptyReport && investigationState.Incident.RegisteredHandler == person && !investigationState.Incident.FinishedHandling {
-            investigatingDangerousLocation = investigationState.Incident.Type.IsDangerousLocation()
-            investigatingSuspiciousLocation = investigationState.Incident.Type.IsSuspiciousLocation()
-        }
-    }
-    if investigatingDangerousLocation {
+    if person.Status == core.ActorStatusInvestigating {
         return
     }
     if a.ReactToDangerousLocations(person) {
-        return
-    }
-    if investigatingSuspiciousLocation {
         return
     }
     if a.ReactToSuspiciousLocations(person) {
@@ -581,46 +542,50 @@ func (a *AIController) SwitchStateBecauseOfNewKnowledge(person *core.Actor) {
 }
 
 func (a *AIController) ReactToDangerousActor(person *core.Actor) bool {
-    contactReport := person.AI.Knowledge.LastSightingOfDangerousActor
-    if contactReport.Tick > 0 && !contactReport.FinishedHandling {
-        currentMap := a.engine.GetGame().GetMap()
-        dangerMan, isActorHere := currentMap.TryGetActorAt(contactReport.Location)
-        if !isActorHere || a.engine.GetGame().AreAllies(person, dangerMan) {
-            return false
-        }
-        if person.CanSeeActor(dangerMan) {
-            //a.RaiseSuspicionAt(person, dangerMan, 200)
-            if person.Type == core.ActorTypeGuard {
-                a.SwitchToCombat(person, dangerMan)
-            } else if !contactReport.IsKnownByGuards() && a.IsGuardAvailable() {
-                a.SwitchToSnitch(person)
-            } else {
-                a.SwitchToPanic(person, []geometry.Point{dangerMan.Pos()})
-            }
-            return true
+    contactReport := person.AI.Knowledge.LastSightingOfDangerous
+    if contactReport.Tick == 0 || contactReport.HandledByMe {
+        return false
+    }
+    currentMap := a.engine.GetGame().GetMap()
+    dangerMan, isActorHere := currentMap.TryGetActorAt(contactReport.Location)
+    if !isActorHere || a.engine.GetGame().AreAllies(person, dangerMan) {
+        return false
+    }
+    if person.CanSeeActor(dangerMan) {
+        if person.Type == core.ActorTypeGuard {
+            a.SwitchToCombat(person, dangerMan)
+        } else if a.IsGuardAvailable() {
+            a.SwitchToSnitch(person)
         } else {
-            if person.Type == core.ActorTypeGuard {
-                a.SwitchToInvestigation(person, contactReport)
-            } else if !contactReport.IsKnownByGuards() && a.IsGuardAvailable() {
-                a.SwitchToSnitch(person)
-            } else if contactReport.Type.IsOpenViolence() {
-                a.SwitchToPanic(person, []geometry.Point{contactReport.Location})
-            }
+            a.SwitchToPanic(person, []geometry.Point{dangerMan.Pos()})
+        }
+        return true
+    } else {
+        if person.Type == core.ActorTypeGuard {
+            a.SwitchToInvestigation(person, contactReport)
+        } else if a.IsGuardAvailable() {
+            a.SwitchToSnitch(person)
+        } else if contactReport.Type.IsOpenViolence() {
+            a.SwitchToPanic(person, []geometry.Point{contactReport.Location})
         }
     }
     return false
 }
 
 func (a *AIController) ReactToSuspiciousActor(person *core.Actor) bool {
-    contactReport := person.AI.Knowledge.LastSightingOfSuspiciousActor
-    if contactReport.Tick > 0 {
-        currentMap := a.engine.GetGame().GetMap()
-        susMan, isActorHere := currentMap.TryGetActorAt(contactReport.Location)
-        if isActorHere && !a.engine.GetGame().AreAllies(person, susMan) {
-            a.SwitchToWatch(person, susMan, contactReport)
-            return true
-        }
+    incident, exists := person.AI.Knowledge.GetUnhandledIncident(func(r core.IncidentReport) bool {
+        return r.Type.IsSuspiciousActor()
+    })
+    if !exists {
+        return false
     }
+    currentMap := a.engine.GetGame().GetMap()
+    susActor, isActorHere := currentMap.TryGetActorAt(incident.Location)
+    if isActorHere && !a.engine.GetGame().AreAllies(person, susActor) {
+        a.SwitchToWatch(person, susActor, incident)
+        return true
+    }
+    person.AI.Knowledge.MarkHandled(incident.Hash())
     return false
 }
 
@@ -632,35 +597,31 @@ func (a *AIController) IsGuardAvailable() bool {
     }
     return false
 }
-func (a *AIController) GetDangerousIncidents(person *core.Actor) []core.IncidentReport {
-    return a.blackboard.Filter(func(report core.IncidentReport) bool {
-        return report.Type.IsDangerousLocation()
-    })
-}
 
 // PROBLEM: guard is handling one incident and switches to investigate
-// but the guard will aso happily acquire another incident
+// but the guard will also happily acquire another incident
 func (a *AIController) ReactToDangerousLocations(person *core.Actor) bool {
-    incident, exists := a.blackboard.LastUnhandledReport(func(report core.IncidentReport) bool {
-        return report.Type.IsDangerousLocation() && report.KnownBy.Contains(person) && (person.Type == core.ActorTypeGuard || report.RegisteredSnitch == nil)
+    incident, exists := person.AI.Knowledge.GetUnhandledIncident(func(r core.IncidentReport) bool {
+        return r.Type.IsDangerousLocation()
+    })
+    if !exists {
+        return false
+    }
+    if person.Type == core.ActorTypeGuard {
+        person.AI.Knowledge.MarkHandled(incident.Hash())
+        a.SwitchToInvestigation(person, incident)
+    } else if a.IsGuardAvailable() {
+        a.SwitchToSnitch(person)
+    }
+    return true
+}
+
+func (a *AIController) ReactToSuspiciousLocations(person *core.Actor) bool {
+    incident, exists := person.AI.Knowledge.GetUnhandledIncident(func(r core.IncidentReport) bool {
+        return r.Type.IsSuspiciousLocation() && !a.isAlreadyBeingInvestigated(r.Location)
     })
     if exists {
-        if person.Type == core.ActorTypeGuard && a.TryRegisterHandler(person, incident) {
-            incident.RegisteredHandler = person
-            a.SwitchToInvestigation(person, incident)
-        } else if !incident.IsKnownByGuards() && a.IsGuardAvailable() {
-            a.SwitchToSnitch(person)
-        }
-        return true
-    }
-    return false
-}
-func (a *AIController) ReactToSuspiciousLocations(person *core.Actor) bool {
-    incident, exists := a.blackboard.LastUnhandledReport(func(report core.IncidentReport) bool {
-        return report.Type.IsSuspiciousLocation() && report.KnownBy.Contains(person) && (person.Type == core.ActorTypeGuard || !a.IsNearActiveDangerousIndicator(report.Location))
-    })
-    if exists && a.TryRegisterHandler(person, incident) {
-        incident.RegisteredHandler = person
+        person.AI.Knowledge.MarkHandled(incident.Hash())
         a.SwitchToInvestigation(person, incident)
         return true
     }
@@ -681,7 +642,7 @@ func (a *AIController) RaiseSuspicionAt(person *core.Actor, dangerousActor *core
         }
         ai.SuspicionCounter = 0
         person.IsEyeWitness = true
-        person.AI.Knowledge.AddSightingOfDangerousActor(person, dangerousActor, core.ObservationOngoingSuspiciousBehaviour, a.engine.CurrentTick())
+        person.AI.Knowledge.AddDangerousSighting(person, dangerousActor, core.ObservationOngoingSuspiciousBehaviour, a.engine.CurrentTick())
         if person.Type == core.ActorTypeGuard {
             a.SwitchToCombat(person, dangerousActor)
         } else if a.IsGuardAvailable() {
@@ -725,7 +686,11 @@ func (a *AIController) TaskCountFor(actor *core.Actor) int {
 }
 
 func (a *AIController) Reset() {
-    a.blackboard = NewBlackboard()
+    for _, actor := range a.engine.GetGame().GetMap().Actors() {
+        if actor.AI != nil {
+            actor.AI.Knowledge = &core.IndividualKnowledge{}
+        }
+    }
 }
 
 func (a *AIController) IsNearGuards(pos geometry.Point) bool {
@@ -744,20 +709,20 @@ func (a *AIController) IsNearGuards(pos geometry.Point) bool {
     return false
 }
 
+// TransferKnowledge shares dangerous-actor sightings between two guards on the same team.
+// Suspicious activities and location incidents are personal and are never shared.
 func (a *AIController) TransferKnowledge(one *core.Actor, two *core.Actor) {
-    if one.AI.Knowledge.LastSightingOfDangerousActor.Tick > 0 && one.AI.Knowledge.LastSightingOfDangerousActor.Tick > two.AI.Knowledge.LastSightingOfDangerousActor.Tick {
-        lastSighting := one.AI.Knowledge.LastSightingOfDangerousActor
-        lastSighting.KnownBy.Add(one)
-        lastSighting.KnownBy.Add(two)
-        two.AI.Knowledge.LastSightingOfDangerousActor = lastSighting
-    } else if two.AI.Knowledge.LastSightingOfDangerousActor.Tick > 0 {
-        lastSighting := two.AI.Knowledge.LastSightingOfDangerousActor
-        lastSighting.KnownBy.Add(one)
-        lastSighting.KnownBy.Add(two)
-        one.AI.Knowledge.LastSightingOfDangerousActor = lastSighting
+    if one.Type != core.ActorTypeGuard || two.Type != core.ActorTypeGuard || one.Team != two.Team {
+        return
     }
-    a.blackboard.TransferKnowledge(one, two)
-    println(fmt.Sprintf("Blackboard: Knowledge transfer between %s and %s", one.DebugDisplayName(), two.DebugDisplayName()))
+    oneS := one.AI.Knowledge.LastSightingOfDangerous
+    twoS := two.AI.Knowledge.LastSightingOfDangerous
+    if oneS.Tick > twoS.Tick {
+        two.AI.Knowledge.LastSightingOfDangerous = oneS
+    } else if twoS.Tick > oneS.Tick {
+        one.AI.Knowledge.LastSightingOfDangerous = twoS
+    }
+    println(fmt.Sprintf("Knowledge transfer: %s <-> %s", one.DebugDisplayName(), two.DebugDisplayName()))
 }
 
 func (a *AIController) handleSplitOfTravelGroup(person *core.Actor, group mapset.Set[*core.Actor]) {

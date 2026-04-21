@@ -47,6 +47,7 @@ var itemTypeNames = map[ItemType]string{
     ItemTypeProximityMine:       "proximity_mine",
     ItemTypeLethalPoisonGrenade: "lethal_poison_grenade",
     ItemTypeSleepPoisonGrenade:  "sleep_poison_grenade",
+    ItemTypeSmokeGrenade:        "smoke_grenade",
     ItemTypeLethalPoisonMine:    "lethal_poison_mine",
     ItemTypeSleepPoisonMine:     "sleep_poison_mine",
     ItemTypeCamera:              "camera",
@@ -111,6 +112,7 @@ const (
     ItemTypeSleepPoisonGrenade
     ItemTypeLethalPoisonMine
     ItemTypeSleepPoisonMine
+    ItemTypeSmokeGrenade
     ItemTypeMessage
     ItemTypeCamera
     ItemTypeShovel
@@ -165,6 +167,7 @@ var itemTraitsTable = map[ItemType]itemTypeTraits{
     ItemTypeProximityMine:       {hasRangedAction: true, isThrowable: true, canSelfActivate: true},
     ItemTypeLethalPoisonGrenade: {hasRangedAction: true, isThrowable: true},
     ItemTypeSleepPoisonGrenade:  {hasRangedAction: true, isThrowable: true},
+    ItemTypeSmokeGrenade:        {hasRangedAction: true, isThrowable: true},
     ItemTypeLethalPoisonMine:    {hasRangedAction: true, isThrowable: true, canSelfActivate: true},
     ItemTypeSleepPoisonMine:     {hasRangedAction: true, isThrowable: true, canSelfActivate: true},
     ItemTypeFlashlight:          {hasMeleeAction: true, scopeFoV: 60.0},

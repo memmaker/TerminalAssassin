@@ -128,6 +128,7 @@ const (
     ActorTypeGuard    ActorType = "guard"
     ActorTypeTarget   ActorType = "target"
     ActorTypeFence    ActorType = "fence"
+    ActorTypePredator ActorType = "predator"
 )
 
 type MovementMode rune
@@ -192,41 +193,55 @@ type OrientedLocation struct {
 }
 
 type IndividualKnowledge struct {
-    LastSightingOfDangerousActor  IncidentReport
-    LastSightingOfSuspiciousActor IncidentReport
+	LastSightingOfDangerous IncidentReport
+	Incidents               []IncidentReport
 }
 
-func (k *IndividualKnowledge) AddSightingOfDangerousActor(witness, dangerMan *Actor, observedBehavior Observation, atTick uint64) {
-    inTheKnow := mapset.NewSet[*Actor]()
-    inTheKnow.Add(witness)
-    noSightingBeforeThis := k.LastSightingOfDangerousActor.Tick == 0
-    k.LastSightingOfDangerousActor = IncidentReport{
-        Location:          dangerMan.Pos(),
-        Type:              observedBehavior,
-        Tick:              atTick,
-        FinishedHandling:  false,
-        RegisteredHandler: nil,
-        KnownBy:           inTheKnow,
-    }
-    if noSightingBeforeThis {
-        println(fmt.Sprintf("%s saw a hostile person doing '%s' at %s", witness.DebugDisplayName(), observedBehavior, dangerMan.Pos()))
-    }
+func (k *IndividualKnowledge) AddDangerousSighting(witness, dangerMan *Actor, obs Observation, tick uint64) {
+	first := k.LastSightingOfDangerous.Tick == 0
+	k.LastSightingOfDangerous = IncidentReport{Location: dangerMan.Pos(), Type: obs, Tick: tick}
+	if first {
+		println(fmt.Sprintf("%s saw a hostile person doing '%s' at %s", witness.DebugDisplayName(), obs, dangerMan.Pos()))
+	}
 }
-func (k *IndividualKnowledge) AddSightingOfSuspiciousActor(witness *Actor, location geometry.Point, observedBehavior Observation, atTick uint64) {
-    inTheKnow := mapset.NewSet[*Actor]()
-    inTheKnow.Add(witness)
-    noSightingBeforeThis := k.LastSightingOfSuspiciousActor.Tick == 0
-    k.LastSightingOfSuspiciousActor = IncidentReport{
-        Location:          location,
-        Tick:              atTick,
-        FinishedHandling:  false,
-        RegisteredHandler: nil,
-        KnownBy:           inTheKnow,
-        Type:              observedBehavior,
-    }
-    if noSightingBeforeThis {
-        println(fmt.Sprintf("%s saw a suspicious person doing '%s' at %s", witness.DebugDisplayName(), observedBehavior, location))
-    }
+
+func (k *IndividualKnowledge) AddIncident(report IncidentReport) {
+	for i, existing := range k.Incidents {
+		if existing.Hash() == report.Hash() {
+			if !existing.HandledByMe {
+				k.Incidents[i].Tick = report.Tick
+			}
+			return
+		}
+	}
+	k.Incidents = append(k.Incidents, report)
+}
+
+func (k *IndividualKnowledge) MarkHandled(hash string) {
+	for i, r := range k.Incidents {
+		if r.Hash() == hash {
+			k.Incidents[i].HandledByMe = true
+			return
+		}
+	}
+}
+
+func (k *IndividualKnowledge) RemoveIncident(hash string) {
+	for i, r := range k.Incidents {
+		if r.Hash() == hash {
+			k.Incidents = append(k.Incidents[:i], k.Incidents[i+1:]...)
+			return
+		}
+	}
+}
+
+func (k *IndividualKnowledge) GetUnhandledIncident(filter func(IncidentReport) bool) (IncidentReport, bool) {
+	for _, r := range k.Incidents {
+		if !r.HandledByMe && filter(r) {
+			return r, true
+		}
+	}
+	return EmptyReport, false
 }
 
 type AIComponent struct {
@@ -366,6 +381,11 @@ func (a *Actor) Icon() rune {
 // IsFence returns true when this actor is a fence (criminal shopkeeper).
 func (a *Actor) IsFence() bool {
     return a.Type == ActorTypeFence
+}
+
+// IsPredator returns true when this actor is a predator.
+func (a *Actor) IsPredator() bool {
+    return a.Type == ActorTypePredator
 }
 
 // IsCriminal returns true when this actor is a criminal who ignores all alerts.

@@ -23,7 +23,7 @@ Allowed_Team: Tech crew
 
 Name: Red Dragon HQ
 Type: Private
-Ambience_Cue:
+Ambience_Cue: 
 
 Name: Dragon drop-off
 Type: Drop Off

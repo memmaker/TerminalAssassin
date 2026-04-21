@@ -101,6 +101,9 @@ Difficulty: easy
 ObjectAt: (29,86)
 Name: a sink (liquid faucet)
 
+ObjectAt: (30,41)
+Name: cage
+
 ObjectAt: (31,63)
 Name: light window (closed)
 

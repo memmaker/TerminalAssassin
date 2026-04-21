@@ -327,9 +327,9 @@ func (m *Model) IllegalActionAt(pos geometry.Point, kindOfEvent core.Observation
                 m.engine.PublishEvent(services.PlayerSpottedEvent{})
             }
             if kindOfEvent.IsOpenViolence() {
-                a.AI.Knowledge.AddSightingOfDangerousActor(a, actorAt, kindOfEvent, m.engine.CurrentTick())
+                a.AI.Knowledge.AddDangerousSighting(a, actorAt, kindOfEvent, m.engine.CurrentTick())
             } else {
-                a.AI.Knowledge.AddSightingOfSuspiciousActor(a, actorAt.Pos(), kindOfEvent, m.engine.CurrentTick())
+                a.AI.Knowledge.AddIncident(core.IncidentReport{Type: kindOfEvent, Location: actorAt.Pos(), Tick: m.engine.CurrentTick()})
             }
         } else {
             aic.ReportIncident(a, pos, kindOfEvent)
@@ -460,7 +460,7 @@ func (m *Model) ApplyStimulusToActor(a *core.Actor, source core.EffectSource, st
 // Cause of Death for people being shot is sneak attack most of the time..
 // We also don't know if a Sniper Rifle was used..
 func (m *Model) TakePiercingDamage(a *core.Actor, source core.EffectSource, force int) {
-    if m.engine.GetAI().IsControlledByAI(a) && (a.Status != core.ActorStatusCombat) {
+    if m.engine.GetAI().IsControlledByAI(a) && (a.Status != core.ActorStatusCombat) && (a.Status != core.ActorStatusFrenzy) {
         m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusPiercingDamage, source))
         return
     }
@@ -1124,14 +1124,14 @@ func (m *Model) UpdateKnowledgeFromVision(person *core.Actor) {
         dangerObservation := m.GetDangerObservation(person, actorAt)
         if dangerObservation != core.ObservationNull {
             person.IsEyeWitness = true
-            a.Knowledge.AddSightingOfDangerousActor(person, actorAt, dangerObservation, m.engine.CurrentTick())
+            a.Knowledge.AddDangerousSighting(person, actorAt, dangerObservation, m.engine.CurrentTick())
             if actorAt.IsPlayer() {
                 m.engine.PublishEvent(services.PlayerSpottedEvent{})
             }
         } else {
             suspicionObservation := m.GetSuspicionObservation(person, actorAt)
             if suspicionObservation != core.ObservationNull {
-                a.Knowledge.AddSightingOfSuspiciousActor(person, p, suspicionObservation, m.engine.CurrentTick())
+                a.Knowledge.AddIncident(core.IncidentReport{Type: suspicionObservation, Location: actorAt.Pos(), Tick: m.engine.CurrentTick()})
                 if actorAt.IsPlayer() {
                     m.engine.PublishEvent(services.PlayerSpottedEvent{})
                 }
@@ -1234,6 +1234,9 @@ func (m *Model) InitLoadedMap(loadedMap *gridmap.GridMap[*core.Actor, *core.Item
 func (m *Model) InitActor(a *core.Actor) {
     a.Fov = geometry.NewFOV(geometry.NewRect(-a.MaxVisionRange, -a.MaxVisionRange, a.MaxVisionRange+1, a.MaxVisionRange+1))
     a.Health = m.engine.GetGame().GetConfig().ActorDefaultHealth
+    if a.Type == core.ActorTypePredator {
+        a.Health = 15
+    }
     a.MovementMode = core.MovementModeWalking
     if a.AI != nil {
         a.AI.Knowledge = &core.IndividualKnowledge{}
@@ -1242,6 +1245,9 @@ func (m *Model) InitActor(a *core.Actor) {
         a.AI.Movement = &actions.Movement{Person: a, Engine: m.engine}
         if a.AI.HasSchedule() {
             a.AI.SetState(&ai.ScheduledMovement{AIContext: ai.AIContext{Engine: m.engine, Person: a}})
+        } else if a.Type == core.ActorTypePredator {
+            a.Status = core.ActorStatusFrenzy
+            a.AI.SetState(&ai.FrenzyMovement{AIContext: ai.AIContext{Engine: m.engine, Person: a}})
         } else if !a.IsFollowing() {
             a.AI.SetState(&ai.GuardMovement{AIContext: ai.AIContext{Engine: m.engine, Person: a}})
         }

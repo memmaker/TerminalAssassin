@@ -59,3 +59,9 @@ lethal_poison: 100
 Signature: FrenzyStims($POWER)
 frenzy: $POWER
 
+Signature: SmokeAreaStims($RADIUS, $DURATION)
+Distribution: gas
+Distance: $RADIUS
+Pressure: $DURATION
+DestroyOnApplication: true
+smoke: 100

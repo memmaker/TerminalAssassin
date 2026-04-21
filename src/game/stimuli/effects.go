@@ -23,6 +23,7 @@ const (
 	StimulusBurnableLiquid  StimulusType = "make_burnable"
 	StimulusHighVoltage     StimulusType = "high_voltage"
 	StimulusFrenzy          StimulusType = "frenzy"
+	StimulusSmoke           StimulusType = "smoke"
 )
 
 type Stim struct {

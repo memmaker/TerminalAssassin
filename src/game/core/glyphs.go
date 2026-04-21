@@ -85,4 +85,6 @@ const (
     GlyphChestOfDrawers       = 'ɥ'
     GlyphDrawers              = 'ɦ'
     GlyphDesk                 = 'ɧ'
+    GlyphCageClosed           = 'ɯ'
+    GlyphCageOpen             = 'ɰ'
 )

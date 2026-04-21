@@ -1,13 +1,12 @@
 package core
 
 import (
-    "fmt"
-    "github.com/memmaker/terminal-assassin/game/stimuli"
-    "regexp"
-    //"github.com/memmaker/terminal-assassin/game/services"
-    "github.com/memmaker/terminal-assassin/geometry"
-    "github.com/memmaker/terminal-assassin/gridmap"
-    "github.com/memmaker/terminal-assassin/mapset"
+	"fmt"
+	"github.com/memmaker/terminal-assassin/game/stimuli"
+	"regexp"
+	//"github.com/memmaker/terminal-assassin/game/services"
+	"github.com/memmaker/terminal-assassin/geometry"
+	"github.com/memmaker/terminal-assassin/gridmap"
 )
 
 type AIUpdate struct {
@@ -61,23 +60,10 @@ const (
 )
 
 type IncidentReport struct {
-    Type              Observation
-    Location          geometry.Point
-    Tick              uint64
-    FinishedHandling  bool
-    RegisteredHandler *Actor
-    RegisteredCleaner *Actor
-    RegisteredSnitch  *Actor
-    KnownBy           mapset.Set[*Actor]
-}
-
-func (i IncidentReport) IsKnownByGuards() bool {
-    for _, actor := range i.KnownBy.ToSlice() {
-        if actor.Type == ActorTypeGuard {
-            return true
-        }
-    }
-    return false
+	Type        Observation
+	Location    geometry.Point
+	Tick        uint64
+	HandledByMe bool
 }
 
 var EmptyReport = IncidentReport{}
@@ -220,26 +206,12 @@ func (i Observation) IsEnvironmentalToggle() bool {
 }
 
 func (i IncidentReport) String() string {
-    if i.KnownBy.Cardinality() == 0 {
-        return fmt.Sprintf("%s at %v", i.Type, i.Location)
-    }
-    knowledgeGroup := ""
-    for _, actor := range i.KnownBy.ToSlice() {
-        knowledgeGroup += fmt.Sprintf(" - %s\n", actor.DebugDisplayName())
-    }
-    reportTitle := fmt.Sprintf("%s at %v - known by:\n", i.Type, i.Location)
-    return reportTitle + knowledgeGroup
+	return fmt.Sprintf("%s at %v", i.Type, i.Location)
 }
 func (i IncidentReport) Hash() string {
-    return fmt.Sprintf("%s:%v", i.Type, i.Location)
+	return fmt.Sprintf("%s:%v", i.Type, i.Location)
 }
 
-func (i IncidentReport) HasActiveHandler() bool {
-    if i.RegisteredHandler == nil || i.RegisteredHandler.IsDowned() {
-        return false
-    }
-    return true
-}
 
 type KnownObject interface {
     Description() string

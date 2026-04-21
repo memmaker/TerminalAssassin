@@ -14,9 +14,7 @@ import (
 
     "github.com/memmaker/terminal-assassin/common"
     "github.com/memmaker/terminal-assassin/game/stimuli"
-    "github.com/memmaker/terminal-assassin/geometry"
     "github.com/memmaker/terminal-assassin/gridmap"
-    "github.com/memmaker/terminal-assassin/mapset"
     rec_files "github.com/memmaker/terminal-assassin/rec-files"
 )
 
@@ -556,24 +554,13 @@ func (e *ExternalData) TileFromIcon(icon rune) gridmap.Tile {
 }
 
 func (e *ExternalData) NewActorFromDisk(factory *ItemFactory, diskData core.ActorOnDisk) *core.Actor {
-    newActor := &core.Actor{
-        Name:           diskData.Name,
-        Type:           diskData.ActorType,
-        Team:           diskData.Team,
-        MapPos:         diskData.Position,
-        LastPos:        diskData.Position,
-        MovementMode:   core.MovementModeWalking,
-        AutoMoveSpeed:  3,
-        FoVinDegrees:   90,
-        MaxVisionRange: 12,
-        LookDirection:  diskData.LookDirection,
-        Path:           make([]geometry.Point, 0),
-    }
-    newActor.Fov = geometry.NewFOV(geometry.NewRect(-newActor.MaxVisionRange, -newActor.MaxVisionRange, newActor.MaxVisionRange+1, newActor.MaxVisionRange+1))
-    newActor.AI = core.NewEmptyAIComponent()
-    newActor.Script = &core.ScriptComponent{}
+    newActor := core.NewActor(diskData.Name)
+    newActor.Type = diskData.ActorType
+    newActor.Team = diskData.Team
+    newActor.MapPos = diskData.Position
+    newActor.LastPos = diskData.Position
+    newActor.LookDirection = diskData.LookDirection
     newActor.Inventory = newInventory(newActor, factory.StringsToItems(diskData.Inventory))
-    newActor.Dialogue = &core.DialogueComponent{Conversations: make(map[string]*core.Conversation), SpokenSpeech: mapset.NewSet[string](), HeardSpeech: mapset.NewSet[string]()}
     return newActor
 }
 

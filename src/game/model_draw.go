@@ -91,6 +91,9 @@ func StimDrawInfo(c gridmap.MapCell[*core.Actor, *core.Item, services.Object], t
     if c.HasStim(stimuli.StimulusBlood) && c.ForceOfStim(stimuli.StimulusBlood) > 15 {
         stimStyle = stimStyle.WithFg(core.CurrentTheme.BloodForeground).WithBg(core.CurrentTheme.BloodBackground)
         icon = runeFromStimType(stimuli.StimulusBlood)
+    } else if c.HasStim(stimuli.StimulusSmoke) {
+        stimStyle = styleFromStimType(stimuli.StimulusSmoke, stimStyle)
+        icon = runeFromStimType(stimuli.StimulusSmoke)
     } else if c.HasStim(stimuli.StimulusFire) {
         stimStyle = styleFromStimType(stimuli.StimulusFire, stimStyle)
         icon = runeFromStimType(stimuli.StimulusFire)
@@ -125,6 +128,8 @@ func styleFromStimType(stimulusType stimuli.StimulusType, st common.Style) commo
     switch stimulusType {
     case stimuli.StimulusWater:
         return st.WithFg(core.CurrentTheme.WaterForeground).WithBg(core.CurrentTheme.WaterBackground)
+    case stimuli.StimulusSmoke:
+        return st.WithFg(common.NewRGBColorFromBytes(180, 180, 180)).WithBg(common.NewRGBColorFromBytes(80, 80, 80))
     case stimuli.StimulusBurnableLiquid:
         return st.WithFg(core.CurrentTheme.OilForeground).WithBg(core.CurrentTheme.OilBackground)
     case stimuli.StimulusFire:
@@ -153,6 +158,8 @@ func runeFromStimType(stimulusType stimuli.StimulusType) rune {
         return core.GlyphFireOne
     case stimuli.StimulusHighVoltage:
         return core.GlyphElectric
+    case stimuli.StimulusSmoke:
+        fallthrough
     case stimuli.StimulusLethalPoison:
         fallthrough
     case stimuli.StimulusEmeticPoison:

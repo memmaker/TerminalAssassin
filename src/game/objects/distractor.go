@@ -94,12 +94,8 @@ func (r *ZoneDistractor) tryToDistract(m services.Engine) {
         }
         aic := m.GetAI()
 
-        report := aic.ReportIncident(target, r.Pos(), core.ObservationDeviceDistraction)
-        if aic.TryRegisterHandler(target, report) {
-            report.RegisteredHandler = target
-            aic.SwitchToInvestigation(target, report)
-            println(fmt.Sprintf("ZoneDistractor is attracting %s", target.DebugDisplayName()))
-        }
+		report := aic.ReportIncident(target, r.Pos(), core.ObservationDeviceDistraction)
+		aic.SwitchToInvestigation(target, report)
 
         m.Schedule(60*5, func() {
             r.tryToDistract(m)

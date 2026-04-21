@@ -15,14 +15,8 @@ type InvestigationMovement struct {
 }
 
 func (i *InvestigationMovement) NextAction() core.AIUpdate {
-	aic := i.AIContext.Engine.GetAI()
 	person := i.Person
 	person.Status = core.ActorStatusInvestigating
-
-	if aic.IsIncidentHandled(person, i.Incident) {
-		person.AI.PopState()
-		return NextUpdateIn(0.5)
-	}
 
 	return person.AI.Movement.Action(i.Incident.Location, i)
 }
@@ -39,13 +33,9 @@ func (i *InvestigationMovement) OnDestinationReached() core.AIUpdate {
 		return NextUpdateIn(0.5)
 	}
 	if i.Incident.Type.IsContact() {
-		if geometry.DistanceChebyshev(i.Incident.Location, person.AI.Knowledge.LastSightingOfDangerousActor.Location) <= 3 {
-			person.AI.Knowledge.LastSightingOfDangerousActor.FinishedHandling = true
-			person.AI.Knowledge.LastSightingOfDangerousActor.Tick = 0
-		}
-		if geometry.DistanceChebyshev(i.Incident.Location, person.AI.Knowledge.LastSightingOfSuspiciousActor.Location) <= 3 {
-			person.AI.Knowledge.LastSightingOfSuspiciousActor.FinishedHandling = true
-			person.AI.Knowledge.LastSightingOfSuspiciousActor.Tick = 0
+		if geometry.DistanceChebyshev(i.Incident.Location, person.AI.Knowledge.LastSightingOfDangerous.Location) <= 3 {
+			person.AI.Knowledge.LastSightingOfDangerous.HandledByMe = true
+			person.AI.Knowledge.LastSightingOfDangerous.Tick = 0
 		}
 		println(fmt.Sprintf("%s FINISHED HANDLING contact. Could not confirm sighting of '%s'", person.Name, i.Incident.Type))
 	} else if i.Incident.Type.IsEnvironmentalToggle() {
@@ -61,7 +51,7 @@ func (i *InvestigationMovement) OnDestinationReached() core.AIUpdate {
 			}
 		}
 	}
-	aic.MarkAsDone(i.Incident)
+	aic.MarkAsDone(person, i.Incident)
 	person.AI.PopState()
 	return NextUpdateIn(0.5)
 }

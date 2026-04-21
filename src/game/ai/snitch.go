@@ -12,8 +12,7 @@ import (
 
 type SnitchMovement struct {
 	AIContext
-	KnownGuard       *core.Actor
-	incidentToReport core.IncidentReport
+	KnownGuard *core.Actor
 }
 
 func (s *SnitchMovement) couldFindGuard() bool {
@@ -52,18 +51,9 @@ func (s *SnitchMovement) NextAction() core.AIUpdate {
 }
 
 func (s *SnitchMovement) nothingToTell() bool {
-	aic := s.Engine.GetAI()
 	currentTick := s.Engine.CurrentTick()
-	if s.Person.AI.Knowledge.LastSightingOfDangerousActor.Tick > 0 && currentTick-s.Person.AI.Knowledge.LastSightingOfDangerousActor.Tick < uint64(120*ebiten.TPS()) {
-		return false
-	}
-	if s.incidentToReport == core.EmptyReport {
-		s.incidentToReport = aic.GetIncidentForSnitching(s.Person)
-		if s.incidentToReport == core.EmptyReport {
-			return true
-		}
-	}
-	return false
+	sighting := s.Person.AI.Knowledge.LastSightingOfDangerous
+	return sighting.Tick == 0 || sighting.HandledByMe || currentTick-sighting.Tick >= uint64(120*ebiten.TPS())
 }
 
 func (s *SnitchMovement) hasGuardLocation() bool {
@@ -77,11 +67,7 @@ func (s *SnitchMovement) noGuards() {
 	person := s.Person
 	aic := s.Engine.GetAI()
 	println(fmt.Sprintf("%s: NO GUARDS! Panic..?!", person.DebugDisplayName()))
-	dangerReports := aic.GetDangerousIncidents(person)
-	dangerLocations := make([]geometry.Point, 0)
-	for _, report := range dangerReports {
-		dangerLocations = append(dangerLocations, report.Location)
-	}
+	dangerLocations := []geometry.Point{person.AI.Knowledge.LastSightingOfDangerous.Location}
 	aic.SwitchToPanic(person, dangerLocations)
 }
 

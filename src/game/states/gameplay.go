@@ -6,6 +6,7 @@ import (
     "math"
     "math/rand"
     "path"
+    "sort"
     "strings"
     "time"
 
@@ -1322,16 +1323,75 @@ func (g *GameStateGameplay) contextAction() {
         return
     }
 
-    // Optimisation: when exactly one context action exists in the surroundings
-    // and no explicit direction has been selected (or the selected direction has
-    // no action), execute that single action immediately.
-    if len(g.ActionMap) == 1 {
-        for dir, action := range g.ActionMap {
-            action.Action(g.engine, player, player.Pos().Add(dir))
-            g.UpdateHUD()
+    // No directional selection — find the best available action ordered by
+    // proximity to look direction: actor actions first, then item pickups,
+    // then any other context action.
+    sortedDirs := dirsSortedByLookAngle(player.LookDirection)
+    sortedDirs = append(sortedDirs, geometry.PointZero) // same-tile last
+
+    var actorDir, pickupDir, fallbackDir geometry.Point
+    var actorAction, pickupAction, fallbackAction services.ContextAction
+
+    for _, dir := range sortedDirs {
+        action, ok := g.ActionMap[dir]
+        if !ok {
+            continue
+        }
+        absPos := player.Pos().Add(dir)
+        if fallbackAction == nil {
+            fallbackDir, fallbackAction = dir, action
+        }
+        if pickupAction == nil && currentMap.IsItemAt(absPos) && !currentMap.ItemAt(absPos).Buried {
+            pickupDir, pickupAction = dir, action
+        }
+        if actorAction == nil && (currentMap.IsActorAt(absPos) || currentMap.IsDownedActorAt(absPos)) {
+            actorDir, actorAction = dir, action
         }
     }
 
+    var chosenDir geometry.Point
+    var chosenAction services.ContextAction
+    switch {
+    case actorAction != nil:
+        chosenDir, chosenAction = actorDir, actorAction
+    case pickupAction != nil:
+        chosenDir, chosenAction = pickupDir, pickupAction
+    case fallbackAction != nil:
+        chosenDir, chosenAction = fallbackDir, fallbackAction
+    default:
+        return
+    }
+    chosenAction.Action(g.engine, player, player.Pos().Add(chosenDir))
+    g.UpdateHUD()
+}
+
+// dirsSortedByLookAngle returns the four cardinal direction vectors sorted by
+// angular closeness to lookDir (degrees), closest first.
+func dirsSortedByLookAngle(lookDir float64) []geometry.Point {
+    dirs := []geometry.Point{
+        geometry.RelativeEast,
+        geometry.RelativeSouth,
+        geometry.RelativeWest,
+        geometry.RelativeNorth,
+    }
+    angles := map[geometry.Point]float64{
+        geometry.RelativeEast:  0,
+        geometry.RelativeSouth: 90,
+        geometry.RelativeWest:  180,
+        geometry.RelativeNorth: 270,
+    }
+    sort.SliceStable(dirs, func(i, j int) bool {
+        return angularDistance(lookDir, angles[dirs[i]]) < angularDistance(lookDir, angles[dirs[j]])
+    })
+    return dirs
+}
+
+func angularDistance(a, b float64) float64 {
+    diff := math.Abs(a - b)
+    if diff > 180 {
+        diff = 360 - diff
+    }
+    return diff
 }
 
 // playerDiveTackle performs the Dive & Tackle action in the given direction.

@@ -683,6 +683,10 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) IsTransparent(p geometry.Poin
         return false
     }
 
+    if m.IsStimulusOnTile(p, stimuli.StimulusSmoke) {
+        return false
+    }
+
     return m.GetCell(p).TileType.IsTransparent
 }
 

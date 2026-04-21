@@ -257,25 +257,22 @@ type AIInterface interface {
     TryContextActionAtTaskLocation(person *core.Actor, action func()) bool
     IsAtGuardPosition(person *core.Actor) bool
 
-    MarkAsDone(incident core.IncidentReport)
-    RaiseSuspicionAt(witness *core.Actor, suspiciousActor *core.Actor, delayInMS int)
+	MarkAsDone(person *core.Actor, incident core.IncidentReport)
+	RaiseSuspicionAt(witness *core.Actor, suspiciousActor *core.Actor, delayInMS int)
 
-    TransferKnowledge(one *core.Actor, two *core.Actor)
-    IncidentsNeedCleanup(person *core.Actor) bool
-    GetIncidentForCleanup(person *core.Actor) core.IncidentReport
-    MarkAsCleaned(incident core.IncidentReport)
-    GetIncidentForSnitching(person *core.Actor) core.IncidentReport
-    IsIncidentHandled(person *core.Actor, incident core.IncidentReport) bool
-    IsGuardAvailable() bool
-    GetDangerousIncidents(person *core.Actor) []core.IncidentReport
+	TransferKnowledge(one *core.Actor, two *core.Actor)
+	IncidentsNeedCleanup(person *core.Actor) bool
+	GetIncidentForCleanup(person *core.Actor) core.IncidentReport
+	MarkAsCleaned(person *core.Actor, incident core.IncidentReport)
+	IsGuardAvailable() bool
+	GetDangerousIncidents(person *core.Actor) []core.IncidentReport
 
-    Update()
-    SwitchToScript(target *core.Actor)
-    TryPopScripted(actor *core.Actor)
-    SetEngaged(person *core.Actor, engagedStatus core.ActorState, until func() bool)
-    TryRegisterHandler(target *core.Actor, report core.IncidentReport) bool
-    CreateTravelGroup(group mapset.Set[*core.Actor])
-    DeleteTravelGroup(group mapset.Set[*core.Actor])
+	Update()
+	SwitchToScript(target *core.Actor)
+	TryPopScripted(actor *core.Actor)
+	SetEngaged(person *core.Actor, engagedStatus core.ActorState, until func() bool)
+	CreateTravelGroup(group mapset.Set[*core.Actor])
+	DeleteTravelGroup(group mapset.Set[*core.Actor])
 }
 
 type FileInterface interface {

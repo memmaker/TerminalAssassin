@@ -283,6 +283,14 @@ projectile_range: 7
 trigger_effects: LethalPoisonGrenadeTrigger(4, 10)
 loot_value: 400
 
+name: Smoke Grenade
+icon: ˑ
+type: smoke_grenade
+uses: 1
+projectile_range: 7
+trigger_effects: SmokeGrenadeTrigger(4, 15)
+loot_value: 200
+
 name: Trip Mine (sleep poison)
 icon: Ő
 type: sleep_poison_mine

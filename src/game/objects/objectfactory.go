@@ -196,6 +196,13 @@ func (f ObjectFactory) SimpleObjects() []services.ObjectCreator {
             },
         },
         {
+            Name: "cage",
+            Icon: core.GlyphCageClosed,
+            Create: func(name string) services.Object {
+                return NewCage()
+            },
+        },
+        {
             Name: "gravestone",
             Icon: core.GlyphGravestone,
             Create: func(name string) services.Object {

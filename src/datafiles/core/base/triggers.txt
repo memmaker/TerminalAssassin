@@ -71,3 +71,5 @@ on_actor_contact: LethalPoisonAreaStims($RADIUS, $DURATION)
 Signature: FrenzyDartTrigger($POWER)
 on_ranged_shot_hit: FrenzyStims($POWER)
 
+Signature: SmokeGrenadeTrigger($RADIUS, $DURATION)
+on_item_impact: SmokeAreaStims($RADIUS, $DURATION)

@@ -413,6 +413,8 @@ func (t *ColorTheme) ActorTypeColor(actorType ActorType) common.HSVColor {
         return common.NewHSVColorFromRGBBytes(255, 40, 40)
     case ActorTypeFence:
         return common.NewHSVColorFromRGBBytes(180, 0, 220)
+    case ActorTypePredator:
+        return common.NewHSVColorFromRGBBytes(255, 140, 0)
     default:
         return t.ActorCivilianForeground
     }

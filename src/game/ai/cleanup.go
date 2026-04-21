@@ -116,7 +116,7 @@ func (c *CleanupMovement) performCleanup() core.AIUpdate {
 		aic.SetEngaged(person, core.ActorStatusEngaged, until)
 		c.Engine.GetAnimator().ActorEngagedAnimation(person, 'c', c.currentIncident.Location, 3.0, func() {
 			game.GetMap().RemoveStimulusFromTile(c.currentIncident.Location, stimuli.StimulusBlood)
-			aic.MarkAsCleaned(c.currentIncident)
+			aic.MarkAsCleaned(person, c.currentIncident)
 			c.cleaningIsDone = true
 		})
 		return DeferredUpdate(func() bool {
@@ -144,6 +144,6 @@ func (c *CleanupMovement) performCleanup() core.AIUpdate {
 func (c *CleanupMovement) cleanupCompleted() core.AIUpdate {
 	aic := c.Engine.GetAI()
 	c.cleaningIsDone = true
-	aic.MarkAsCleaned(c.currentIncident)
+	aic.MarkAsCleaned(c.Person, c.currentIncident)
 	return NextUpdateIn(0.3)
 }
