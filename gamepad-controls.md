@@ -13,9 +13,10 @@
 | **Left Stick** | Move (8 directions) | Scroll list (up / down) |
 | **Right Stick** | Peek / look around | — |
 | **L1** *(hold)* | Run | — |
-| **L2** *(hold)* | Switch right stick to Aim mode | — |
+| **L2** *(hold)* | Aim mode (guns/throw) — or draw bow (see below) | — |
+| **L2** *(release)* | Exit aim mode — or **fire bow** | — |
 | **R1** *(or* **✕ / A***)* | Context Action | — |
-| **R2** *(hold)* | Fire / Throw equipped item | — |
+| **R2** *(hold)* | Fire / Throw equipped item *(not bow)* | — |
 | **△ / Y** | Assassinate | — |
 | **□ / X** | Use item at peeked tile | — |
 | **○ / B** | Dive & Tackle | Cancel / Back |
@@ -55,7 +56,7 @@
 
 ## Aiming & Ranged Combat
 
-### Aim Mode
+### Aim Mode (Guns, Thrown Items)
 - **L2 held** — Switches the right stick from *peek* to *aim*. While L2 is held,
   the right stick steers a targeting cursor across the map.
 - **L2 released** — Exits aim mode and returns to the default peek/move state.
@@ -63,6 +64,28 @@
 ### Firing & Throwing
 - **R2 held** — Fire your equipped ranged weapon, or throw your equipped throwable
   item, towards the aimed position. Hold for sustained fire with automatic weapons.
+
+> **Note:** R2 does **not** fire a bow. See *Bow* below.
+
+### Bow
+
+The bow uses a **slingshot / pull-back** mechanic:
+
+1. Equip the bow.
+2. **Hold L2** and push the **Right Stick** in the direction **opposite** to your
+   target — as if you are physically pulling the bowstring back toward you.
+3. A LoS indicator extends in your pull direction (max 5 tiles). **Stick
+   magnitude** controls how far the arrow will travel: a light push = short range,
+   full deflection = maximum range.
+4. **Release L2** to fire. The arrow flies in the direction *opposite* to your
+   pull — towards your intended target.
+
+| Action | Control |
+|---|---|
+| Draw bow & aim | L2 held + Right Stick (push ***away*** from target) |
+| Increase range | Push stick further out (up to full deflection) |
+| Fire | Release L2 |
+| Cancel draw | Press Options / Start (pause) or re-centre the stick before releasing L2 |
 
 ---
 
@@ -173,6 +196,9 @@ cardinal steps feel consistent.
   your right stick is pointing toward. Aim your stick first.
 - **L2 + right stick = precision aim.** Use this combination to line up a shot
   around a corner before pressing R2.
+- **Bow: slingshot mechanic.** Push the right stick *away from* your target to
+  draw — stick magnitude controls range. Release L2 to fire. R2 does nothing with
+  the bow equipped.
 - **Sneak + R1** near an NPC's back = pickpocket without a sound.
 - **Knock on a wall** (R1 facing a plain wall) to lure a nearby guard away from
   their post.
