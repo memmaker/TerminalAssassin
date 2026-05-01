@@ -17,10 +17,6 @@ func GetPixelsFromImage(fileSystem fs.FS, filename string) ([][]common.Color, er
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
-
 	defer file.Close()
 
 	pixels, err := getPixels(file)

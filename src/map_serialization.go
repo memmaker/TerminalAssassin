@@ -1,19 +1,20 @@
 package main
 
 import (
-    "crypto/sha256"
-    "encoding/hex"
-    "fmt"
-    "github.com/memmaker/terminal-assassin/game/core"
-    "github.com/memmaker/terminal-assassin/game/services"
-    "github.com/memmaker/terminal-assassin/geometry"
-    "github.com/memmaker/terminal-assassin/gridmap"
-    rec_files "github.com/memmaker/terminal-assassin/rec-files"
-    "io"
-    "io/fs"
-    "os"
-    "path"
-    "sort"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path"
+	"sort"
+
+	"github.com/memmaker/terminal-assassin/game/core"
+	"github.com/memmaker/terminal-assassin/game/services"
+	"github.com/memmaker/terminal-assassin/geometry"
+	"github.com/memmaker/terminal-assassin/gridmap"
+	rec_files "github.com/memmaker/terminal-assassin/rec-files"
 )
 
 type MapSerializer struct {
@@ -246,6 +247,7 @@ func NewActorOnDiskFromActor(person *core.Actor) core.ActorOnDisk {
         Name:          person.Name,
         Inventory:     services.EncodeItems(person.Inventory),
         ActorType:     person.Type,
+        IsTarget:      person.IsTarget,
         Team:          person.Team,
         LookDirection: person.LookDirection,
         Position:      person.MapPos,

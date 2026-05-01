@@ -1,7 +1,0 @@
-Bodyguard	violet
-Gardening Clothes	green
-Mechanic	orange
-Vincent Ludwig	red
-Suit (Training Gear)	violet
-Boat Crew	blue
-Boat Security	green

@@ -1,6 +1,0 @@
-Medical Scrubs	cyan
-Gardening Clothes	green
-Warehouse Uniform	orange
-Tactical Turtleneck	violet
-Goth Party Outfit	magenta
-Stylish Jacket	green

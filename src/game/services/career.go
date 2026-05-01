@@ -22,7 +22,6 @@ type CareerData struct {
     CurrentCampaignFolder string
     ExperiencePoints      uint64
     MapStatistics         map[string]*MapStatistics
-    UnlockedItems         mapset.MapSet[string]
     Money                 uint64
     UnlockedSkills        PlayerSkills
 }
@@ -92,7 +91,7 @@ func (c *CareerData) registerChallengePredicates(parser *ChallengeParser, engine
     currentMap := engine.GetGame().GetMap()
     var targetKill core.KillStatistics
     for _, killStat := range stats.Kills {
-        if killStat.VictimType == core.ActorTypeTarget {
+        if killStat.IsTarget {
             targetKill = killStat
         }
     }
@@ -117,7 +116,6 @@ func (c *CareerData) registerChallengePredicates(parser *ChallengeParser, engine
     parser.RegisterPredicate("KillDetails", func(args ...any) bool {
         nameOfVictim := args[0].(string)
         typeOfItem := args[1].(string)
-        // Optional legacy 3rd arg ("clothing") is accepted but ignored.
         for _, kill := range stats.Kills {
             if kill.CauseOfDeath.Source.Item == nil {
                 continue

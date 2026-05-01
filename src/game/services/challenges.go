@@ -52,7 +52,7 @@ func AllActorsDead(game GameInterface) func() bool {
 func TargetCauseOfDeath(statistics core.MissionStats, cod core.CoDDescription) func() bool {
 	return func() bool {
 		for _, kill := range statistics.Kills {
-			if kill.CauseOfDeath.Description == cod && kill.VictimType == core.ActorTypeTarget {
+			if kill.CauseOfDeath.Description == cod && kill.IsTarget {
 				return true
 			}
 		}
@@ -63,7 +63,7 @@ func TargetCauseOfDeath(statistics core.MissionStats, cod core.CoDDescription) f
 func TargetDiedOfAccident(statistics core.MissionStats) func() bool {
 	return func() bool {
 		for _, kill := range statistics.Kills {
-			if kill.VictimType == core.ActorTypeTarget && (kill.CauseOfDeath.Description == core.CoDFalling ||
+			if kill.IsTarget && (kill.CauseOfDeath.Description == core.CoDFalling ||
 				kill.CauseOfDeath.Description == core.CoDBurned ||
 				kill.CauseOfDeath.Description == core.CoDDrowned ||
 				kill.CauseOfDeath.Description == core.CoDElectrocuted) {

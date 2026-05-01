@@ -49,18 +49,6 @@ func (d DoorState) String() string {
 	return "unknown"
 }
 
-func StateFromString(s string) DoorState {
-	switch s {
-	case "closed":
-		return DoorStateClosed
-	case "open":
-		return DoorStateOpen
-	case "locked":
-		return DoorStateLocked
-	}
-	return DoorStateClosed
-}
-
 const (
 	DoorTypeMechanic   = core.LockTypeMechanical
 	DoorTypeElectronic = core.LockTypeElectronic

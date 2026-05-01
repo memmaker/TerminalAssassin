@@ -9,15 +9,16 @@ import (
 )
 
 type Menu struct {
-    menuItems         []services.MenuItem
-    onClose           func()
-    beforeConfirm     func()
-    selectedItemIndex int
-    bgColor           common.RGBAColor
-    boundingBox       geometry.Rect
-    isDirty           bool
-    title             string
-    scrollPos         int
+    menuItems             []services.MenuItem
+    onClose               func()
+    beforeConfirm         func()
+    selectedItemIndex     int
+    bgColor               common.RGBAColor
+    boundingBox           geometry.Rect
+    isDirty               bool
+    title                 string
+    scrollPos             int
+    suppressNextMouseMove bool
 }
 
 func (m *Menu) Update(input services.InputInterface) {
@@ -117,6 +118,10 @@ func (m *Menu) handlePointerCommand(cmd core.PointerCommand) {
     mousePos := cmd.Pos
     switch cmd.Action {
     case core.MouseMoved:
+        if m.suppressNextMouseMove {
+            m.suppressNextMouseMove = false
+            return
+        }
         if mousePos.Y >= m.boundingBox.Min.Y && mousePos.Y <= m.boundingBox.Max.Y {
             m.selectedItemIndex = mousePos.Y - m.boundingBox.Min.Y - 1 + m.scrollPos
             m.isDirty = true
@@ -295,11 +300,12 @@ func NewMenu(title string, menuItems []services.MenuItem, boundingBox geometry.R
             }
             return item.Condition()
         }),
-        onClose:       onClose,
-        beforeConfirm: beforeConfirm,
-        bgColor:       common.RGBAColor{R: 0.2, G: 0.2, B: 0.6, A: 1.0},
-        boundingBox:   boundingBox,
-        isDirty:       true,
+        onClose:               onClose,
+        beforeConfirm:         beforeConfirm,
+        bgColor:               common.RGBAColor{R: 0.2, G: 0.2, B: 0.6, A: 1.0},
+        boundingBox:           boundingBox,
+        isDirty:               true,
+        suppressNextMouseMove: true,
     }
 }
 

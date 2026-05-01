@@ -56,7 +56,7 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) LightAt(p geometry.Point) com
 
 // we use the value stored in cell.Lighting for lighting the tile later on..
 func (m *GridMap[ActorType, ItemType, ObjectType]) UpdateDynamicLights() {
-	for key, _ := range m.dynamicallyLitCells {
+	for key := range m.dynamicallyLitCells {
 		delete(m.dynamicallyLitCells, key)
 	}
 	if len(m.DynamicLights) == 0 {

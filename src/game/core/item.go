@@ -406,7 +406,7 @@ func (i *Item) Style(st common.Style) common.Style {
     return itemStyle
 }
 func (i *Item) IsLegalForActor(actor *Actor) bool {
-    if actor.Type == ActorTypeGuard || actor.Type == ActorTypeTarget {
+    if actor.Type == ActorTypeGuard || actor.IsTarget {
         return true
     }
     return !i.IsObviousWeapon()

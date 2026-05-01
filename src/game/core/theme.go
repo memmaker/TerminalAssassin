@@ -409,8 +409,6 @@ func (t *ColorTheme) ActorTypeColor(actorType ActorType) common.HSVColor {
     switch actorType {
     case ActorTypeGuard:
         return common.NewHSVColorFromRGBBytes(0, 120, 255)
-    case ActorTypeTarget:
-        return common.NewHSVColorFromRGBBytes(255, 40, 40)
     case ActorTypeFence:
         return common.NewHSVColorFromRGBBytes(180, 0, 220)
     case ActorTypePredator:

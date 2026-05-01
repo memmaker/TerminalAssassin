@@ -62,7 +62,7 @@ func (pr *PathRange) AstarPath(ast Astar, from, to Point) []Point {
 
 		if n.P == to {
 			// Found a path to the goal.
-			path := []Point{}
+			var path []Point
 			pn := n
 			path = append(path, pn.P)
 			for {

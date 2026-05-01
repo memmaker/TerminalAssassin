@@ -1,17 +1,18 @@
 package states
 
 import (
-    "fmt"
-    rec_files "github.com/memmaker/terminal-assassin/rec-files"
-    "path"
-    "strconv"
-    "time"
+	"fmt"
+	"path"
+	"strconv"
+	"time"
 
-    "github.com/memmaker/terminal-assassin/common"
-    "github.com/memmaker/terminal-assassin/console"
-    "github.com/memmaker/terminal-assassin/game/core"
-    "github.com/memmaker/terminal-assassin/game/services"
-    "github.com/memmaker/terminal-assassin/utils"
+	rec_files "github.com/memmaker/terminal-assassin/rec-files"
+
+	"github.com/memmaker/terminal-assassin/common"
+	"github.com/memmaker/terminal-assassin/console"
+	"github.com/memmaker/terminal-assassin/game/core"
+	"github.com/memmaker/terminal-assassin/game/services"
+	"github.com/memmaker/terminal-assassin/utils"
 )
 
 type GameStateGameOver struct {
@@ -223,8 +224,6 @@ func (g *GameStateGameOver) ApplyUnlocks(unlocks []Unlockable) {
             currentMap := g.engine.GetGame().GetMap()
             mapHash := currentMap.MapHash()
             career.AddUnlockedLocation(mapHash, unlock.Unlockable)
-        case "Item":
-            career.UnlockedItems.Add(unlock.Unlockable)
         }
     }
 }

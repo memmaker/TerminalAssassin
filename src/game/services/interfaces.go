@@ -110,6 +110,11 @@ type UIInterface interface {
     ShowStyledAlert(strings []core.StyledText, background common.Color)
     SetGamestate(state GameState)
 }
+const (
+    ControllerKeyboardMouse = "Keyboard & Mouse"
+    ControllerGamepad       = "Gamepad"
+)
+
 type GameConfig struct {
     console.GridConfig
     ActorDefaultHealth int
@@ -120,6 +125,7 @@ type GameConfig struct {
     LightSources       bool
     ShowHints          bool
     Fullscreen         bool
+    ControllerMode     string
 }
 type GameInterface interface {
     UpdateHUD()
@@ -153,7 +159,6 @@ type GameInterface interface {
     ApplyStimulusToActor(person *core.Actor, source core.EffectSource, stimulus stimuli.Stimulus)
 
     GetStats() *core.MissionStats
-    GetMissionPlan() *core.MissionPlan
     GetActions() ActionsInterface
 
     IllegalPlayerEngagementWithActorAtPos(position geometry.Point, icon rune, timeInSeconds float64, engagementFinishedAction func(), engagementCancelledAction func())
@@ -347,6 +352,8 @@ type Engine interface {
     SetTextFont(fontName string)
     SetTileFont(fontName string)
     SetFullscreen(enabled bool)
+    SetControllerMode(mode string)
+    SaveOptions()
     CurrentTick() uint64
     ResetForGameplay()
     PublishEvent(event GameEvent)
@@ -427,7 +434,6 @@ type AudioInterface interface {
 type KeyDefinitions struct {
     MovementKeys      [4]ebiten.Key
     PeekingKeys       [4]ebiten.Key
-    ActionKeys        [4]ebiten.Key
     SameTileActionKey ebiten.Key
     SneakModeKey      ebiten.Key
     DropItemKey       ebiten.Key

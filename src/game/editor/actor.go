@@ -1,13 +1,14 @@
 package editor
 
 import (
-    "fmt"
-    "github.com/memmaker/terminal-assassin/game/services"
-    "strconv"
+	"fmt"
+	"strconv"
 
-    "github.com/memmaker/terminal-assassin/game/ai"
-    "github.com/memmaker/terminal-assassin/game/core"
-    "github.com/memmaker/terminal-assassin/geometry"
+	"github.com/memmaker/terminal-assassin/game/services"
+
+	"github.com/memmaker/terminal-assassin/game/ai"
+	"github.com/memmaker/terminal-assassin/game/core"
+	"github.com/memmaker/terminal-assassin/geometry"
 )
 
 func (g *GameStateEditor) selectActorAt(pos geometry.Point) {
@@ -113,8 +114,6 @@ func (g *GameStateEditor) toggleActorType() {
     case core.ActorTypeCivilian:
         g.SelectedActor.Type = core.ActorTypeGuard
     case core.ActorTypeGuard:
-        g.SelectedActor.Type = core.ActorTypeTarget
-    case core.ActorTypeTarget:
         g.SelectedActor.Type = core.ActorTypeFence
     case core.ActorTypeFence:
         g.SelectedActor.Type = core.ActorTypePredator
@@ -125,6 +124,14 @@ func (g *GameStateEditor) toggleActorType() {
     }
     g.PrintAsMessage(fmt.Sprintf("%s is now a %s", g.SelectedActor.Name, g.SelectedActor.Type))
     return
+}
+
+func (g *GameStateEditor) toggleIsTarget() {
+    if g.SelectedActor == nil {
+        return
+    }
+    g.SelectedActor.IsTarget = !g.SelectedActor.IsTarget
+    g.PrintAsMessage(fmt.Sprintf("%s IsTarget: %v", g.SelectedActor.Name, g.SelectedActor.IsTarget))
 }
 
 func (g *GameStateEditor) quickAddActor() {

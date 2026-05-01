@@ -16,6 +16,7 @@ type TextInput struct {
 	position     geometry.Point
 	isDirty      bool
 	width        int
+	MaxLen       int
 	OnCursorMove func(newPos geometry.Point)
 }
 
@@ -56,6 +57,9 @@ func (t *TextInput) handleKeyCommand(cmd core.KeyCommand) {
 		if len(printableChar) > 1 {
 			return
 		}
+		if t.MaxLen > 0 && len(t.content) >= t.MaxLen {
+			return
+		}
 		t.content += printableChar
 		t.isDirty = true
 	}
@@ -94,7 +98,7 @@ func (t *TextInput) Draw(grid console.CellInterface) {
 	grid.HalfWidthFill(bbox, blankCell)
 	PrintToGrid(grid, t.prompt, geometry.Point{X: startX, Y: startY}, common.TerminalColor, common.TerminalColorBackground)
 	PrintToGrid(grid, t.content, geometry.Point{X: startX + len(t.prompt), Y: startY}, common.TerminalColor, common.TerminalColorBackground)
-	//grid.SetHalfWidth(geometry.Point{X: startX + len(t.prompt) + len(t.content), Y: startY}, common.Cell{Rune: ' ', Style: common.Style{Foreground: common.TerminalColor, Background: common.TerminalColor}})
+	grid.SetHalfWidth(geometry.Point{X: startX + len(t.prompt) + len(t.content), Y: startY}, common.Cell{Rune: '█', Style: common.Style{Foreground: common.TerminalColor, Background: common.TerminalColorBackground}})
 	t.isDirty = false
 }
 

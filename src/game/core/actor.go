@@ -1,19 +1,20 @@
 package core
 
 import (
-    "bytes"
-    "fmt"
-    rec_files "github.com/memmaker/terminal-assassin/rec-files"
-    "strconv"
-    "strings"
-    "time"
+	"bytes"
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
 
-    "github.com/memmaker/terminal-assassin/common"
-    "github.com/memmaker/terminal-assassin/game/stimuli"
-    "github.com/memmaker/terminal-assassin/geometry"
-    "github.com/memmaker/terminal-assassin/gridmap"
-    "github.com/memmaker/terminal-assassin/mapset"
-    "github.com/memmaker/terminal-assassin/utils"
+	rec_files "github.com/memmaker/terminal-assassin/rec-files"
+
+	"github.com/memmaker/terminal-assassin/common"
+	"github.com/memmaker/terminal-assassin/game/stimuli"
+	"github.com/memmaker/terminal-assassin/geometry"
+	"github.com/memmaker/terminal-assassin/gridmap"
+	"github.com/memmaker/terminal-assassin/mapset"
+	"github.com/memmaker/terminal-assassin/utils"
 )
 
 // ThrowingRange is the maximum distance (in tiles) at which thrown items can
@@ -126,7 +127,6 @@ type ActorType string
 const (
     ActorTypeCivilian ActorType = "civilian"
     ActorTypeGuard    ActorType = "guard"
-    ActorTypeTarget   ActorType = "target"
     ActorTypeFence    ActorType = "fence"
     ActorTypePredator ActorType = "predator"
 )
@@ -185,7 +185,7 @@ type Actor struct {
     IsHidden          bool
     IsBodyBagged      bool
     IsNauseous        bool
-    lastHolsteredItem *Item
+    IsTarget          bool
 }
 type OrientedLocation struct {
     Location  geometry.Point
@@ -407,23 +407,6 @@ func (a *Actor) SetPos(point geometry.Point) {
 // stateStack of enemy (sleeping, dead, engaged, etc)
 // Environmental hazards (fire, water, etc) - Must: Background Color, Optional: Foreground Color & icon
 
-func mustParseFloat(s string) float64 {
-    f, err := strconv.ParseFloat(strings.TrimSpace(s), 64)
-    if err != nil {
-        println("Error parsing float: " + s)
-        return 0
-    }
-    return f
-}
-
-func MustParseInt(s string) int {
-    f, err := strconv.ParseInt(strings.TrimSpace(s), 10, 32)
-    if err != nil {
-        println("Error parsing integer: " + s)
-        return 0
-    }
-    return int(f)
-}
 
 func (a *Actor) IsVisible() bool {
     return a.Status != ActorStatusInCloset && !a.IsHidden
@@ -590,6 +573,9 @@ func (a *Actor) runeFromDirection() rune {
 
 func (a *Actor) Style(st common.Style) common.Style {
     actorStyle := st.WithFg(CurrentTheme.ActorTypeColor(a.Type))
+    if a.IsTarget {
+        actorStyle = st.WithFg(common.NewHSVColorFromRGBBytes(255, 40, 40))
+    }
     if a.IsEyeWitness {
         fg := CurrentTheme.ActorTypeColor(a.Type)
         actorStyle = st.WithFg(common.HSVColor{H: fg.H, S: fg.S, V: 4})
@@ -626,24 +612,6 @@ func (a *Actor) CanSeeActor(other *Actor) bool {
     return a.CanSee(other.Pos()) && other.IsVisible()
 }
 
-func (a *Actor) HolsterItem() {
-
-    if a.EquippedItem == nil {
-        if a.lastHolsteredItem != nil {
-            a.EquippedItem = a.lastHolsteredItem
-            a.lastHolsteredItem = nil
-        }
-        return
-    }
-
-    if a.EquippedItem.IsBig {
-        return
-    }
-
-    a.lastHolsteredItem = a.EquippedItem
-    a.EquippedItem = nil
-    return
-}
 func (a *Actor) HasLineToSpeak(currentTick uint64) bool {
     deltaTicks := int(currentTick - a.Dialogue.LastSpokenAtTick)
     if deltaTicks < utils.SecondsToTicks(4) {
@@ -855,14 +823,11 @@ func (a *Actor) ConsumeItemsFromInventory(itemType ItemType, count int) {
 }
 
 // RemoveItem removes item from the actor's inventory and clears the equipped
-// and holster slots if they reference the same item.
+// slot if it references the same item.
 func (a *Actor) RemoveItem(item *Item) {
     a.Inventory.RemoveItem(item)
     if a.EquippedItem == item {
         a.EquippedItem = nil
-    }
-    if a.lastHolsteredItem == item {
-        a.lastHolsteredItem = nil
     }
 }
 
@@ -1045,6 +1010,7 @@ type ActorOnDisk struct {
     Name          string
     Inventory     []string
     ActorType     ActorType
+    IsTarget      bool
     Team          string
     LookDirection float64
     Position      geometry.Point
@@ -1058,6 +1024,9 @@ func (d ActorOnDisk) ToRecord() []rec_files.Field {
         {Name: "Position", Value: d.Position.String()},
         {Name: "LookDirection", Value: strconv.FormatFloat(d.LookDirection, 'f', 2, 64)},
     }
+    if d.IsTarget {
+        record = append(record, rec_files.Field{Name: "IsTarget", Value: "true"})
+    }
     for _, item := range d.Inventory {
         record = append(record, rec_files.Field{Name: "Inventory", Value: item})
     }
@@ -1070,7 +1039,15 @@ func ActorOnDiskFromRecord(record []rec_files.Field) ActorOnDisk {
         case "Name":
             actor.Name = strings.TrimSpace(field.Value)
         case "ActorType":
-            actor.ActorType = ActorType(field.Value)
+            v := ActorType(strings.TrimSpace(field.Value))
+            if v == "target" {
+                actor.IsTarget = true
+                actor.ActorType = ActorTypeCivilian
+            } else {
+                actor.ActorType = v
+            }
+        case "IsTarget":
+            actor.IsTarget = strings.TrimSpace(field.Value) == "true"
         case "Team":
             actor.Team = strings.TrimSpace(field.Value)
         case "Position":

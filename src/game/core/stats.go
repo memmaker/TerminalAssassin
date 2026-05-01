@@ -1,17 +1,19 @@
 package core
 
 import (
-    "fmt"
-    "github.com/memmaker/terminal-assassin/common"
-    rec_files "github.com/memmaker/terminal-assassin/rec-files"
-    "time"
+	"fmt"
+	"time"
 
-    "github.com/memmaker/terminal-assassin/geometry"
+	"github.com/memmaker/terminal-assassin/common"
+	rec_files "github.com/memmaker/terminal-assassin/rec-files"
+
+	"github.com/memmaker/terminal-assassin/geometry"
 )
 
 type KillStatistics struct {
     VictimType               ActorType
     VictimName               string
+    IsTarget                 bool
     CauseOfDeath             CauseOfDeath
     AtLocation               geometry.Point
     AtSecond                 float64
@@ -55,50 +57,10 @@ func (s StartLocation) ToString() string {
     return s.Name
 }
 
-type MissionPlan struct {
-    chosenWeapon         *Item
-    chosenGearOne        *Item
-    chosenGearTwo        *Item
-    defaultStartLocation geometry.Point
-    chosenStartLocation  geometry.Point
-    startLocationName    string
-}
 
-func (g *MissionPlan) Weapon() *Item {
-    return g.chosenWeapon
-}
-func (g *MissionPlan) GearOne() *Item {
-    return g.chosenGearOne
-}
-func (g *MissionPlan) GearTwo() *Item {
-    return g.chosenGearTwo
-}
-func (g *MissionPlan) SetWeapon(weapon *Item) {
-    g.chosenWeapon = weapon
-}
-func (g *MissionPlan) SetSlotOne(tool *Item) {
-    g.chosenGearOne = tool
-}
-func (g *MissionPlan) SetSlotTwo(tool *Item) {
-    g.chosenGearTwo = tool
-}
-
-func (g *MissionPlan) SetSpecialStartLocation(name string, location geometry.Point) {
-    g.chosenStartLocation = location
-    g.startLocationName = name
-}
-
-func (g *MissionPlan) SetDefaultStartLocation(spawn geometry.Point) {
-    g.defaultStartLocation = spawn
-    g.chosenStartLocation = spawn
-}
-
-func (g *MissionPlan) Location() (geometry.Point, string) {
-    return g.chosenStartLocation, g.startLocationName
-}
 func (m *MissionStats) OnlyKilledTargets() bool {
     for _, kill := range m.Kills {
-        if kill.VictimType != ActorTypeTarget {
+        if !kill.IsTarget {
             return false
         }
     }
@@ -109,7 +71,7 @@ func (m *MissionStats) PlayerKilledTargetsWithSniperOnly() bool {
         if !kill.CauseOfDeath.IsPlayer() {
             continue
         }
-        if kill.VictimType != ActorTypeTarget || kill.CauseOfDeath.Description != CoDSnipered {
+        if !kill.IsTarget || kill.CauseOfDeath.Description != CoDSnipered {
             return false
         }
     }
@@ -124,6 +86,7 @@ func (m *MissionStats) AddKill(victim *Actor, death CauseOfDeath, location geome
     kill := KillStatistics{
         VictimName:   victim.Name,
         VictimType:   victim.Type,
+        IsTarget:     victim.IsTarget,
         CauseOfDeath: death,
         AtLocation:   location,
         AtSecond:     timeInSeconds,

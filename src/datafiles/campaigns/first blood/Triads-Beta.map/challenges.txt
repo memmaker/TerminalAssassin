@@ -23,4 +23,4 @@ TargetKilledBeforeTime(30)
 # 2500 - Blue Collar Hero
 
 ## AND-CONDITIONS
-KillDetails(Blue Lotus Leader, wrench, Mechanic)
+KillDetails(Blue Lotus Leader, wrench)

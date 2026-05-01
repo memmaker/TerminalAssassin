@@ -2,6 +2,7 @@ package states
 
 import (
 	"fmt"
+
 	"github.com/memmaker/terminal-assassin/common"
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/game/services"
@@ -40,9 +41,7 @@ func (t TrainingHelper) alertContextAction() {
 		core.NewStyledText("you and any person you want to talk to.", textStyle),
 		core.NewStyledText("", textStyle),
 		core.NewStyledText("                             ↑                             ", textStyle),
-		core.NewStyledText("                             @l"+keyDefs.ActionKeys[0].String()+"@N                             ", textStyle).WithMarkup('l', t.defaultStyle.WithFg(common.FourGreen)),
-		core.NewStyledText("             ←@l"+keyDefs.ActionKeys[1].String()+"@N             [@l"+keyDefs.SameTileActionKey.String()+"@N]             @l"+keyDefs.ActionKeys[3].String()+"@N→             ", textStyle).WithMarkup('l', t.defaultStyle.WithFg(common.FourGreen)),
-		core.NewStyledText("                             @l"+keyDefs.ActionKeys[2].String()+"@N                             ", textStyle).WithMarkup('l', t.defaultStyle.WithFg(common.FourGreen)),
+		core.NewStyledText("             ←               [@l"+keyDefs.SameTileActionKey.String()+"@N]               →             ", textStyle).WithMarkup('l', t.defaultStyle.WithFg(common.FourGreen)),
 		core.NewStyledText("                             ↓                             ", textStyle),
 		core.NewStyledText("", textStyle),
 		t.confirmLine(),
@@ -130,9 +129,7 @@ func (t TrainingHelper) alertTakedown() {
 		core.NewStyledText("Frontal attacks and gunshots make a lot of noise,", textStyle),
 		core.NewStyledText("and will alert anyone nearby.", textStyle),
 		core.NewStyledText("", textStyle),
-		core.NewStyledText("                             @l"+keyDefs.ActionKeys[0].String()+"@N                             ", textStyle).WithMarkup('l', t.defaultStyle.WithFg(common.FourGreen)),
-		core.NewStyledText("              @l"+keyDefs.ActionKeys[1].String()+"@N              @l"+keyDefs.SameTileActionKey.String()+"@N              @l"+keyDefs.ActionKeys[3].String()+"@N              ", textStyle).WithMarkup('l', t.defaultStyle.WithFg(common.FourGreen)),
-		core.NewStyledText("                             @l"+keyDefs.ActionKeys[2].String()+"@N                             ", textStyle).WithMarkup('l', t.defaultStyle.WithFg(common.FourGreen)),
+		core.NewStyledText("              Use @l"+keyDefs.SameTileActionKey.String()+"@N to interact with adjacent targets.", textStyle).WithMarkup('l', t.defaultStyle.WithFg(common.FourGreen)),
 		core.NewStyledText("", textStyle),
 		t.confirmLine(),
 	}

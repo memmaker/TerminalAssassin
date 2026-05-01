@@ -65,12 +65,12 @@ func (a ExitAction) Action(m services.Engine, person *core.Actor, position geome
 
 func (a ExitAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
     for _, inLevel := range m.GetGame().GetMap().Actors() {
-        if inLevel.Type == core.ActorTypeTarget && inLevel.Status != core.ActorStatusDead {
+        if inLevel.IsTarget && inLevel.Status != core.ActorStatusDead {
             return false
         }
     }
     for _, inLevel := range m.GetGame().GetMap().DownedActors() {
-        if inLevel.Type == core.ActorTypeTarget && inLevel.Status != core.ActorStatusDead {
+        if inLevel.IsTarget && inLevel.Status != core.ActorStatusDead {
             return false
         }
     }

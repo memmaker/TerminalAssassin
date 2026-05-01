@@ -10,18 +10,18 @@ import (
 	"github.com/memmaker/terminal-assassin/ui"
 )
 
-type GameStateIntro struct {
+type GameStateNewCareer struct {
 	engine    services.Engine
 	textInput *ui.TextInput
 	isDirty   bool
 }
 
-func (g *GameStateIntro) ClearOverlay() {}
-func (g *GameStateIntro) SetDirty()     { g.isDirty = true }
-func (g *GameStateIntro) Print(_ string) {}
-func (g *GameStateIntro) UpdateHUD()    {}
+func (g *GameStateNewCareer) ClearOverlay()  {}
+func (g *GameStateNewCareer) SetDirty()      { g.isDirty = true }
+func (g *GameStateNewCareer) Print(_ string) {}
+func (g *GameStateNewCareer) UpdateHUD()     {}
 
-func (g *GameStateIntro) Init(engine services.Engine) {
+func (g *GameStateNewCareer) Init(engine services.Engine) {
 	g.engine = engine
 	g.isDirty = true
 
@@ -38,9 +38,10 @@ func (g *GameStateIntro) Init(engine services.Engine) {
 		func(name string) { g.confirm(name) },
 		nil,
 	)
+	g.textInput.MaxLen = 16
 }
 
-func (g *GameStateIntro) confirm(name string) {
+func (g *GameStateNewCareer) confirm(name string) {
 	name = strings.TrimSpace(strings.ToLower(name))
 	if name == "" {
 		return
@@ -53,11 +54,12 @@ func (g *GameStateIntro) confirm(name string) {
 	g.engine.GetGame().PushState(&GameStateMainMenu{})
 }
 
-func (g *GameStateIntro) Update(input services.InputInterface) {
+func (g *GameStateNewCareer) Update(input services.InputInterface) {
 	g.textInput.Update(input)
+	g.isDirty = true
 }
 
-func (g *GameStateIntro) Draw(con console.CellInterface) {
+func (g *GameStateNewCareer) Draw(con console.CellInterface) {
 	if !g.isDirty {
 		return
 	}

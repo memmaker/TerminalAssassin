@@ -2,10 +2,11 @@ package states
 
 import (
 	"fmt"
-	"github.com/memmaker/terminal-assassin/utils"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/memmaker/terminal-assassin/utils"
 
 	"github.com/memmaker/terminal-assassin/common"
 	"github.com/memmaker/terminal-assassin/console"
@@ -62,15 +63,6 @@ func (g *GameStateCareerViewer) renderCareerData() []core.StyledText {
 	lines = append(lines, core.Text("Level: "+strconv.FormatUint(career.Level(), 10)))
 	lines = append(lines, core.Text("Title: "+career.Title()))
 
-	if len(career.UnlockedItems) > 0 {
-		lines = append(lines, core.Text("Available Items:"))
-		unlockedItems := career.UnlockedItems.ToSlice()
-		sort.SliceStable(unlockedItems, utils.NewStringComparer())
-		for _, name := range unlockedItems {
-			lines = append(lines, core.Text("  "+name))
-		}
-	}
-
 	if len(career.MapStatistics) > 0 {
 		lines = append(lines, core.Text("Missions:"))
 	}
@@ -101,7 +93,7 @@ func (g *GameStateCareerViewer) renderCareerData() []core.StyledText {
 		totalBodyCount += mapStat.TotalBodyCount
 	}
 
-	lines = append(lines, core.Text("Total Play Time: "+totalPlayTime.Round(time.Second).String()))
+	lines = append(lines, core.Text("Total Play Time : "+totalPlayTime.Round(time.Second).String()))
 	lines = append(lines, core.Text("Total Body Count: "+strconv.Itoa(totalBodyCount)))
 	return lines
 }

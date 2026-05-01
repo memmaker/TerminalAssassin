@@ -23,6 +23,7 @@ var LockOnAngleDegrees = 15.0
 func (g *GameStateGameplay) OpenPauseMenu() {
     userInterface := g.engine.GetUI()
     audio := g.engine.GetAudio()
+    config := g.engine.GetGame().GetConfig()
     menuItems := []services.MenuItem{
         {
             Label: "Resume mission",
@@ -68,9 +69,24 @@ func (g *GameStateGameplay) OpenPauseMenu() {
                 audio.SetSoundVolume(audio.GetSoundVolume() + 0.1)
             },
         },
+        {
+            DynamicLabel: func() string {
+                return "Controller: " + config.ControllerMode
+            },
+            Handler: func() {
+                if config.ControllerMode == services.ControllerKeyboardMouse {
+                    g.engine.SetControllerMode(services.ControllerGamepad)
+                } else {
+                    g.engine.SetControllerMode(services.ControllerKeyboardMouse)
+                }
+            },
+        },
+        {
+            Label:   "Control Help",
+            Handler: g.showControlHelp,
+        },
     }
     userInterface.OpenFixedWidthAutoCloseMenuWithCallback("Paused", menuItems, nil)
-    //g.engine.GetGame().PushState(&GameStateMainMenu{})
 }
 
 func (g *GameStateGameplay) quitToMainMenu() {
