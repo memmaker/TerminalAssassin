@@ -222,10 +222,11 @@ LookDirection: 71.57
 Inventory: Pistol
 
 Name: Red Dragon Leader
-ActorType: target
+ActorType: civilian
 Team: Red dragon leader
 Position: (61,89)
 LookDirection: 288.43
+IsTarget: true
 Inventory: Pistol
 
 Name: Tourist 1

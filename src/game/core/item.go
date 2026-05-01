@@ -53,6 +53,7 @@ var itemTypeNames = map[ItemType]string{
     ItemTypeCamera:              "camera",
     ItemTypeShovel:              "shovel",
     ItemTypeFlashlight:          "flashlight",
+    ItemTypeBow:                 "bow",
 }
 
 var itemTypeByName map[string]ItemType
@@ -117,6 +118,7 @@ const (
     ItemTypeCamera
     ItemTypeShovel
     ItemTypeFlashlight
+    ItemTypeBow
 )
 
 // itemTypeTraits holds every per-type capability flag and value in one place.
@@ -171,6 +173,7 @@ var itemTraitsTable = map[ItemType]itemTypeTraits{
     ItemTypeLethalPoisonMine:    {hasRangedAction: true, isThrowable: true, canSelfActivate: true},
     ItemTypeSleepPoisonMine:     {hasRangedAction: true, isThrowable: true, canSelfActivate: true},
     ItemTypeFlashlight:          {hasMeleeAction: true, scopeFoV: 60.0},
+    ItemTypeBow:                 {hasRangedAction: true, isRangedWeapon: true, cooldownSecs: 1.5},
     // ItemTypeMechanicalLockpick, ItemTypeElectronicLockpick, ItemTypeClothing,
     // ItemTypeKey, ItemTypeKeyCard, ItemTypeMessage, ItemTypeCamera, ItemTypeShovel
     // use all-false / zero defaults.

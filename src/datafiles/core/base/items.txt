@@ -316,6 +316,14 @@ icon: ư
 type: shovel
 loot_value: 80
 
+name: Bow
+icon: }
+type: bow
+uses: 5
+projectile_range: 20
+trigger_effects: BulletTrigger(50)
+loot_value: 350
+
 name: Diamond Necklace
 icon: Ʋ
 type: loot

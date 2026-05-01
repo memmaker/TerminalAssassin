@@ -59,6 +59,9 @@ type GameStateGameplay struct {
 	padAimPos    geometry.PointF // accumulated gamepad aim cursor position
 	padAimActive bool            // true while aiming via gamepad (suppresses mouse-based scope scroll)
 
+	bowPullDir geometry.PointF  // last stick direction while bow was drawn (used on release)
+	bowLoSEnd  geometry.Point   // grid-snapped LoS endpoint from last bow aim frame
+
 	lookModeActive bool            // true while free look cursor is active (Select toggle)
 	lookCursorPos  geometry.PointF // accumulated look cursor position in world space
 
@@ -508,6 +511,8 @@ func (g *GameStateGameplay) resetPlayerState() {
 	player.InteractionShift = geometry.PointZero
 	g.Ui = defaultUIState
 	g.padAimActive = false
+	g.bowPullDir = geometry.PointF{}
+	g.bowLoSEnd = geometry.Point{}
 	g.lookModeActive = false
 }
 
@@ -892,9 +897,8 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
 	})
 
 	emptyPoint := geometry.Point{}
-	if m.GetMap().Player.FoVShift != emptyPoint {
-		fovSourcePos := m.GetMap().Player.Pos().Add(m.GetMap().Player.FoVShift)
-		screenFovSource := m.GetCamera().WorldToScreen(fovSourcePos)
+	if m.GetMap().Player.FoVShift != emptyPoint && g.Ui.ID != aimingUIState.ID {
+		screenFovSource := m.GetCamera().WorldToScreen(m.GetMap().Player.FoVSource())
 		currentCell := con.AtSquare(screenFovSource)
 		con.SetSquare(screenFovSource, currentCell.WithStyle(currentCell.Style.WithBg(core.CurrentTheme.LOSBackground)))
 	}
@@ -1108,6 +1112,9 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
 		g.holsterItem(player)
 		g.UpdateHUD()
 	case core.UseRangedItem:
+		if player.EquippedItem != nil && player.EquippedItem.Type == core.ItemTypeBow {
+			break
+		}
 		if len(g.TargetLoS) == 0 {
 			g.aimInLookDirection()
 		}
@@ -1128,9 +1135,13 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
 		g.OpenPauseMenu()
 	case core.StopAiming:
 		if g.padAimActive {
-			g.resetPlayerState()
-			g.ensureWorldPosInView(player.Pos(), 4)
-			model.GetMap().UpdateFieldOfView(player)
+			if player.EquippedItem != nil && player.EquippedItem.Type == core.ItemTypeBow {
+				g.handleBowRelease()
+			} else {
+				g.resetPlayerState()
+				g.ensureWorldPosInView(player.Pos(), 4)
+				model.GetMap().UpdateFieldOfView(player)
+			}
 		}
 	case core.ToggleLookMode:
 		g.toggleLookMode()
@@ -1805,4 +1816,44 @@ func (g *GameStateGameplay) holsterItem(player *core.Actor) {
 func (g *GameStateGameplay) showControlHelp() {
 	config := g.engine.GetGame().GetConfig()
 	g.engine.GetUI().ShowPager("Controls", controlHelpLines(config.ControllerMode), nil)
+}
+
+// handleBowRelease fires the bow when the right stick snapped back to the dead
+// zone (fast release = arrow loosed). The fire direction is derived from the
+// grid-quantized LoS endpoint (opposite of the pull LoS vector), so it snaps
+// cleanly to the 8 grid directions. Distance is still scaled by pull magnitude.
+func (g *GameStateGameplay) handleBowRelease() {
+	player := g.engine.GetGame().GetMap().Player
+	if !g.padAimActive {
+		return
+	}
+	if player.EquippedItem == nil || player.EquippedItem.Type != core.ItemTypeBow {
+		return
+	}
+	if g.bowLoSEnd == (geometry.Point{}) {
+		return
+	}
+
+	// Derive pull direction from the stored bow LoS endpoint (set during aiming,
+	// immune to peek-direction interference that occurs in the same input frame).
+	origin := player.Pos()
+	pullDX := float64(g.bowLoSEnd.X - origin.X)
+	pullDY := float64(g.bowLoSEnd.Y - origin.Y)
+	if pullDX == 0 && pullDY == 0 {
+		return
+	}
+
+	magnitude := math.Sqrt(g.bowPullDir.X*g.bowPullDir.X + g.bowPullDir.Y*g.bowPullDir.Y)
+	fireDistance := int(math.Round(magnitude * float64(player.EquippedItem.ProjectileRange)))
+	if fireDistance < 1 {
+		fireDistance = 1
+	}
+
+	// Arrow flies opposite to the pull LoS direction.
+	fireTarget := geometry.VectorInDirectionWithLength(origin, -pullDX, -pullDY, fireDistance)
+	g.AdjustPlayerAim(fireTarget)
+	g.UseRangedItemInLoS()
+	g.resetPlayerState()
+	g.TargetLoS = nil
+	g.UpdateHUD()
 }

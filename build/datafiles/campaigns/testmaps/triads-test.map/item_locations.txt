@@ -148,6 +148,9 @@ ItemAt: (69,32)
 Name: Note
 Key: dreams
 
+ItemAt: (69,47)
+Name: Bow
+
 ItemAt: (70,71)
 Name: Knife
 
