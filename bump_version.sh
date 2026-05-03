@@ -1,7 +1,6 @@
 #!/bin/zsh
 
 REPO="$(dirname "$0")"
-VERSION_FILE="$REPO/version.txt"
 PART="$1"
 
 if [[ "$PART" != "major" && "$PART" != "minor" && "$PART" != "patch" ]]; then
@@ -19,7 +18,10 @@ if ! git -C "$REPO" diff --quiet || ! git -C "$REPO" diff --cached --quiet; then
     git -C "$REPO" add -A && git -C "$REPO" commit -m "$msg"
 fi
 
-current=$(cat "$VERSION_FILE" | tr -d 'v\n')
+current=$(git -C "$REPO" describe --tags --abbrev=0 2>/dev/null | tr -d 'v\n')
+if [[ -z "$current" ]]; then
+    current="0.0.0"
+fi
 major=$(echo "$current" | cut -d. -f1)
 minor=$(echo "$current" | cut -d. -f2)
 patch=$(echo "$current" | cut -d. -f3)
@@ -31,7 +33,6 @@ case "$PART" in
 esac
 
 new="v${major}.${minor}.${patch}"
-echo "$new" > "$VERSION_FILE"
 echo "Version bumped: v${current} -> ${new}"
 
 read "reply?Tag current git state as ${new}? [y/N] "

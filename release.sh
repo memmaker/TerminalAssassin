@@ -59,7 +59,7 @@ for SUBDIR in *
 do
 #    cp -r ../font "$SUBDIR"
 #    cp -r ../data "$SUBDIR"
-    cp ../readme.txt "$SUBDIR"
+    cp ../readme.md "$SUBDIR"
     cp ../changelog.txt "$SUBDIR"
     cp -r ../build/keydefs.txt "$SUBDIR"
     cp -r ../build/datafiles "$SUBDIR"
