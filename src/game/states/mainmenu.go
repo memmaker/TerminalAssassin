@@ -92,10 +92,12 @@ func (g *GameStateMainMenu) openMainMenu() {
 				Handler: g.debugStuff,
 				//Handler: g.openReplayMenu,
 			},*/
-		{
+	}
+	if !g.engine.GetGame().GetConfig().WebMode {
+		menuItems = append(menuItems, services.MenuItem{
 			Label:   "Quit",
 			Handler: g.engine.QuitGame,
-		},
+		})
 	}
 	g.engine.GetAudio().PlayCue("open_menu")
 	g.engine.GetUI().OpenFancyMenu(menuItems)
