@@ -31,7 +31,7 @@ jobs:
           cp changelog.txt dist/terminal-assassin-linux-amd64/
           cp readme.md dist/terminal-assassin-linux-amd64/
           cd dist && zip -r terminal-assassin-linux-amd64.zip terminal-assassin-linux-amd64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: linux-amd64
           path: dist/terminal-assassin-linux-amd64.zip
@@ -56,7 +56,7 @@ jobs:
           cp changelog.txt dist/terminal-assassin-darwin-arm64/
           cp readme.md dist/terminal-assassin-darwin-arm64/
           cd dist && zip -r terminal-assassin-darwin-arm64.zip terminal-assassin-darwin-arm64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: darwin-arm64
           path: dist/terminal-assassin-darwin-arm64.zip
@@ -81,7 +81,7 @@ jobs:
           cp changelog.txt dist/terminal-assassin-darwin-amd64/
           cp readme.md dist/terminal-assassin-darwin-amd64/
           cd dist && zip -r terminal-assassin-darwin-amd64.zip terminal-assassin-darwin-amd64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: darwin-amd64
           path: dist/terminal-assassin-darwin-amd64.zip
@@ -108,7 +108,7 @@ jobs:
           cp changelog.txt dist/terminal-assassin-windows-amd64/
           cp readme.md dist/terminal-assassin-windows-amd64/
           cd dist && zip -r terminal-assassin-windows-amd64.zip terminal-assassin-windows-amd64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-amd64
           path: dist/terminal-assassin-windows-amd64.zip
@@ -134,7 +134,7 @@ jobs:
           cp changelog.txt dist/terminal-assassin-wasm/
           cp readme.md dist/terminal-assassin-wasm/
           cd dist && zip -r terminal-assassin-wasm.zip terminal-assassin-wasm
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wasm
           path: dist/terminal-assassin-wasm.zip
@@ -145,11 +145,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: artifacts/*.zip
 
