@@ -71,8 +71,6 @@ type GameStateGameplay struct {
 	// advanced.  At 60 TPS one real second equals one in-game minute, so a full
 	// day/night cycle takes 24 real minutes.
 	timeAccumulator int
-
-	assassinationTargets map[*core.Actor]struct{} // NPCs highlighted for assassination
 }
 
 func (g *GameStateGameplay) Print(text string) {
@@ -639,7 +637,6 @@ func (g *GameStateGameplay) Update(input services.InputInterface) {
 	actions := game.GetActions()
 	actions.Update()
 
-	g.assassinationTargets = assassinationTargets(g.engine)
 
 	currentMap := game.GetMap()
 	if currentMap.DynamicLightsChanged && game.GetConfig().LightSources {
@@ -886,10 +883,8 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
 				_, actionStyle := action.Description(g.engine, player, p)
 				style = style.WithBg(actionStyle.Background)
 			}
-			if c.Actor != nil {
-				if _, ok := g.assassinationTargets[*c.Actor]; ok {
-					style = style.WithBg(core.CurrentTheme.IllegalActionBackground)
-				}
+			if c.Actor != nil && m.GetOffensiveActionAt(p) != nil {
+				style = style.WithBg(core.CurrentTheme.IllegalActionBackground)
 			}
 		}
 		drawPos := m.GetCamera().WorldToScreen(p)
@@ -1123,7 +1118,7 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
 	case core.BeginMouseAiming:
 		g.BeginMouseAiming()
 	case core.Assassinate:
-		g.executeAssassination()
+		g.offensiveMeleeAction()
 	// ── Gamepad plain commands – use current peek tile as direction ──────────
 	case core.DiveTackle:
 		g.playerDiveTackle()
@@ -1148,13 +1143,11 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
 	}
 }
 
-func (g *GameStateGameplay) executeAssassination() {
-	if len(g.assassinationTargets) == 0 {
-		return
-	}
+func (g *GameStateGameplay) executeDualAssassination(targets map[*core.Actor]struct{}) {
 	game := g.engine.GetGame()
 	player := game.GetMap().Player
 
+	// Find a piercing weapon (equipped first, then inventory).
 	var weapon *core.Item
 	if player.EquippedItem != nil && player.EquippedItem.HasMeleePiercingDamage() {
 		weapon = player.EquippedItem
@@ -1167,41 +1160,36 @@ func (g *GameStateGameplay) executeAssassination() {
 		}
 	}
 
-	// Collect targets and clear the field so no second trigger can fire.
-	targets := make([]*core.Actor, 0, len(g.assassinationTargets))
-	for target := range g.assassinationTargets {
-		targets = append(targets, target)
+	list := make([]*core.Actor, 0, len(targets))
+	for t := range targets {
+		list = append(list, t)
 	}
-	g.assassinationTargets = nil
 
-	// Choose the icon: weapon icon, fallback to dagger rune.
 	icon := rune('†')
 	if weapon != nil {
 		icon = weapon.Icon()
 	}
 
-	// Lock player and victims for the duration of the animation.
 	aic := g.engine.GetAI()
-	animationDone := false
-	until := func() bool { return animationDone }
+	done := false
+	until := func() bool { return done }
 	aic.SetEngaged(player, core.ActorStatusEngagedIllegal, until)
-	for _, target := range targets {
-		aic.SetEngaged(target, core.ActorStatusVictimOfEngagement, until)
+	for _, t := range list {
+		aic.SetEngaged(t, core.ActorStatusVictimOfEngagement, until)
 	}
 
 	capturedWeapon := weapon
 	finished := func() {
-		animationDone = true
-		for _, target := range targets {
-			game.IllegalActionAt(target.Pos(), core.ObservationPersonAttacked)
-			game.Kill(target, core.CauseOfDeath{
+		done = true
+		for _, t := range list {
+			game.IllegalActionAt(t.Pos(), core.ObservationPersonAttacked)
+			game.Kill(t, core.CauseOfDeath{
 				Description: core.CoDStabbed,
 				Source:      core.EffectSource{Actor: player, Item: capturedWeapon},
 			})
 		}
 	}
-
-	g.engine.GetAnimator().AssassinationAnimation(targets, icon, finished)
+	g.engine.GetAnimator().AssassinationAnimation(list, icon, finished)
 }
 
 func (g *GameStateGameplay) handleDirectionalInput(directionalCommand core.DirectionalGameCommand) {
@@ -1361,6 +1349,32 @@ func (g *GameStateGameplay) contextAction() {
 	}
 	chosenAction.Action(g.engine, player, player.Pos().Add(chosenDir))
 	g.UpdateHUD()
+}
+
+// offensiveMeleeAction fires the best offensive action sorted by look direction.
+// Double assassination (skill + 2 weapons + 2 adjacent actors) is handled first.
+func (g *GameStateGameplay) offensiveMeleeAction() {
+	game := g.engine.GetGame()
+	player := game.GetMap().Player
+
+	if !player.CanUseActions() {
+		return
+	}
+
+	// Double assassination takes priority when conditions are met.
+	if targets := assassinationTargets(g.engine); len(targets) == 2 {
+		g.executeDualAssassination(targets)
+		return
+	}
+
+	for _, dir := range dirsSortedByLookAngle(player.LookDirection) {
+		pos := player.Pos().Add(dir)
+		if action := game.GetOffensiveActionAt(pos); action != nil {
+			action.Action(g.engine, player, pos)
+			g.UpdateHUD()
+			return
+		}
+	}
 }
 
 // dirsSortedByLookAngle returns the four cardinal direction vectors sorted by

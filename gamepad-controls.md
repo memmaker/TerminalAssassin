@@ -15,9 +15,9 @@
 | **L1** *(hold)* | Run | — |
 | **L2** *(hold)* | Aim mode (guns/throw) — or draw bow (see below) | — |
 | **L2** *(release)* | Exit aim mode — or **fire bow** | — |
-| **R1** *(or* **✕ / A***)* | Context Action | — |
+| **R1** *(or* **✕ / A***)* | Context Action *(non-offensive only)* | — |
 | **R2** *(hold)* | Fire / Throw equipped item *(not bow)* | — |
-| **△ / Y** | Assassinate | — |
+| **△ / Y** | Offensive Melee *(equipped item — or assassination fallback)* | — |
 | **□ / X** | Use item at peeked tile | — |
 | **○ / B** | Dive & Tackle | Cancel / Back |
 | **✕ / A** | Context Action *(alias for R1)* | Confirm |
@@ -92,8 +92,8 @@ The bow uses a **slingshot / pull-back** mechanic:
 ## Interactions & Context Actions
 
 ### Context Action (R1 / ✕·A)
-**R1** or **✕ / A** is the smart interaction button. What it does depends on what is in front
-of you (your current peek tile):
+**R1** or **✕ / A** is the smart interaction button. It never initiates attacks or
+offensive actions. What it does depends on what is in front of you (your current peek tile):
 
 | Situation | Result |
 |---|---|
@@ -110,11 +110,18 @@ peeking toward*. Context-sensitive examples:
 - **Screwdriver / Wrench** equipped → use on a device, vent or panel.
 - **Crowbar** equipped → pry open a locked mechanical door.
 
-### Assassination (△ / Y)
-When an assassination target steps into range, press **△ / Y** for an instant
-silent kill. Only available when a valid target is highlighted.  
-Your sharpest bladed item in inventory is used automatically. If none is found,
-a bare-hands technique is used instead.
+### Offensive Melee (△ / Y)
+Press **△ / Y** to perform an offensive melee action using your currently equipped
+item against the closest actor in your look direction:
+
+| Equipped item | Result |
+|---|---|
+| **Piano wire** *(unaware target)* | Strangle |
+| **Any item / bare-hands** | Melee takedown (KO) |
+| **Bladed weapon** *(no takedown available)* | Assassination — instant silent kill |
+
+The action priority follows your look direction. The actor closest to where your
+right stick is pointing is chosen first.
 
 ### Dive & Tackle (○ / B)
 Press **○ / B** to lunge **two tiles** in your current peek direction:
@@ -199,7 +206,7 @@ cardinal steps feel consistent.
 - **Bow: slingshot mechanic.** Push the right stick *away from* your target to
   draw — stick magnitude controls range. Release L2 to fire. R2 does nothing with
   the bow equipped.
-- **Sneak + R1** near an NPC's back = pickpocket without a sound.
+- **△ / Y = offensive melee.** Piano wire equipped → strangle. Bare-handed / any item → takedown. Bladed weapon and no adjacent takedown target → assassination.
 - **Knock on a wall** (R1 facing a plain wall) to lure a nearby guard away from
   their post.
 - **Holster before entering a restricted zone.** Guards react to visible weapons

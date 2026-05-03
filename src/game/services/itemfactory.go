@@ -244,6 +244,11 @@ func (f ItemFactory) applyCameraBehavior(item *core.Item) {
         // Collect scene metadata.
         metadata := CapturePhotoMetadata(engine)
 
+        // Record photo in mission stats for challenge evaluation.
+        if stats := engine.GetGame().GetStats(); stats != nil {
+            stats.AddPhoto(metadata)
+        }
+
         // Derive timestamped output paths.
         timestamp := time.Now().Format("2006-01-02_15-04-05")
         photoDir := "photos"

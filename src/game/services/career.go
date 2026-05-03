@@ -113,6 +113,21 @@ func (c *CareerData) registerChallengePredicates(parser *ChallengeParser, engine
         return targetKill.CauseOfDeath.Source.Actor.Name == actorName
     })
 
+    parser.RegisterPredicate("PhotographedInZone", func(args ...any) bool {
+        zoneName := args[0].(string)
+        required := make([]string, len(args)-1)
+        for i, a := range args[1:] {
+            required[i] = a.(string)
+        }
+        for _, photo := range stats.Photos {
+            actorsInZone := photo.ActorsInZone()[zoneName]
+            if containsAll(actorsInZone, required) {
+                return true
+            }
+        }
+        return false
+    })
+
     parser.RegisterPredicate("KillDetails", func(args ...any) bool {
         nameOfVictim := args[0].(string)
         typeOfItem := args[1].(string)
@@ -129,6 +144,19 @@ func (c *CareerData) registerChallengePredicates(parser *ChallengeParser, engine
         return false
     })
 }
+func containsAll(haystack []string, needles []string) bool {
+	set := make(map[string]struct{}, len(haystack))
+	for _, s := range haystack {
+		set[s] = struct{}{}
+	}
+	for _, n := range needles {
+		if _, ok := set[n]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
 func (c *CareerData) ParseMapChallenges(mapFolder string, engine Engine, stats core.MissionStats) []Challenge {
     var mapChallenges []Challenge
     files := engine.GetFiles()

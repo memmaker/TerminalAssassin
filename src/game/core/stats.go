@@ -18,11 +18,50 @@ type KillStatistics struct {
     AtLocation               geometry.Point
     AtSecond                 float64
 }
+
+// PhotoMetadata captures a snapshot of what was visible in the scene when a
+// photo was taken. It is serialised as JSON alongside the screenshot image.
+type PhotoMetadata struct {
+	Timestamp      string          `json:"timestamp"`
+	MapName        string          `json:"map_name"`
+	VisibleActors  []ActorSighting `json:"visible_actors"`
+	VisibleItems   []ItemSighting  `json:"visible_items"`
+	VisibleObjects []ObjectSighting `json:"visible_objects"`
+}
+
+// ActorsInZone returns a map of zone name -> actor names from this photo.
+func (p PhotoMetadata) ActorsInZone() map[string][]string {
+	result := make(map[string][]string)
+	for _, s := range p.VisibleActors {
+		result[s.Zone] = append(result[s.Zone], s.Name)
+	}
+	return result
+}
+
+// ActorSighting records a single visible actor and the zone they were in.
+type ActorSighting struct {
+	Name string `json:"name"`
+	Zone string `json:"zone"`
+}
+
+// ItemSighting records a single visible map item and the zone it was in.
+type ItemSighting struct {
+	Name string `json:"name"`
+	Zone string `json:"zone"`
+}
+
+// ObjectSighting records a single visible map object and the zone it was in.
+type ObjectSighting struct {
+	Description string `json:"description"`
+	Zone        string `json:"zone"`
+}
+
 type MissionStats struct {
-    SecondsNeeded float64
-    Kills         []KillStatistics
-    BodiesFound   bool
-    BeenSpotted   bool
+	SecondsNeeded float64
+	Kills         []KillStatistics
+	Photos        []PhotoMetadata
+	BodiesFound   bool
+	BeenSpotted   bool
 }
 
 func NewMissionStats() *MissionStats {
@@ -93,6 +132,10 @@ func (m *MissionStats) AddKill(victim *Actor, death CauseOfDeath, location geome
     }
     m.Kills = append(m.Kills, kill)
     println(fmt.Sprintf("Killed %s by %s at %s", kill.VictimName, kill.CauseOfDeath.Description, kill.AtLocation))
+}
+
+func (m *MissionStats) AddPhoto(photo PhotoMetadata) {
+	m.Photos = append(m.Photos, photo)
 }
 
 func (m *MissionStats) StartMission() {

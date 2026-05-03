@@ -65,6 +65,7 @@ func (d CauseOfDeath) WithKiller() string {
 
 const (
     CoDStrangledWithWire CoDDescription = "strangled with piano wire"
+    CoDStrangled         CoDDescription = "strangled"
     CoDPoisoned          CoDDescription = "was lethally poisoned"
     CoDDrowned           CoDDescription = "drowned"
     CoDDrownedInToilet   CoDDescription = "drowned in a toilet"

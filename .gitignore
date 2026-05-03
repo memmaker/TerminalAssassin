@@ -1,13 +1,14 @@
 .idea
 .DS_Store
 oldcode/
-build/career.gob
-build/ta
 profile.out
 inspiration/
 godepgraph.png
 Log.txt
 release/
+/src/terminal-assassin
+build/career.gob
+build/ta
 /build/graphics.cfg
 build/photos
-/src/terminal-assassin
+build/options.rec

@@ -1,0 +1,152 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: src/go.mod
+          cache-dependency-path: src/go.sum
+      - name: Install Linux dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libasound2-dev
+      - name: Build Linux amd64
+        working-directory: src
+        run: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -tags ebitensinglethread -o ta -trimpath -ldflags '-s -w' .
+      - name: Package
+        run: |
+          mkdir -p dist/terminal-assassin-linux-amd64
+          cp src/ta dist/terminal-assassin-linux-amd64/
+          cp -r build/datafiles dist/terminal-assassin-linux-amd64/
+          cp build/keydefs.txt dist/terminal-assassin-linux-amd64/
+          cp changelog.txt dist/terminal-assassin-linux-amd64/
+          cp readme.md dist/terminal-assassin-linux-amd64/
+          cd dist && zip -r terminal-assassin-linux-amd64.zip terminal-assassin-linux-amd64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-amd64
+          path: dist/terminal-assassin-linux-amd64.zip
+
+  build-darwin-arm64:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: src/go.mod
+          cache-dependency-path: src/go.sum
+      - name: Build macOS arm64
+        working-directory: src
+        run: CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -tags ebitensinglethread -o ta -trimpath -ldflags '-s -w' .
+      - name: Package
+        run: |
+          mkdir -p dist/terminal-assassin-darwin-arm64
+          cp src/ta dist/terminal-assassin-darwin-arm64/
+          cp -r build/datafiles dist/terminal-assassin-darwin-arm64/
+          cp build/keydefs.txt dist/terminal-assassin-darwin-arm64/
+          cp changelog.txt dist/terminal-assassin-darwin-arm64/
+          cp readme.md dist/terminal-assassin-darwin-arm64/
+          cd dist && zip -r terminal-assassin-darwin-arm64.zip terminal-assassin-darwin-arm64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: darwin-arm64
+          path: dist/terminal-assassin-darwin-arm64.zip
+
+  build-darwin-amd64:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: src/go.mod
+          cache-dependency-path: src/go.sum
+      - name: Build macOS amd64
+        working-directory: src
+        run: CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o ta -trimpath -ldflags '-s -w' .
+      - name: Package
+        run: |
+          mkdir -p dist/terminal-assassin-darwin-amd64
+          cp src/ta dist/terminal-assassin-darwin-amd64/
+          cp -r build/datafiles dist/terminal-assassin-darwin-amd64/
+          cp build/keydefs.txt dist/terminal-assassin-darwin-amd64/
+          cp changelog.txt dist/terminal-assassin-darwin-amd64/
+          cp readme.md dist/terminal-assassin-darwin-amd64/
+          cd dist && zip -r terminal-assassin-darwin-amd64.zip terminal-assassin-darwin-amd64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: darwin-amd64
+          path: dist/terminal-assassin-darwin-amd64.zip
+
+  build-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: src/go.mod
+          cache-dependency-path: src/go.sum
+      - name: Install MinGW
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64
+      - name: Build Windows amd64
+        working-directory: src
+        run: CC=x86_64-w64-mingw32-gcc CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -tags ebitensinglethread -o ta.exe -trimpath -ldflags '-s -w' .
+      - name: Package
+        run: |
+          mkdir -p dist/terminal-assassin-windows-amd64
+          cp src/ta.exe dist/terminal-assassin-windows-amd64/
+          cp -r build/datafiles dist/terminal-assassin-windows-amd64/
+          cp build/keydefs.txt dist/terminal-assassin-windows-amd64/
+          cp changelog.txt dist/terminal-assassin-windows-amd64/
+          cp readme.md dist/terminal-assassin-windows-amd64/
+          cd dist && zip -r terminal-assassin-windows-amd64.zip terminal-assassin-windows-amd64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-amd64
+          path: dist/terminal-assassin-windows-amd64.zip
+
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: src/go.mod
+          cache-dependency-path: src/go.sum
+      - name: Build WASM
+        working-directory: src
+        run: CGO_ENABLED=0 GOOS=js GOARCH=wasm go build -tags ebitensinglethread,web -o ta.wasm -trimpath -ldflags '-s -w' .
+      - name: Package
+        run: |
+          mkdir -p dist/terminal-assassin-wasm
+          cp src/ta.wasm dist/terminal-assassin-wasm/
+          cp wasm-template/* dist/terminal-assassin-wasm/
+          cp -r build/datafiles dist/terminal-assassin-wasm/
+          cp build/keydefs.txt dist/terminal-assassin-wasm/
+          cp changelog.txt dist/terminal-assassin-wasm/
+          cp readme.md dist/terminal-assassin-wasm/
+          cd dist && zip -r terminal-assassin-wasm.zip terminal-assassin-wasm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasm
+          path: dist/terminal-assassin-wasm.zip
+
+  release:
+    needs: [build-linux, build-darwin-arm64, build-darwin-amd64, build-windows, build-wasm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip
+

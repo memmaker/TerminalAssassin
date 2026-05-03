@@ -510,6 +510,15 @@ func (m *Model) TakeInducedSleep(a *core.Actor, source core.EffectSource, force 
 	m.SendToSleep(a)
 }
 
+func (m *Model) WakeUp(actor *core.Actor) {
+	if actor == nil || !actor.IsSleeping() {
+		return
+	}
+	actor.Status = core.ActorStatusIdle
+	m.GetMap().SetDownedActorToActive(actor)
+	m.UpdateHUD()
+}
+
 func (m *Model) TakeElectricalDamage(a *core.Actor, source core.EffectSource, force int) {
 	if force > 50 {
 		m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusHighVoltage, source))
@@ -1024,13 +1033,21 @@ func (m *Model) ApplyStimulusToObject(object services.Object, stim stimuli.Stimu
 
 var actorActions = []services.ContextAction{
 	FenceShopAction{},
+}
+
+var offensiveActorActions = []services.ContextAction{
 	PianoWire{},
 	DrownAction{},
 	PushOverEdge{},
+	AssassinationAction{},
 	MeleeTakedown{},
 }
 
 var downedActorActions = []services.ContextAction{
+	WakeUpAction{},
+}
+
+var offensiveDownedActorActions = []services.ContextAction{
 	SnapNeckAction{},
 }
 
@@ -1096,6 +1113,29 @@ func (m *Model) GetContextActionAt(position geometry.Point) services.ContextActi
 	*/
 
 	return action
+}
+
+func (m *Model) GetOffensiveActionAt(position geometry.Point) services.ContextAction {
+	currentMap := m.GetMap()
+	player := currentMap.Player
+
+	if currentMap.IsActorAt(position) {
+		for _, a := range offensiveActorActions {
+			if a.IsActionPossible(m.engine, player, position) {
+				return a
+			}
+		}
+	}
+
+	if currentMap.IsDownedActorAt(position) {
+		for _, a := range offensiveDownedActorActions {
+			if a.IsActionPossible(m.engine, player, position) {
+				return a
+			}
+		}
+	}
+
+	return nil
 }
 
 func (m *Model) UpdateKnowledgeFromVision(person *core.Actor) {

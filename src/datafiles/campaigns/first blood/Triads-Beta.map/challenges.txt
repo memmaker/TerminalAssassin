@@ -10,10 +10,6 @@ TargetKilledByActorWithName(Blue Lotus Guard 1)
 TargetKilledByActorWithName(Blue Lotus Guard 2)
 TargetKilledByActorWithName(Blue Lotus Leader)
 
-# 1000 - Medic!
-
-## AND-CONDITIONS
-DisguiseWorn(Medic)
 
 # 1500 - Impatient
 
@@ -23,4 +19,4 @@ TargetKilledBeforeTime(30)
 # 2500 - Blue Collar Hero
 
 ## AND-CONDITIONS
-KillDetails(Blue Lotus Leader, wrench)
+KillDetails(Blue Lotus Leader, Wrench)

@@ -10,10 +10,6 @@ TargetKilledByActorWithName(Blue Lotus Guard 1)
 TargetKilledByActorWithName(Blue Lotus Guard 2)
 TargetKilledByActorWithName(Blue Lotus Leader)
 
-# 1000 - Medic!
-
-## AND-CONDITIONS
-DisguiseWorn(Medic)
 
 # 1500 - Impatient
 
@@ -24,3 +20,9 @@ TargetKilledBeforeTime(30)
 
 ## AND-CONDITIONS
 KillDetails(Blue Lotus Leader, wrench)
+
+# 3500 - Journalist
+
+## AND-CONDITIONS
+PhotographedInZone(Park, Blue Lotus Guard 1, Blue Lotus Guard 2, Blue Lotus Leader, Red Dragon Guard 1, Red Dragon Guard 2, Red Dragon Leader)
+

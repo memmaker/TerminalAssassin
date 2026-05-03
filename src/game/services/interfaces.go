@@ -141,6 +141,7 @@ type GameInterface interface {
     PopAndInitPrevious()
 
     SendToSleep(target *core.Actor)
+    WakeUp(target *core.Actor)
     Kill(victim *core.Actor, causeOfDeath core.CauseOfDeath)
     SnapNeck(attacker, target *core.Actor)
 
@@ -170,6 +171,7 @@ type GameInterface interface {
     DrawVisionCone(con console.CellInterface, actor *core.Actor)
     TryPushActorInDirection(actor *core.Actor, target geometry.Point)
     GetContextActionAt(pos geometry.Point) ContextAction
+    GetOffensiveActionAt(pos geometry.Point) ContextAction
     CreatePickupAction(forItem *core.Item) ContextAction
     InitLoadedMap(*gridmap.GridMap[*core.Actor, *core.Item, Object])
 
