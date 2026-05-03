@@ -62,7 +62,7 @@ jobs:
           path: dist/terminal-assassin-darwin-arm64.zip
 
   build-darwin-amd64:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -71,7 +71,7 @@ jobs:
           cache-dependency-path: src/go.sum
       - name: Build macOS amd64
         working-directory: src
-        run: CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -tags ebitensinglethread -o ta -trimpath -ldflags '-s -w' .
+        run: CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 CGO_CFLAGS="-arch x86_64" CGO_LDFLAGS="-arch x86_64" go build -tags ebitensinglethread -o ta -trimpath -ldflags '-s -w' .
       - name: Package
         run: |
           mkdir -p dist/terminal-assassin-darwin-amd64
