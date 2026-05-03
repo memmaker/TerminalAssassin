@@ -41,7 +41,7 @@ fi
 
 read "reply?Push current state to remote? [y/N] "
 if [[ "$reply" == "y" || "$reply" == "Y" ]]; then
-    git -C "$REPO" push --follow-tags && echo "Pushed."
+    git -C "$REPO" push --tags && echo "Pushed."
 fi
 
 
