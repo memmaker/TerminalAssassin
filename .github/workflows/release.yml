@@ -152,4 +152,18 @@ jobs:
       - uses: softprops/action-gh-release@v3
         with:
           files: artifacts/*.zip
+      - name: Install butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+      - name: Upload to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          ./butler push artifacts/terminal-assassin-linux-amd64.zip   memmakerx/terminal-assassin:linux-amd64   --userversion ${{ github.ref_name }}
+          ./butler push artifacts/terminal-assassin-windows-amd64.zip memmakerx/terminal-assassin:windows-amd64 --userversion ${{ github.ref_name }}
+          ./butler push artifacts/terminal-assassin-darwin-arm64.zip  memmakerx/terminal-assassin:mac-arm64     --userversion ${{ github.ref_name }}
+          ./butler push artifacts/terminal-assassin-darwin-amd64.zip  memmakerx/terminal-assassin:mac-amd64     --userversion ${{ github.ref_name }}
+          ./butler push artifacts/terminal-assassin-wasm.zip          memmakerx/terminal-assassin:html5         --userversion ${{ github.ref_name }}
 
