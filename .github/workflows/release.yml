@@ -129,7 +129,7 @@ jobs:
           mkdir -p dist/terminal-assassin-wasm
           cp src/ta.wasm dist/terminal-assassin-wasm/
           cp wasm-template/index.html dist/terminal-assassin-wasm/
-          cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" dist/terminal-assassin-wasm/
+          cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" dist/terminal-assassin-wasm/
           cp -r build/datafiles dist/terminal-assassin-wasm/
           cp build/keydefs.txt dist/terminal-assassin-wasm/
           cp changelog.txt dist/terminal-assassin-wasm/
