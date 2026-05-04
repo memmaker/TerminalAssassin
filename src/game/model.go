@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"math/rand"
 	"sort"
 
 	"github.com/memmaker/terminal-assassin/common"
@@ -16,6 +15,7 @@ import (
 	"github.com/memmaker/terminal-assassin/game/stimuli"
 	"github.com/memmaker/terminal-assassin/geometry"
 	"github.com/memmaker/terminal-assassin/gridmap"
+	"github.com/memmaker/terminal-assassin/rng"
 	"github.com/memmaker/terminal-assassin/ui"
 )
 
@@ -281,7 +281,7 @@ func (m *Model) SoundEventAt(soundLocation geometry.Point, kindOfSound core.Obse
 				//areAllies := game.AreAllies(actorAtSource, actorAt)
 				if isActorAt && actorAt.CanPerceive() {
 					if kindOfSound.IsSpeech() {
-						actorAt.TryRespondToSpeech(m.engine.CurrentTick(), string(kindOfSound))
+						actorAt.TryRespondToSpeech(m.engine.CurrentInGameTick(), string(kindOfSound))
 					} else if aic.IsControlledByAI(actorAt) && !actorAt.IsCriminal() {
 						if !actorAt.IsInCombat() {
 							actorAt.LookAt(soundLocation)
@@ -322,9 +322,9 @@ func (m *Model) IllegalActionAt(pos geometry.Point, kindOfEvent core.Observation
 				m.engine.PublishEvent(services.PlayerSpottedEvent{})
 			}
 			if kindOfEvent.IsOpenViolence() {
-				a.AI.Knowledge.AddDangerousSighting(a, actorAt, kindOfEvent, m.engine.CurrentTick())
+				a.AI.Knowledge.AddDangerousSighting(a, actorAt, kindOfEvent, m.engine.CurrentInGameTick())
 			} else {
-				a.AI.Knowledge.AddIncident(core.IncidentReport{Type: kindOfEvent, Location: actorAt.Pos(), Tick: m.engine.CurrentTick()})
+				a.AI.Knowledge.AddIncident(core.IncidentReport{Type: kindOfEvent, Location: actorAt.Pos(), Tick: m.engine.CurrentInGameTick()})
 			}
 		} else {
 			aic.ReportIncident(a, pos, kindOfEvent)
@@ -365,7 +365,7 @@ func (m *Model) ApplyFireToTile(atLocation geometry.Point, source core.EffectSou
 		for _, n := range gridMap.GetFilteredCardinalNeighbors(atLocation, func(p geometry.Point) bool {
 			return gridMap.IsStimulusOnTile(p, stimuli.StimulusBurnableLiquid) && !gridMap.IsStimulusOnTile(p, stimuli.StimulusFire)
 		}) {
-			m.ApplyDelayed(n, source, stimuli.StimEffect{Stimuli: []stimuli.Stimulus{stim}}, rand.Float64()*0.5)
+			m.ApplyDelayed(n, source, stimuli.StimEffect{Stimuli: []stimuli.Stimulus{stim}}, rng.R.Float64()*0.5)
 		}
 	}
 }
@@ -408,12 +408,12 @@ func (m *Model) ApplyBurnableToTile(atLocation geometry.Point, source core.Effec
 		for _, n := range currentMap.GetFilteredCardinalNeighbors(atLocation, func(p geometry.Point) bool {
 			return currentMap.IsStimulusOnTile(p, stimuli.StimulusFire)
 		}) {
-			m.engine.ScheduleGameTime(rand.Float64()*0.5, func() {
+			m.engine.ScheduleGameTime(rng.R.Float64()*0.5, func() {
 				fireForce := currentMap.ForceOfStimulusOnTile(n, stimuli.StimulusFire)
 				currentMap.AddStimulusToTile(n, stimuli.Stim{StimType: stimuli.StimulusFire, StimForce: fireForce})
 			})
 
-			m.ApplyDelayed(atLocation, source, stimuli.StimEffect{Stimuli: []stimuli.Stimulus{stimuli.Stim{StimType: stimuli.StimulusFire, StimForce: currentMap.ForceOfStimulusOnTile(n, stimuli.StimulusFire)}}}, rand.Float64()*0.5)
+			m.ApplyDelayed(atLocation, source, stimuli.StimEffect{Stimuli: []stimuli.Stimulus{stimuli.Stim{StimType: stimuli.StimulusFire, StimForce: currentMap.ForceOfStimulusOnTile(n, stimuli.StimulusFire)}}}, rng.R.Float64()*0.5)
 			break
 		}
 	}
@@ -487,14 +487,14 @@ func (m *Model) TakeFireDamage(a *core.Actor, source core.EffectSource, force in
 }
 
 func (m *Model) TakeLethalPoisonDamage(a *core.Actor, source core.EffectSource, force int) {
-	randomDelay := rand.Float64() * 5
+	randomDelay := rng.R.Float64() * 5
 	m.engine.ScheduleGameTime(randomDelay, func() {
 		m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusLethalPoison, source))
 	})
 }
 
 func (m *Model) TakeEmeticPoisonDamage(a *core.Actor, source core.EffectSource, force int) {
-	randomDelay := rand.Float64() * 10
+	randomDelay := rng.R.Float64() * 10
 	m.engine.ScheduleGameTime(randomDelay, func() {
 		m.engine.GetAI().SwitchToVomit(a)
 	})
@@ -533,7 +533,7 @@ func (m *Model) TakeFrenzyEffect(a *core.Actor, source core.EffectSource, force 
 	if a.IsPlayer() {
 		return // frenzy only affects AI-controlled actors
 	}
-	randomDelay := rand.Float64() * 2
+	randomDelay := rng.R.Float64() * 2
 	m.engine.ScheduleGameTime(randomDelay, func() {
 		m.engine.GetAI().SwitchToFrenzy(a)
 	})
@@ -709,7 +709,7 @@ func (m *Model) ActorEnteredCell(person *core.Actor, oldPosition geometry.Point,
 	if person.EquippedItem != nil {
 		m.SendTriggerStimuli(person, person.EquippedItem, newPosition, core.TriggerOnTakenToNewCell)
 	}
-	if person.IsBleeding() && !person.IsBodyBagged && rand.Float64() < 0.1 {
+	if person.IsBleeding() && !person.IsBodyBagged && rng.R.Float64() < 0.1 {
 		currentMap.AddStimulusToTile(person.Pos(), stimuli.Stim{StimType: stimuli.StimulusBlood, StimForce: 5})
 	}
 	if person == currentMap.Player {
@@ -1163,14 +1163,14 @@ func (m *Model) UpdateKnowledgeFromVision(person *core.Actor) {
 		dangerObservation := m.GetDangerObservation(person, actorAt)
 		if dangerObservation != core.ObservationNull {
 			person.IsEyeWitness = true
-			a.Knowledge.AddDangerousSighting(person, actorAt, dangerObservation, m.engine.CurrentTick())
+			a.Knowledge.AddDangerousSighting(person, actorAt, dangerObservation, m.engine.CurrentInGameTick())
 			if actorAt.IsPlayer() {
 				m.engine.PublishEvent(services.PlayerSpottedEvent{})
 			}
 		} else {
 			suspicionObservation := m.GetSuspicionObservation(person, actorAt)
 			if suspicionObservation != core.ObservationNull {
-				a.Knowledge.AddIncident(core.IncidentReport{Type: suspicionObservation, Location: actorAt.Pos(), Tick: m.engine.CurrentTick()})
+				a.Knowledge.AddIncident(core.IncidentReport{Type: suspicionObservation, Location: actorAt.Pos(), Tick: m.engine.CurrentInGameTick()})
 				if actorAt.IsPlayer() {
 					m.engine.PublishEvent(services.PlayerSpottedEvent{})
 				}

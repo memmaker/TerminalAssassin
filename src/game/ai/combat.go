@@ -1,11 +1,10 @@
 package ai
 
 import (
-	"math/rand"
-
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/game/services"
 	"github.com/memmaker/terminal-assassin/geometry"
+	"github.com/memmaker/terminal-assassin/rng"
 )
 
 type CombatMovement struct {
@@ -64,7 +63,7 @@ func (t *CombatMovement) handleFiring(person *core.Actor, aic services.AIInterfa
 	t.stepCounter = 0
 	currentMap := t.Engine.GetGame().GetMap()
 	person.LookDirection = geometry.DirectionVectorToAngleInDegrees(t.Target.Pos().Sub(person.Pos()))
-	aimedShot := rand.Intn(100) < 50
+	aimedShot := rng.R.Intn(100) < 50
 	if person.EquippedItem.OnCooldown || (t.isAimingAt != t.Target.Pos() && aimedShot) {
 		t.isAimingAt = t.Target.Pos()
 	} else {
@@ -80,5 +79,5 @@ func (t *CombatMovement) handleFiring(person *core.Actor, aic services.AIInterfa
 			})
 		}
 	}
-	return NextUpdateIn(rand.Float64()*0.5 + 0.5)
+	return NextUpdateIn(rng.R.Float64()*0.5 + 0.5)
 }

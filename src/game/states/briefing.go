@@ -28,15 +28,26 @@ func (g *GameStateMainMenu) openBriefingMenu() {
 
     //recorder := g.engine.GetRecorder()
     title := "Mission" // + currentMap.MapFileName()
+    recorder := g.engine.GetRecorder()
     menuItems := []services.MenuItem{
         {
             Label: "Start mission",
             Handler: func() {
                 audioPlayer.StopAll()
-                //recorder.StartRecording()
                 userInterface.PopAll()
                 game.PopState()
                 game.PushState(&GameStateGameplay{})
+            },
+        },
+        {
+            DynamicLabel: func() string {
+                if recorder.ShouldRecord {
+                    return "Record   : ON"
+                }
+                return "Record   : OFF"
+            },
+            Handler: func() {
+                recorder.ShouldRecord = !recorder.ShouldRecord
             },
         },
         {

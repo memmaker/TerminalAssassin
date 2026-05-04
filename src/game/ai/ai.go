@@ -2,8 +2,9 @@ package ai
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
+
+	"github.com/memmaker/terminal-assassin/rng"
 
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/game/services"
@@ -114,7 +115,7 @@ func NewAIController(engine services.Engine) *AIController {
 }
 
 func (a *AIController) ReportIncident(person *core.Actor, location geometry.Point, incidentType core.Observation) core.IncidentReport {
-	report := core.IncidentReport{Type: incidentType, Location: location, Tick: a.engine.CurrentTick()}
+	report := core.IncidentReport{Type: incidentType, Location: location, Tick: a.engine.CurrentInGameTick()}
 	person.AI.Knowledge.AddIncident(report)
 	return report
 }
@@ -464,7 +465,7 @@ func (a *AIController) StopAuto(person *core.Actor) core.AIUpdate {
 func (a *AIController) HandleBlockedPath(person *core.Actor, moveDelta geometry.Point) core.AIUpdate {
 	ai := person.AI
 	ai.PathBlockedCount++
-	if ai.PathBlockedCount > rand.Intn(3)+2 {
+	if ai.PathBlockedCount > rng.R.Intn(3)+2 {
 		ai.PathBlockedCount = 0
 		return ai.Movement.OnBlockedPath()
 	}
@@ -638,7 +639,7 @@ func (a *AIController) RaiseSuspicionAt(person *core.Actor, dangerousActor *core
 		}
 		ai.SuspicionCounter = 0
 		person.IsEyeWitness = true
-		person.AI.Knowledge.AddDangerousSighting(person, dangerousActor, core.ObservationOngoingSuspiciousBehaviour, a.engine.CurrentTick())
+		person.AI.Knowledge.AddDangerousSighting(person, dangerousActor, core.ObservationOngoingSuspiciousBehaviour, a.engine.CurrentInGameTick())
 		if person.Type == core.ActorTypeGuard {
 			a.SwitchToCombat(person, dangerousActor)
 		} else if a.IsGuardAvailable() {

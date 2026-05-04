@@ -90,6 +90,11 @@ func (g *GameStateGameplay) OpenPauseMenu() {
 }
 
 func (g *GameStateGameplay) quitToMainMenu() {
+	if recorder := g.engine.GetRecorder(); recorder != nil && recorder.IsRecording() {
+		if path, err := recorder.StopAndSave(); err == nil {
+			println("Replay saved:", path)
+		}
+	}
 	g.engine.Reset()
 }
 

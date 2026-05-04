@@ -2,9 +2,9 @@ package actions
 
 import (
 	"fmt"
-	"math/rand"
 
 	"github.com/memmaker/terminal-assassin/game/stimuli"
+	"github.com/memmaker/terminal-assassin/rng"
 
 	"github.com/memmaker/terminal-assassin/common"
 	"github.com/memmaker/terminal-assassin/console"
@@ -137,7 +137,7 @@ func (g *ActionProvider) spreadShot(attacker *core.Actor, weapon *core.Item, tar
 	normalizedProjectileDirection = normalizedProjectileDirection.Normalize()
 	for i := uint8(0); i < core.ShotgunPelletCount; i++ {
 		// add some randomness to the projectile direction
-		rotationInDegrees := rand.Intn(core.SpreadShotDegrees) - (core.SpreadShotDegrees / 2)
+		rotationInDegrees := rng.R.Intn(core.SpreadShotDegrees) - (core.SpreadShotDegrees / 2)
 		projectileDirection := normalizedProjectileDirection.Rotate(rotationInDegrees)
 		// project the bullet
 		projectileHitTarget := attacker.Pos().Add(projectileDirection.MulInt(weapon.ProjectileRange).ToPoint())

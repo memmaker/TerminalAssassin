@@ -578,14 +578,14 @@ func (d DialogueAction) Description(services.Engine, *core.Actor, geometry.Point
 func (d DialogueAction) Action(m services.Engine, person *core.Actor, position geometry.Point) {
 	person.Dialogue.CurrentDialogue = d.DialogueName
 	person.Dialogue.Situation = &core.OrientedLocation{Location: person.Pos()}
-	person.Dialogue.LastHeardAtTick = m.CurrentTick()
+	person.Dialogue.LastHeardAtTick = m.CurrentInGameTick()
 	d.InitialSpeaker.Dialogue.Situation = &core.OrientedLocation{Location: d.InitialSpeaker.Pos()}
 	d.InitialSpeaker.StartDialogue(d.DialogueName)
 	println(fmt.Sprintf("Started dialogue %s from context action", d.DialogueName))
 }
 
 func (d DialogueAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
-	wasRecentlyActive := person.Dialogue.Active(m.CurrentTick())
+	wasRecentlyActive := person.Dialogue.Active(m.CurrentInGameTick())
 	hasCurrentDialogueSet := person.Dialogue.CurrentDialogue != ""
 	return !wasRecentlyActive && !hasCurrentDialogueSet
 }

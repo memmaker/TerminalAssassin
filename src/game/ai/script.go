@@ -23,8 +23,7 @@ func (s *ScriptedState) OnCannotReachDestination() core.AIUpdate {
 func (s *ScriptedState) NextAction() core.AIUpdate {
 	person := s.Person
 
-
-	isInConversation := person.Dialogue.Active(s.Engine.CurrentTick())
+	isInConversation := person.Dialogue.Active(s.Engine.CurrentInGameTick())
 
 	if isInConversation && person.Dialogue.Situation != nil {
 		if person.Pos() != person.Dialogue.Situation.Location {

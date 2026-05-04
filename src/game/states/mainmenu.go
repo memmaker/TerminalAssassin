@@ -76,6 +76,10 @@ func (g *GameStateMainMenu) openMainMenu() {
 			},
 		},
 		{
+			Label:   "Watch Replay",
+			Handler: g.openReplayMenu,
+		},
+		{
 			Label: "Editor",
 			Handler: func() {
 				userInterface.PopModal()
@@ -290,6 +294,32 @@ func (g *GameStateMainMenu) printVersionText(text string, topLeft gruid.Point, y
 		m.ScreenGrid.SetSquare(pointToPlace, gruid.Cell{Rune: char, Style: style.WithFg(ColorFromCode(ColorBrightRed))})
 	}
 }*/
+
+func (g *GameStateMainMenu) openReplayMenu() {
+	userInterface := g.engine.GetUI()
+	files := g.engine.GetFiles()
+	entries, err := files.ReadDir(services.ReplayDirectory)
+	if err != nil || len(entries) == 0 {
+		userInterface.ShowAlert([]string{"No replays found."})
+		return
+	}
+	menuItems := make([]services.MenuItem, 0, len(entries))
+	for _, entry := range entries {
+		name := entry.Name()
+		fullPath := filepath.Join(services.ReplayDirectory, name)
+		menuItems = append(menuItems, services.MenuItem{
+			Label: name,
+			Handler: func() {
+				userInterface.PopModal()
+				g.engine.GetGame().PushState(&GameStateReplay{
+					ReplayPath: fullPath,
+					OnComplete: g.openMainMenu,
+				})
+			},
+		})
+	}
+	userInterface.OpenFixedWidthAutoCloseMenuWithCallback("Watch Replay", menuItems, nil)
+}
 
 func (g *GameStateMainMenu) openFontsMenu() {
 	userInterface := g.engine.GetUI()

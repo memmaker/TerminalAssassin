@@ -2,6 +2,10 @@
 
 A terminal-aesthetic stealth/assassination roguelite written in Go, rendered via a custom Unicode cell grid on top of [Ebiten v2](https://ebitengine.org/).
 
+## For AI Agents: Be brief and concise
+
+Always use caveman mode (skill in .github/skills/caveman.md)
+
 ## For AI Agents: Simplicity rules
 
 When implementing features, always look for the simplest possible solution that achieves the desired outcome. Avoid over-engineering or adding unnecessary complexity.
@@ -28,6 +32,3 @@ AI Agents should never use heredoc for anything.
 
 The only exception are compile error checks and GIT Operations.
 
-## For AI Agents: Be brief and concise
-
-Always use caveman mode (skill).

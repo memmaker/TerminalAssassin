@@ -54,13 +54,17 @@ type ConsoleEngine struct {
 	// Creating complex items with engine dependencies
 	ItemFactory   *services.ItemFactory
 	ObjectFactory *objects.ObjectFactory
+	Recorder      *services.Recorder
+
+	inputOverride services.InputInterface
 
 	options Options
 
 	deviceDPIScale float64
 	wantsToQuit    bool
 
-	WorldTicks                  uint64
+	InGameTicks                 uint64 // increments when the time in the game advances
+	RawTicks                    uint64 // increments every Update, unaffected by IsBlocking
 	scheduledCalls              map[uint64][]func()
 	scheduledCallsWithCondition []ScheduledCallWithCondition
 	subscribers                 []services.Subscriber
@@ -74,6 +78,10 @@ type ConsoleEngine struct {
 
 func (g *ConsoleEngine) GetObjectFactory() services.ObjectFactoryInterface {
 	return g.ObjectFactory
+}
+
+func (g *ConsoleEngine) GetRecorder() *services.Recorder {
+	return g.Recorder
 }
 
 func (g *ConsoleEngine) PublishEvent(event services.GameEvent) {
@@ -131,11 +139,19 @@ func (g *ConsoleEngine) Update() error {
 	// do we need this? we do
 	g.Input.Update()
 
-	g.UserInterface.Update(g.Input)
+	var effectiveInput services.InputInterface = g.Input
+	if g.inputOverride != nil {
+		effectiveInput = g.inputOverride
+	} else if g.Recorder != nil && g.Recorder.IsRecording() {
+		effectiveInput = &services.RecordingProxy{Inner: g.Input, Recorder: g.Recorder}
+	}
 
+	g.UserInterface.Update(effectiveInput)
+
+	g.RawTicks++
 	if !g.UserInterface.IsBlocking() {
 		g.UpdateScheduledCalls()
-		g.WorldTicks++
+		g.InGameTicks++
 	}
 
 	g.UserInterface.Draw(g.Console)
@@ -240,9 +256,11 @@ func main() {
 		Files:          files,
 		ExternalData:   externalData,
 		Career:         game.NewCareerFromFile(),
+		Recorder:       &services.Recorder{},
 		scheduledCalls: map[uint64][]func(){},
 		TimeFactor:     1.0,
 	}
+	consoleGame.Recorder.SetTickSource(func() uint64 { return consoleGame.RawTicks })
 	// Sync controller mode from options.
 	gameConfig.ControllerMode = opts.ControllerMode
 	consoleGame.Input.SetControllerMode(opts.ControllerMode)
@@ -294,7 +312,7 @@ func (g *ConsoleEngine) Schedule(relativeSeconds float64, call func()) {
 	if relativeTicks == 0 {
 		relativeTicks = 1
 	}
-	g.ScheduleAbs(g.WorldTicks+relativeTicks, call)
+	g.ScheduleAbs(g.InGameTicks+relativeTicks, call)
 }
 
 // ScheduleGameTime fires after a game-time delay scaled by TimeFactor.
@@ -311,7 +329,7 @@ func (g *ConsoleEngine) ScheduleInTicks(relativeTicks uint64, call func()) {
 	if relativeTicks == 0 {
 		relativeTicks = 1
 	}
-	g.ScheduleAbs(g.WorldTicks+relativeTicks, call)
+	g.ScheduleAbs(g.InGameTicks+relativeTicks, call)
 }
 
 func (g *ConsoleEngine) ScheduleAbs(absoluteWorldTick uint64, call func()) {
@@ -321,11 +339,11 @@ func (g *ConsoleEngine) ScheduleAbs(absoluteWorldTick uint64, call func()) {
 	g.scheduledCalls[absoluteWorldTick] = append(g.scheduledCalls[absoluteWorldTick], call)
 }
 func (g *ConsoleEngine) UpdateScheduledCalls() {
-	if calls, forThisTick := g.scheduledCalls[g.WorldTicks]; forThisTick {
+	if calls, forThisTick := g.scheduledCalls[g.InGameTicks]; forThisTick {
 		for _, call := range calls {
 			call()
 		}
-		delete(g.scheduledCalls, g.WorldTicks)
+		delete(g.scheduledCalls, g.InGameTicks)
 	}
 
 	for i := len(g.scheduledCallsWithCondition) - 1; i >= 0; i-- {
@@ -417,6 +435,10 @@ func (g *ConsoleEngine) GetInput() services.InputInterface {
 	return g.Input
 }
 
+func (g *ConsoleEngine) SetInputOverride(input services.InputInterface) {
+	g.inputOverride = input
+}
+
 func (g *ConsoleEngine) ScreenGridWidth() int {
 	return g.Config.GridWidth
 }
@@ -452,8 +474,12 @@ func (g *ConsoleEngine) GetAI() services.AIInterface {
 func (g *ConsoleEngine) GetAnimator() services.AnimationInterface {
 	return g.Animator
 }
-func (g *ConsoleEngine) CurrentTick() uint64 {
-	return g.WorldTicks
+func (g *ConsoleEngine) CurrentInGameTick() uint64 {
+	return g.InGameTicks
+}
+
+func (g *ConsoleEngine) CurrentRawTick() uint64 {
+	return g.RawTicks
 }
 
 func (g *ConsoleEngine) Reset() {
@@ -468,7 +494,8 @@ func (g *ConsoleEngine) Reset() {
 func (g *ConsoleEngine) ResetForGameplay() {
 	g.AIController.Reset()
 	g.Animator.Reset()
-	g.WorldTicks = 0
+	g.InGameTicks = 0
+	g.RawTicks = 0
 	g.subscribers = make([]services.Subscriber, 0)
 	g.scheduledCalls = map[uint64][]func(){}
 	g.scheduledCallsWithCondition = make([]ScheduledCallWithCondition, 0)
