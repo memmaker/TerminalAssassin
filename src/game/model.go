@@ -452,10 +452,8 @@ func (m *Model) ApplyStimulusToActor(a *core.Actor, source core.EffectSource, st
 	}
 }
 
-// Cause of Death for people being shot is sneak attack most of the time..
-// We also don't know if a Sniper Rifle was used..
 func (m *Model) TakePiercingDamage(a *core.Actor, source core.EffectSource, force int) {
-	if m.engine.GetAI().IsControlledByAI(a) && (a.Status != core.ActorStatusCombat) && (a.Status != core.ActorStatusFrenzy) {
+	if m.engine.GetAI().IsControlledByAI(a) && !a.IsInCombat() && !a.IsFrenzied() {
 		m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusPiercingDamage, source))
 		return
 	}
@@ -514,7 +512,11 @@ func (m *Model) WakeUp(actor *core.Actor) {
 	if actor == nil || !actor.IsSleeping() {
 		return
 	}
-	actor.Status = core.ActorStatusIdle
+	if actor.IsPlayer() {
+		actor.Sleeping = false
+	} else {
+		actor.AI.PopState()
+	}
 	m.GetMap().SetDownedActorToActive(actor)
 	m.UpdateHUD()
 }
@@ -546,10 +548,12 @@ func ActorMovedOrIncapacitated(person *core.Actor) func() bool {
 
 func ActorMovedOrStateChanged(person *core.Actor) func() bool {
 	currentPos := person.Pos()
-	currentStatus := person.Status
+	if person.AI == nil {
+		return func() bool { return person.Pos() != currentPos }
+	}
+	currentState := person.AI.GetState()
 	return func() bool {
-		result := person.Pos() != currentPos || person.Status != currentStatus
-		return result
+		return person.Pos() != currentPos || person.AI.GetState() != currentState
 	}
 }
 
@@ -560,11 +564,11 @@ func SoundStopped(handle services.AudioHandle) func() bool {
 }
 
 func (m *Model) Kill(victim *core.Actor, causeOfDeath core.CauseOfDeath) {
-	if victim.Status == core.ActorStatusDead {
+	if victim.Dead {
 		return
 	}
 	defer m.UpdateHUD()
-	victim.Status = core.ActorStatusDead
+	victim.Dead = true
 	victim.IsEyeWitness = false
 
 	if causeOfDeath.IsBodyDisappearing() {
@@ -586,7 +590,7 @@ func (m *Model) Kill(victim *core.Actor, causeOfDeath core.CauseOfDeath) {
 	}
 }
 func (m *Model) RemoveDeadActor(victim *core.Actor) {
-	if victim.Status != core.ActorStatusDead {
+	if !victim.Dead {
 		return
 	}
 	defer m.UpdateHUD()
@@ -656,19 +660,20 @@ func (m *Model) ReEmitStimuliOnTileToThings(source core.EffectSource, p geometry
 }
 
 func (m *Model) SendToSleep(sleeper *core.Actor) {
-	if sleeper == nil || sleeper.Status == core.ActorStatusDead || sleeper.Status == core.ActorStatusSleeping {
+	if sleeper == nil || sleeper.Dead || sleeper.IsSleeping() {
 		return
 	}
 	currentMap := m.GetMap()
 	animator := m.engine.GetAnimator()
-	sleeper.Status = core.ActorStatusSleeping
 	sleeper.Fov.Visibles = nil
 	if sleeper == currentMap.Player {
+		sleeper.Sleeping = true
 		animator.SleepingAnimation(sleeper, func() {
 			currentMap.UpdateFieldOfView(sleeper)
-			sleeper.Status = core.ActorStatusIdle
+			sleeper.Sleeping = false
 		})
 	} else {
+		sleeper.AI.PushState(&ai.SleepingState{AIContext: ai.AIContext{Engine: m.engine, Person: sleeper}})
 		currentMap.SetActorToDowned(sleeper)
 		m.DropInventory(sleeper)
 	}
@@ -724,7 +729,7 @@ func (m *Model) ActorEnteredCell(person *core.Actor, oldPosition geometry.Point,
 	if !person.IsDowned() && currentMap.IsItemAt(newPosition) {
 		itemAt := currentMap.ItemAt(newPosition)
 		guardHandlingMine := person.Type == core.ActorTypeGuard &&
-			(person.Status == core.ActorStatusInvestigating || person.Status == core.ActorStatusCleanup) &&
+			(person.IsInvestigating() || person.Status() == core.ActorStatusCleanup) &&
 			itemAt.IsMine()
 		if !itemAt.IsDestroyed && !guardHandlingMine {
 			m.SendTriggerStimuli(person, itemAt, newPosition, core.TriggerOnActorContact)
@@ -743,7 +748,7 @@ func (m *Model) handleDeathTile(person *core.Actor, deathCell gridmap.MapCell[*c
 	// TODO: play a small death animation..
 	animationCompleted := false
 	aic := m.engine.GetAI()
-	aic.SetEngaged(person, core.ActorStatusEngaged, func() bool { return animationCompleted })
+	aic.SetEngrossed(person, func() bool { return animationCompleted })
 	animator := m.engine.GetAnimator()
 	animator.FallingAnimation(person.Pos(), func() {
 		if person.IsDead() {
@@ -1010,8 +1015,8 @@ func (m *Model) IllegalPlayerEngagementWithActorAtPos(position geometry.Point, i
 	until := func() bool {
 		return animationCompleted
 	}
-	aic.SetEngaged(actorAt, core.ActorStatusVictimOfEngagement, until)
-	aic.SetEngaged(currentMap.Player, core.ActorStatusEngagedIllegal, until)
+	aic.SetEngrossed(actorAt, until)
+	aic.SetEngrossed(currentMap.Player, until)
 
 	completed := func() {
 		animationCompleted = true
@@ -1181,7 +1186,7 @@ func (m *Model) GetSuspicionObservation(person *core.Actor, susActor *core.Actor
 	if susActor.HasIllegalItemEquipped() {
 		return core.ObservationOpenCarry
 	}
-	if susActor.IsEngagedInIllegalAction() {
+	if susActor.Engrossed {
 		return core.ObservationIllegalAction
 	}
 	if currentMap.IsInHostileZone(susActor) {
@@ -1280,7 +1285,6 @@ func (m *Model) InitActor(a *core.Actor) {
 		if a.AI.HasSchedule() {
 			a.AI.SetState(&ai.ScheduledMovement{AIContext: ai.AIContext{Engine: m.engine, Person: a}})
 		} else if a.Type == core.ActorTypePredator {
-			a.Status = core.ActorStatusFrenzy
 			a.AI.SetState(&ai.FrenzyMovement{AIContext: ai.AIContext{Engine: m.engine, Person: a}})
 		} else if !a.IsFollowing() {
 			a.AI.SetState(&ai.GuardMovement{AIContext: ai.AIContext{Engine: m.engine, Person: a}})

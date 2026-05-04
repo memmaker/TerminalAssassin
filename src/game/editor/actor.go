@@ -97,7 +97,6 @@ func (g *GameStateEditor) setLeaderForActor(follower *core.Actor) func() {
             return
         }
         offset := follower.Pos().Sub(leader.Pos())
-        follower.Status = core.ActorStatusFollowing
         follower.AI.SetState(&ai.FollowerMovement{LeaderStartsAt: leader.Pos(), PosOffset: offset})
         follower.AI.Schedule = ""
         g.PrintAsMessage(fmt.Sprintf("OK: %s is now following %s", follower.Name, leader.Name))

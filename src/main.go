@@ -483,6 +483,7 @@ func init() {
 	gob.Register(&ai.FollowerMovement{})
 	gob.Register(&ai.GuardMovement{})
 	gob.Register(&ai.ScheduledMovement{})
+	gob.Register(&ai.SleepingState{})
 	gob.Register(&stimuli.Stim{})
 	gob.Register(&stimuli.StimEffect{})
 	gob.Register(&game.ExitAction{})

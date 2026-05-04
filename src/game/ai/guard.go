@@ -10,6 +10,8 @@ type GuardMovement struct {
 	AIContext
 }
 
+func (u *GuardMovement) Status() core.ActorState { return core.ActorStatusIdle }
+
 func (u *GuardMovement) OnDestinationReached() core.AIUpdate {
 	ai := u.Person.AI
 	aic := u.Engine.GetAI()
@@ -28,6 +30,5 @@ func (u *GuardMovement) OnCannotReachDestination() core.AIUpdate {
 
 func (u *GuardMovement) NextAction() core.AIUpdate {
 	ai := u.Person.AI
-	u.Person.Status = core.ActorStatusIdle
 	return u.Person.AI.Movement.Action(ai.StartPosition, u)
 }

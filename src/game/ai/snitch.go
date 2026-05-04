@@ -15,6 +15,8 @@ type SnitchMovement struct {
 	KnownGuard *core.Actor
 }
 
+func (s *SnitchMovement) Status() core.ActorState { return core.ActorStatusSnitching }
+
 func (s *SnitchMovement) couldFindGuard() bool {
 	person := s.Person
 	currentMap := s.Engine.GetGame().GetMap()

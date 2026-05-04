@@ -13,6 +13,8 @@ type WatchMovement struct {
 	chaseCounter      int
 }
 
+func (v *WatchMovement) Status() core.ActorState { return core.ActorStatusWatching }
+
 func (v *WatchMovement) OnDestinationReached() core.AIUpdate {
 	return NextUpdateIn(1)
 }
@@ -24,10 +26,6 @@ func (v *WatchMovement) OnCannotReachDestination() core.AIUpdate {
 func (v *WatchMovement) NextAction() core.AIUpdate {
 	person := v.Person
 	aic := v.Engine.GetAI()
-	//println(fmt.Sprintf("%s: next watch action", person.DebugDisplayName()))
-	person.Status = core.ActorStatusWatching
-	// can we see the suspicious actor? -> raise suspicion
-	// no -> investigate
 	if v.suspiciousActor == nil || v.suspiciousActor.IsDowned() {
 		person.AI.PopState()
 		return NextUpdateIn(1)
@@ -36,7 +34,6 @@ func (v *WatchMovement) NextAction() core.AIUpdate {
 	if person.CanSeeActor(v.suspiciousActor) {
 		v.lastKnownLocation = v.suspiciousActor.Pos()
 		currentMap := v.Engine.GetGame().GetMap()
-		currentMap.IsTrespassing(person)
 		suspicionDelayInMS := v.getSuspicionDelayInMS()
 
 		if v.incident.Type.IsTrespassing() && !currentMap.IsTrespassing(v.suspiciousActor) {
@@ -49,7 +46,7 @@ func (v *WatchMovement) NextAction() core.AIUpdate {
 			aic.RaiseSuspicionAt(person, v.suspiciousActor, suspicionDelayInMS)
 		}
 
-		return NextUpdateIn(float64(suspicionDelayInMS / 1000.0))
+		return NextUpdateIn(float64(suspicionDelayInMS) / float64(1000.0))
 	}
 
 	person.AI.LowerSuspicion()
@@ -63,7 +60,6 @@ func (v *WatchMovement) NextAction() core.AIUpdate {
 }
 
 func (v *WatchMovement) getSuspicionDelayInMS() int {
-
 	if v.incident.Type == core.ObservationTrespassingInHostileZone {
 		return 200
 	}
@@ -76,6 +72,5 @@ func (v *WatchMovement) getSuspicionDelayInMS() int {
 	if v.incident.Type == core.ObservationOpenCarry {
 		return 600
 	}
-
 	return 800
 }

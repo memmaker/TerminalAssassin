@@ -2,6 +2,7 @@ package ai
 
 import (
 	"fmt"
+
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/game/stimuli"
 )
@@ -12,6 +13,8 @@ type CleanupMovement struct {
 	cleaningIsDone  bool
 	securedItems    []*core.Item
 }
+
+func (c *CleanupMovement) Status() core.ActorState { return core.ActorStatusCleanup }
 
 func (c *CleanupMovement) OnDestinationReached() core.AIUpdate {
 	person := c.Person
@@ -25,10 +28,10 @@ func (c *CleanupMovement) OnDestinationReached() core.AIUpdate {
 			c.dropOffItems()
 			droppedStuff = true
 		}
-        if person.IsDraggingBody() {
-            person.DraggedBody = nil
-            droppedStuff = true
-        }
+		if person.IsDraggingBody() {
+			person.DraggedBody = nil
+			droppedStuff = true
+		}
 		if droppedStuff {
 			return NextUpdateIn(0.1)
 		}
@@ -55,7 +58,6 @@ func (c *CleanupMovement) OnCannotReachDestination() core.AIUpdate {
 
 func (c *CleanupMovement) NextAction() core.AIUpdate {
 	person := c.Person
-	person.Status = core.ActorStatusCleanup
 
 	if person.IsDraggingBody() {
 		return c.gotoDropoff()
@@ -82,9 +84,9 @@ func (c *CleanupMovement) gotoDropoff() core.AIUpdate {
 	currentMap := game.GetMap()
 	if !currentMap.HasDropOffZone() {
 		c.securedItems = []*core.Item{}
-        if person.IsDraggingBody() {
-            person.DraggedBody = nil
-        }
+		if person.IsDraggingBody() {
+			person.DraggedBody = nil
+		}
 		person.AI.PopState()
 		return NextUpdateIn(0.1)
 	}
@@ -113,7 +115,7 @@ func (c *CleanupMovement) performCleanup() core.AIUpdate {
 		until := func() bool {
 			return c.cleaningIsDone
 		}
-		aic.SetEngaged(person, core.ActorStatusEngaged, until)
+		aic.SetEngrossed(person, until)
 		c.Engine.GetAnimator().ActorEngagedAnimation(person, 'c', c.currentIncident.Location, 3.0, func() {
 			game.GetMap().RemoveStimulusFromTile(c.currentIncident.Location, stimuli.StimulusBlood)
 			aic.MarkAsCleaned(person, c.currentIncident)

@@ -37,6 +37,7 @@ type GameStateGameplay struct {
 	FocusedActor          *core.Actor
 	targetMovePath        []geometry.Point
 	ActionMap             map[geometry.Point]services.ContextAction
+	assassinations        map[*core.Actor]struct{}
 	contextActionsHelp    string
 	lastPlayerMovementAt  time.Time
 
@@ -59,8 +60,8 @@ type GameStateGameplay struct {
 	padAimPos    geometry.PointF // accumulated gamepad aim cursor position
 	padAimActive bool            // true while aiming via gamepad (suppresses mouse-based scope scroll)
 
-	bowPullDir geometry.PointF  // last stick direction while bow was drawn (used on release)
-	bowLoSEnd  geometry.Point   // grid-snapped LoS endpoint from last bow aim frame
+	bowPullDir geometry.PointF // last stick direction while bow was drawn (used on release)
+	bowLoSEnd  geometry.Point  // grid-snapped LoS endpoint from last bow aim frame
 
 	lookModeActive bool            // true while free look cursor is active (Select toggle)
 	lookCursorPos  geometry.PointF // accumulated look cursor position in world space
@@ -97,7 +98,6 @@ var defaultUIState, aimingUIState, examineUIState, lookUIState GameplayUIState
 func (g *GameStateGameplay) ToNormalUIState() {
 	g.Pager = nil
 	currentMap := g.engine.GetGame().GetMap()
-	currentMap.Player.Status = core.ActorStatusOnSchedule
 	currentMap.Player.FovMode = gridmap.FoVModeNormal
 	currentMap.Player.FoVShift = geometry.PointZero
 	currentMap.Player.InteractionShift = geometry.PointZero
@@ -363,7 +363,6 @@ func (g *GameStateGameplay) SpawnPlayer() {
 		FoVinDegrees:   90,
 		Health:         3,
 		MovementMode:   core.MovementModeWalking,
-		Status:         core.ActorStatusIdle,
 		Team:           "player",
 	}
 	player.Fov = geometry.NewFOV(geometry.NewRect(-visionRange, -visionRange, visionRange+1, visionRange+1))
@@ -460,6 +459,8 @@ func (g *GameStateGameplay) updateContextActions() {
 			}
 		}
 	}
+
+	g.assassinations = assassinationTargets(g.engine)
 }
 
 func (g *GameStateGameplay) playerMoved(oldPosition geometry.Point, newPosition geometry.Point) {
@@ -636,7 +637,6 @@ func (g *GameStateGameplay) Update(input services.InputInterface) {
 	g.updateFlashlight()
 	actions := game.GetActions()
 	actions.Update()
-
 
 	currentMap := game.GetMap()
 	if currentMap.DynamicLightsChanged && game.GetConfig().LightSources {
@@ -883,9 +883,12 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
 				_, actionStyle := action.Description(g.engine, player, p)
 				style = style.WithBg(actionStyle.Background)
 			}
-			if c.Actor != nil && m.GetOffensiveActionAt(p) != nil {
-				style = style.WithBg(core.CurrentTheme.IllegalActionBackground)
+			if c.Actor != nil {
+				if _, canAssassinate := g.assassinations[*c.Actor]; canAssassinate {
+					style = style.WithBg(core.CurrentTheme.IllegalActionBackground)
+				}
 			}
+
 		}
 		drawPos := m.GetCamera().WorldToScreen(p)
 		con.SetSquare(drawPos, common.Cell{Rune: icon, Style: style})
@@ -1173,9 +1176,9 @@ func (g *GameStateGameplay) executeDualAssassination(targets map[*core.Actor]str
 	aic := g.engine.GetAI()
 	done := false
 	until := func() bool { return done }
-	aic.SetEngaged(player, core.ActorStatusEngagedIllegal, until)
+	aic.SetEngrossed(player, until)
 	for _, t := range list {
-		aic.SetEngaged(t, core.ActorStatusVictimOfEngagement, until)
+		aic.SetEngrossed(t, until)
 	}
 
 	capturedWeapon := weapon
@@ -1544,9 +1547,8 @@ func (g *GameStateGameplay) tryPickpocket(target *core.Actor) {
 	// Guard: target must be unaware.
 
 	if target.IsInCombat() || target.IsInvestigating() ||
-		target.Status == core.ActorStatusSearching ||
-		target.Status == core.ActorStatusSnitching ||
-		target.Status == core.ActorStatusPanic {
+		target.Status() == core.ActorStatusSnitching ||
+		target.Status() == core.ActorStatusPanic {
 		g.Print("Target is too alert to pickpocket.")
 		return
 	}
@@ -1662,8 +1664,8 @@ func (g *GameStateGameplay) showTooltipAt(screenPos geometry.Point, styledText c
 
 func (g *GameStateGameplay) showActorTooltip(person *core.Actor) {
 	infoString := fmt.Sprintf("%s / %s", person.Name, person.Type)
-	if person.Status != "" {
-		infoString = fmt.Sprintf("%s / %s / %s", person.Name, person.Type, person.Status)
+	if person.AI != nil {
+		infoString = fmt.Sprintf("%s / %s / %s", person.Name, person.Type, person.Status())
 	}
 	tooltipFontColor := core.CurrentTheme.TooltipForeground
 	if person.IsTarget {

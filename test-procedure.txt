@@ -7,9 +7,11 @@ TA Testplan:
 [ ] Editor
 
 # Movement
-[ ] Sneaking
+[X] Sneaking
+[ ] Running
 [X] Peeking
 [X] Hiding in container
+[ ] Dive & tackle
 
 # Items
 [X] Pickup
@@ -17,20 +19,23 @@ TA Testplan:
 [X] Ring menu
 [X] Put away
 [X] Throwing
-[ ] Throwing creates a distraction
+[X] Throwing creates a distraction
+[ ] Searching containers
 
 # Doors & Windows
 [X] Open
 [X] Close
 [X] Melee weapons can open doors and break windows
 [X] Shots can open doors and penetrate windows while breaking them
-[ ] Doors that cannot be shot open
-[ ] Windows cannot be opened from the outside
+[X] Doors that cannot be shot open
+[X] Windows cannot be opened from the outside
 
 # Keys
 [X] Locked Doors
 [X] Unlock with Key / KeyCard
 [X] Lockpicking
+[ ] Safe opening with key / lockpick
+[ ] Crowbar unlocking
 
 # Combat
 [X] Shooting
@@ -39,6 +44,9 @@ TA Testplan:
 [X] Sniping
 [X] Throwing
 [X] Melee attacks
+[ ] Taser (melee knockout)
+[ ] Dart gun (ranged knockout)
+[ ] Bow
 [X] Prodding (downed) actors
 [X] Drown in toilet
 
@@ -54,11 +62,15 @@ TA Testplan:
 [X] Actor eating food
 [X] Emetic poison effect
 [X] Deadly poison effect
-[ ] Sleep poison effect
+[X] Sleep poison effect
+[ ] Frenzy poison effect
 
 # Explosives
 [X] Grenades
 [X] Remote detonated bombs
+[ ] Proximity mines
+[ ] Poison mines (lethal / sleep)
+[ ] Smoke grenade
 [ ] Gas containers being shot
 
 # Actor behaviour
@@ -74,17 +86,29 @@ TA Testplan:
 [X] Only one civilian will report a suspicion and only one guard will react
 [ ] Guards will search an area after hostile activity and loss of LoS
 [X] Guards will carry corpses and weapons to the security area
+[ ] Guards react to open carry of weapons
+[ ] Guards build up suspicion on trespassing
+[ ] Guards disarm mines
+[ ] Actors wake up from induced sleep
+[ ] Fence (buy / sell loot)
 
 # Systemic interactions
 [X] Liquid leaking
 [X] Burnable liquid can be set on fire
 [X] Fire kills people
 [X] Fire will propagate along burnable areas
-[ ] Water will kill Fire
-[ ] Electricity is distributed along water
+[X] Water will kill Fire
+[X] Electricity is distributed along water
 
 # Special Items
 [ ] Liquid Canisters can be thrown and used while sneaking
-[ ] Remote detonated items
+[X] Remote detonated items
+[ ] Remote taser
 [X] Cloth for cleaning
-[ ] Fiber-wire for quick dragging
+[X] Fiber-wire for quick dragging
+[ ] Taser
+[ ] Dart gun
+[ ] Bow
+[ ] Camera
+[ ] Shovel (bury / uncover items)
+[ ] Flashlight

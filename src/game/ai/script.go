@@ -10,6 +10,8 @@ type ScriptedState struct {
 	AIContext
 }
 
+func (s *ScriptedState) Status() core.ActorState { return core.ActorStatusScripted }
+
 func (s *ScriptedState) OnDestinationReached() core.AIUpdate {
 	return NextUpdateIn(1)
 }
@@ -21,7 +23,6 @@ func (s *ScriptedState) OnCannotReachDestination() core.AIUpdate {
 func (s *ScriptedState) NextAction() core.AIUpdate {
 	person := s.Person
 
-	person.Status = core.ActorStatusScripted
 
 	isInConversation := person.Dialogue.Active(s.Engine.CurrentTick())
 
