@@ -9,11 +9,11 @@ import (
 
 func NewCareerFromFile() *services.CareerData {
 	fileReader, fileErr := os.Open("career.gob")
-	defer fileReader.Close()
 	if fileErr != nil {
 		println("Error opening career.gob file: ", fileErr.Error())
 		return NewEmptyCareer()
 	}
+	defer fileReader.Close()
 	decoder := gob.NewDecoder(fileReader)
 	careerData := &services.CareerData{}
 	err := decoder.Decode(careerData)

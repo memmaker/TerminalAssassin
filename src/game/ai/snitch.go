@@ -75,8 +75,16 @@ func (s *SnitchMovement) noGuards() {
 
 func (s *SnitchMovement) OnDestinationReached() core.AIUpdate {
 	person := s.Person
-	s.trySnitching()
-	return NextUpdateIn(float64(person.MoveDelay()))
+	if s.trySnitching() {
+		return NextUpdateIn(2)
+	}
+	// Snitching failed (guard moved away) — replan to nearest available guard
+	s.KnownGuard = nil
+	if !s.hasGuardLocation() {
+		s.noGuards()
+		return NextUpdateIn(0.1)
+	}
+	return person.AI.Movement.Action(s.KnownGuard.Pos(), s)
 }
 
 func (s *SnitchMovement) trySnitching() bool {

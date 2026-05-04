@@ -26,6 +26,9 @@ func (p *PanicMovement) runAway() core.AIUpdate {
 	game := p.Engine.GetGame()
 	currentMap := game.GetMap()
 	possibleMoves := currentMap.GetFilteredCardinalNeighbors(person.Pos(), currentMap.CurrentlyPassableForActor(person))
+	if len(possibleMoves) == 0 {
+		return NextUpdateIn(float64(person.MoveDelay()))
+	}
 	maxDistance := 0.0
 	for _, move := range possibleMoves {
 		summedDistance := 0.0
