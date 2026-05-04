@@ -98,6 +98,9 @@ func (s StartLocation) ToString() string {
 
 
 func (m *MissionStats) OnlyKilledTargets() bool {
+    if len(m.Kills) == 0 {
+        return false
+    }
     for _, kill := range m.Kills {
         if !kill.IsTarget {
             return false

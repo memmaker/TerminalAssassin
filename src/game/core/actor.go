@@ -38,9 +38,9 @@ func (d CauseOfDeath) IsPlayer() bool {
 func (d CauseOfDeath) IsBodyDisappearing() bool {
 	switch d.Description {
 	case CoDFalling, CoDDrowned:
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 func (d CauseOfDeath) descriptionWithItem() string {
@@ -265,6 +265,9 @@ type AIComponent struct {
 }
 
 func (a *AIComponent) GetState() AIStateHandler {
+	if len(a.stateStack) == 0 {
+		return nil
+	}
 	return a.stateStack[len(a.stateStack)-1]
 }
 

@@ -39,7 +39,13 @@ func (t *CombatMovement) NextAction() core.AIUpdate {
 		t.LastKnownPosition = &targetPosition
 		return t.handleFiring(person, aic)
 	}
-	t.stepCounter++
+	if person.CanSeeActor(t.Target) {
+		targetPosition := t.Target.Pos()
+		t.LastKnownPosition = &targetPosition
+		t.stepCounter = 0
+	} else {
+		t.stepCounter++
+	}
 	return person.AI.Movement.Action(currentMap.GetRandomFreeNeighbor(*t.LastKnownPosition), t)
 }
 

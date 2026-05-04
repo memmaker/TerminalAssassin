@@ -127,7 +127,7 @@ func (c *CleanupMovement) performCleanup() core.AIUpdate {
 	} else if c.currentIncident.Type == core.ObservationWeaponFound || c.currentIncident.Type == core.ObservationMineFound {
 		itemAt := game.GetMap().ItemAt(c.currentIncident.Location)
 		if itemAt != nil {
-			game.PickUpItem(person)
+			game.PickUpItemAt(person, c.currentIncident.Location)
 			c.securedItems = append(c.securedItems, itemAt)
 		}
 		return c.cleanupCompleted()

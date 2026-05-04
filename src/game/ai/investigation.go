@@ -33,7 +33,7 @@ func (i *InvestigationMovement) OnDestinationReached() core.AIUpdate {
 		return NextUpdateIn(0.5)
 	}
 	if i.Incident.Type.IsContact() {
-		if geometry.DistanceChebyshev(i.Incident.Location, person.AI.Knowledge.LastSightingOfDangerous.Location) <= 3 {
+		if person.AI.Knowledge.LastSightingOfDangerous.Location == i.Incident.Location {
 			person.AI.Knowledge.LastSightingOfDangerous.HandledByMe = true
 			person.AI.Knowledge.LastSightingOfDangerous.Tick = 0
 		}
