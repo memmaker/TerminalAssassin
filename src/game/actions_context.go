@@ -65,12 +65,12 @@ func (a ExitAction) Action(m services.Engine, person *core.Actor, position geome
 
 func (a ExitAction) IsActionPossible(m services.Engine, person *core.Actor, actionAt geometry.Point) bool {
 	for _, inLevel := range m.GetGame().GetMap().Actors() {
-		if inLevel.IsTarget && inLevel.Status != core.ActorStatusDead {
+		if inLevel.IsTarget && !inLevel.Dead {
 			return false
 		}
 	}
 	for _, inLevel := range m.GetGame().GetMap().DownedActors() {
-		if inLevel.IsTarget && inLevel.Status != core.ActorStatusDead {
+		if inLevel.IsTarget && !inLevel.Dead {
 			return false
 		}
 	}
@@ -254,8 +254,8 @@ func (d DrownAction) Action(m services.Engine, person *core.Actor, position geom
 	}
 	aic := m.GetAI()
 
-	aic.SetEngaged(victim, core.ActorStatusVictimOfEngagement, until)
-	aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
+	aic.SetEngrossed(victim, until)
+	aic.SetEngrossed(person, until)
 
 	completed := func() {
 		animationCompleted = true
@@ -393,8 +393,8 @@ func (a AssassinationAction) Action(m services.Engine, person *core.Actor, posit
 	aic := m.GetAI()
 	done := false
 	until := func() bool { return done }
-	aic.SetEngaged(person, core.ActorStatusEngagedIllegal, until)
-	aic.SetEngaged(victim, core.ActorStatusVictimOfEngagement, until)
+	aic.SetEngrossed(person, until)
+	aic.SetEngrossed(victim, until)
 
 	capturedWeapon, capturedCod, capturedVictim := weapon, cod, victim
 	finished := func() {
@@ -414,7 +414,7 @@ func (a AssassinationAction) IsActionPossible(m services.Engine, person *core.Ac
 	if actorAt == nil || actorAt == person {
 		return false
 	}
-	return actorAt.IsActive() && person.CanSee(actionAt)
+	return actorAt.IsActive() && geometry.DistanceManhattan(person.Pos(), actionAt) <= 1
 }
 
 type KnockOnWallAction struct{}

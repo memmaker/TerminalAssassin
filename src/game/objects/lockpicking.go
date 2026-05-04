@@ -64,7 +64,7 @@ func performMechanicalPickLock(
 	case hasPicks:
 		pickTime := difficulty.PickTime()
 		done := false
-		aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
+		aic.SetEngrossed(person, func() bool { return done })
 		game.IllegalActionAt(lockPos, core.ObservationIllegalAction)
 		animator.ActorEngagedAnimationWithCancel(person, core.GlyphLockpick, lockPos, pickTime, func() {
 			done = true
@@ -79,7 +79,7 @@ func performMechanicalPickLock(
 		game.SoundEventAt(lockPos, core.ObservationMeleeNoises, 20)
 		game.IllegalActionAt(lockPos, core.ObservationIllegalAction)
 		done := false
-		aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
+		aic.SetEngrossed(person, func() bool { return done })
 		animator.ActorEngagedAnimationWithCancel(person, core.GlyphCrowbar, lockPos, crowbarTime, func() {
 			done = true
 			person.ConsumeItemsFromInventory(core.ItemTypeCrowbar, 1)
@@ -118,7 +118,7 @@ func performElectronicPickLock(
 
 	pickTime := difficulty.PickTime()
 	done := false
-	aic.SetEngaged(person, core.ActorStatusEngagedIllegal, func() bool { return done })
+	aic.SetEngrossed(person, func() bool { return done })
 	game.IllegalActionAt(lockPos, core.ObservationIllegalAction)
 	animator.ActorEngagedAnimationWithCancel(person, core.GlyphLockpickElectronic, lockPos, pickTime, func() {
 		done = true
@@ -128,4 +128,3 @@ func performElectronicPickLock(
 		done = true
 	})
 }
-

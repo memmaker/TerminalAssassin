@@ -18,10 +18,11 @@ type AIUpdate struct {
 var ManualDeferredUpdate = AIUpdate{DelayInSeconds: -1}
 
 // AIStateHandler is the interface every AI behaviour state must implement.
-// Storing the stack as []AIStateHandler gives compile-time safety and
-// eliminates the type assertion in AIController.StateOf.
+// Status returns the ActorState that is active while this state is on top of
+// the stack; PopState restores it automatically so per-tick reasserts are not needed.
 type AIStateHandler interface {
 	NextAction() AIUpdate
+	Status() ActorState
 }
 
 type AIMovement interface {

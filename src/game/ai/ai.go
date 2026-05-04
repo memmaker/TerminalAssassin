@@ -94,7 +94,7 @@ func (a *AIController) IsNearActiveIllegalIncident(person *core.Actor, location 
 
 func (a *AIController) isAlreadyBeingInvestigated(location geometry.Point) bool {
 	for _, actor := range a.engine.GetGame().GetMap().Actors() {
-		if actor.IsPlayer() || !actor.IsActive() || actor.IsInCombat() || actor.Status == core.ActorStatusPanic {
+		if actor.IsPlayer() || !actor.IsActive() || actor.IsInCombat() || actor.Status() == core.ActorStatusPanic {
 			continue
 		}
 		if state, ok := actor.AI.GetState().(*InvestigationMovement); ok {
@@ -160,6 +160,7 @@ func (a *AIController) GetDangerousIncidents(person *core.Actor) []core.Incident
 }
 
 func (a *AIController) TryPopScripted(person *core.Actor) {
+	// looks error prone to me: What if an investigation state was pushed over the scripted state?
 	if _, ok := person.AI.GetState().(*ScriptedState); ok {
 		person.AI.PopState()
 	}
@@ -177,15 +178,19 @@ func (a *AIController) MarkAsCleaned(person *core.Actor, incident core.IncidentR
 	person.AI.Knowledge.RemoveIncident(incident.Hash())
 }
 func (a *AIController) SwitchToWait(person *core.Actor) {
-	a.PushWaitWithStatus(person, person.Status, nil)
+	a.PushWait(person, nil)
 }
 
-func (a *AIController) PushWaitWithStatus(person *core.Actor, status core.ActorState, until func() bool) {
+func (a *AIController) PushWaitWithStatus(person *core.Actor, _ core.ActorState, until func() bool) {
+	a.PushWait(person, until)
+}
+
+func (a *AIController) PushWait(person *core.Actor, until func() bool) {
 	if person.IsDowned() || person.IsInCombat() {
 		return
 	}
-	a.pushStateTransition(person, status,
-		&WaitMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Until: until})
+	a.pushStateTransition(person,
+		&Wait{AIContext: AIContext{Engine: a.engine, Person: person}, Until: until})
 }
 
 func (a *AIController) PushGoto(person *core.Actor, destination geometry.Point) {
@@ -196,7 +201,7 @@ func (a *AIController) PushGotoWithCall(person *core.Actor, destination geometry
 	if person.IsDowned() || person.IsInCombat() {
 		return
 	}
-	a.pushStateTransition(person, person.Status,
+	a.pushStateTransition(person,
 		&GotoBehaviour{AIContext: AIContext{Engine: a.engine, Person: person}, TargetLocation: destination, CallOnArrival: callOnArrival})
 }
 
@@ -205,7 +210,7 @@ func (a *AIController) SwitchToCombat(person *core.Actor, target *core.Actor) {
 		return
 	}
 	currentTargetPos := target.Pos()
-	a.pushStateTransition(person, core.ActorStatusCombat,
+	a.pushStateTransition(person,
 		&CombatMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Target: target, LastKnownPosition: &currentTargetPos})
 	println(fmt.Sprintf("%s is now in combat with %s", person.DebugDisplayName(), target.Name))
 }
@@ -214,41 +219,36 @@ func (a *AIController) SwitchToCleanup(person *core.Actor) {
 	if person.IsDowned() {
 		return
 	}
-	a.pushStateTransition(person, core.ActorStatusCleanup,
+	a.pushStateTransition(person,
 		&CleanupMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
 	println(fmt.Sprintf("%s is now cleaning up", person.DebugDisplayName()))
 }
 
 func (a *AIController) SwitchToScript(target *core.Actor) {
-	if target.IsDowned() || target.Status == core.ActorStatusScripted {
+	if target.IsDowned() || target.Status() == core.ActorStatusScripted {
 		return
 	}
-	a.pushStateTransition(target, core.ActorStatusScripted,
+	a.pushStateTransition(target,
 		&ScriptedState{AIContext: AIContext{Engine: a.engine, Person: target}})
 	println(fmt.Sprintf("%s is now in script mode", target.DebugDisplayName()))
 }
 
 func (a *AIController) SwitchToSnitch(person *core.Actor) {
-	if person.IsDowned() || person.Status == core.ActorStatusSnitching {
+	if person.IsDowned() || person.Status() == core.ActorStatusSnitching {
 		return
 	}
-	ai := person.AI
 	newState := &SnitchMovement{AIContext: AIContext{Engine: a.engine, Person: person}}
 	if person.IsInvestigating() {
-		ai.ReplaceState(newState)
+		person.AI.ReplaceState(newState)
 	} else {
-		ai.PushState(newState)
+		person.AI.PushState(newState)
 	}
-	person.Status = core.ActorStatusSnitching
-	person.Move = core.AutoMove{}
-	person.Path = nil
-	ai.UpdatePredicate = nil
-	ai.NextUpdateIn = stateTransitionDelay
+	a.resetTransitionFields(person)
 	println(fmt.Sprintf("%s is now snitching", person.DebugDisplayName()))
 }
 
 func (a *AIController) SwitchToPanic(person *core.Actor, dangerLocations []geometry.Point) {
-	if person.IsDowned() || person.Status == core.ActorStatusPanic {
+	if person.IsDowned() || person.Status() == core.ActorStatusPanic {
 		return
 	}
 	var threatActor *core.Actor
@@ -258,44 +258,44 @@ func (a *AIController) SwitchToPanic(person *core.Actor, dangerLocations []geome
 			break
 		}
 	}
-	a.pushStateTransition(person, core.ActorStatusPanic,
+	a.pushStateTransition(person,
 		&PanicMovement{AIContext: AIContext{Engine: a.engine, Person: person}, DangerousLocations: dangerLocations, ThreatActor: threatActor})
 	println(fmt.Sprintf("%s is now panicking", person.DebugDisplayName()))
 }
 
 func (a *AIController) SwitchToInvestigation(person *core.Actor, incidentReport core.IncidentReport) {
 	if person.IsDowned() || person.IsInCombat() ||
-		person.Status == core.ActorStatusPanic ||
-		person.Status == core.ActorStatusInvestigating ||
-		person.Status == core.ActorStatusSnitching {
+		person.Status() == core.ActorStatusPanic ||
+		person.Status() == core.ActorStatusInvestigating ||
+		person.Status() == core.ActorStatusSnitching {
 		return
 	}
 	if a.IsPartOfTravelGroup(person) {
 		a.handleSplitOfTravelGroup(person, a.GetTravelGroup(person))
 	}
-	a.pushStateTransition(person, core.ActorStatusInvestigating,
+	a.pushStateTransition(person,
 		&InvestigationMovement{AIContext: AIContext{Engine: a.engine, Person: person}, Incident: incidentReport})
 	println(fmt.Sprintf("%s is now investigating %v", person.DebugDisplayName(), incidentReport.Hash()))
 }
 
 func (a *AIController) SwitchToSchedule(person *core.Actor) {
-	if person.IsDowned() || person.IsEngaged() || person.IsInCombat() ||
-		person.Status == core.ActorStatusPanic ||
-		person.Status == core.ActorStatusOnSchedule {
+	if person.IsDowned() || person.Engrossed || person.IsInCombat() ||
+		person.Status() == core.ActorStatusPanic ||
+		person.Status() == core.ActorStatusOnSchedule {
 		return
 	}
-	a.setStateTransition(person, core.ActorStatusOnSchedule,
+	a.setStateTransition(person,
 		&ScheduledMovement{AIContext{Engine: a.engine, Person: person}})
 	println(fmt.Sprintf("%s is now on schedule", person.DebugDisplayName()))
 }
 
 func (a *AIController) SwitchToWatch(person *core.Actor, target *core.Actor, report core.IncidentReport) {
 	if person.IsDowned() || person.IsInCombat() ||
-		person.Status == core.ActorStatusPanic ||
-		person.Status == core.ActorStatusWatching {
+		person.Status() == core.ActorStatusPanic ||
+		person.Status() == core.ActorStatusWatching {
 		return
 	}
-	a.pushStateTransition(person, core.ActorStatusWatching,
+	a.pushStateTransition(person,
 		&WatchMovement{AIContext: AIContext{Engine: a.engine, Person: person}, suspiciousActor: target, lastKnownLocation: person.Pos(), incident: report})
 	println(fmt.Sprintf("%s is now watching %s", person.DebugDisplayName(), target.Name))
 }
@@ -304,7 +304,7 @@ func (a *AIController) SwitchToGuard(person *core.Actor) {
 	if person.IsDowned() {
 		return
 	}
-	a.setStateTransition(person, core.ActorStatusIdle,
+	a.setStateTransition(person,
 		&GuardMovement{AIContext{Engine: a.engine, Person: person}})
 	println(fmt.Sprintf("%s is now guarding", person.DebugDisplayName()))
 }
@@ -314,7 +314,7 @@ func (a *AIController) SwitchToVomit(person *core.Actor) {
 		return
 	}
 	person.IsNauseous = true
-	a.pushStateTransition(person, person.Status,
+	a.pushStateTransition(person,
 		&VomitMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
 	println(fmt.Sprintf("%s is now vomiting", person.DebugDisplayName()))
 }
@@ -323,7 +323,7 @@ func (a *AIController) SwitchToFrenzy(person *core.Actor) {
 	if person.IsDowned() || person.IsFrenzied() {
 		return
 	}
-	a.pushStateTransition(person, core.ActorStatusFrenzy,
+	a.pushStateTransition(person,
 		&FrenzyMovement{AIContext: AIContext{Engine: a.engine, Person: person}})
 	println(fmt.Sprintf("%s is now frenzied", person.DebugDisplayName()))
 }
@@ -356,9 +356,8 @@ func (a *AIController) ConsumeFoodAt(person *core.Actor, foodPos geometry.Point,
 	currentMap := a.engine.GetGame().GetMap()
 	animationCompleted := false
 	until := func() bool { return animationCompleted }
-	a.SetEngaged(person, core.ActorStatusEngaged, until)
+	a.SetEngrossed(person, until)
 	completed := func() {
-		a.SetEngaged(person, core.ActorStatusIdle, nil)
 		if currentMap.IsStimulusOnTile(foodPos, stimuli.StimulusLethalPoison) {
 			game.ApplyStimulusToActor(person, core.NewEffectSourceFromTile(currentMap.CellAt(foodPos).TileType), stimuli.Stim{StimType: stimuli.StimulusLethalPoison, StimForce: 100})
 		} else if currentMap.IsStimulusOnTile(foodPos, stimuli.StimulusEmeticPoison) {
@@ -381,50 +380,36 @@ func (a *AIController) UpdateVision(person *core.Actor) {
 		a.SwitchStateBecauseOfNewKnowledge(person)
 	}
 }
-func (a *AIController) SetEngaged(person *core.Actor, engagedStatus core.ActorState, until func() bool) {
-	if person.IsPlayer() {
-		person.Status = engagedStatus
-		a.engine.ScheduleWhen(until, func() {
-			person.Status = core.ActorStatusIdle
-		})
-	} else { //ActorStatusVictimOfEngagement
-		if person.DebugFlag {
-			println(fmt.Sprintf("%s: New Engaged Status: %s", person.DebugDisplayName(), engagedStatus))
-		}
-		if engagedStatus == core.ActorStatusEngaged {
-			a.PushWaitWithStatus(person, engagedStatus, until) // push wait state
-		} else if engagedStatus == core.ActorStatusEngagedIllegal {
-			a.PushWaitWithStatus(person, engagedStatus, until) // push wait state
-		} else if engagedStatus == core.ActorStatusVictimOfEngagement {
-			a.PushWaitWithStatus(person, engagedStatus, until) // push wait state
-		}
-	}
+
+func (a *AIController) SetEngrossed(person *core.Actor, until func() bool) {
+	person.Engrossed = true
+	a.engine.ScheduleWhen(until, func() {
+		person.Engrossed = false
+	})
 }
+
 func (a *AIController) StateOf(person *core.Actor) core.AIStateHandler {
 	return person.AI.GetState()
 }
 
-// pushStateTransition is the shared tail of every SwitchTo* / PushXxx method.
-// It sets the actor status, pushes the new state onto the stack, and resets
-// all per-tick movement fields.
-func (a *AIController) pushStateTransition(person *core.Actor, status core.ActorState, state core.AIStateHandler) {
-	person.Status = status
-	person.AI.PushState(state)
+// resetTransitionFields resets per-tick movement fields after a state transition.
+func (a *AIController) resetTransitionFields(person *core.Actor) {
 	person.Move = core.AutoMove{}
 	person.Path = nil
 	person.AI.UpdatePredicate = nil
 	person.AI.NextUpdateIn = stateTransitionDelay
 }
 
-// setStateTransition is like pushStateTransition but replaces the entire stack
-// (used when the new state is an irreversible base state, e.g. Guard, Schedule).
-func (a *AIController) setStateTransition(person *core.Actor, status core.ActorState, state core.AIStateHandler) {
-	person.Status = status
+// pushStateTransition pushes a new state and resets movement fields.
+func (a *AIController) pushStateTransition(person *core.Actor, state core.AIStateHandler) {
+	person.AI.PushState(state)
+	a.resetTransitionFields(person)
+}
+
+// setStateTransition replaces the entire stack (irreversible base states e.g. Guard, Schedule).
+func (a *AIController) setStateTransition(person *core.Actor, state core.AIStateHandler) {
 	person.AI.SetState(state)
-	person.Move = core.AutoMove{}
-	person.Path = nil
-	person.AI.UpdatePredicate = nil
-	person.AI.NextUpdateIn = stateTransitionDelay
+	a.resetTransitionFields(person)
 }
 
 // PathSet updates the path of Person to a new position.
@@ -524,7 +509,7 @@ func (a *AIController) UpdateAI(person *core.Actor) float64 {
 // Hostile Actor     - very high -> combat / snitch
 
 func (a *AIController) SwitchStateBecauseOfNewKnowledge(person *core.Actor) {
-	if !person.IsActive() || person.IsInCombat() || person.IsFrenzied() || person.Status == core.ActorStatusPanic || person.Status == core.ActorStatusSnitching {
+	if !person.IsActive() || person.IsInCombat() || person.IsFrenzied() || person.Status() == core.ActorStatusPanic || person.Status() == core.ActorStatusSnitching {
 		return
 	}
 	if a.ReactToDangerousActor(person) {
@@ -533,10 +518,10 @@ func (a *AIController) SwitchStateBecauseOfNewKnowledge(person *core.Actor) {
 	if a.ReactToSuspiciousActor(person) {
 		return
 	}
-	if person.Status == core.ActorStatusWatching {
+	if person.Status() == core.ActorStatusWatching {
 		return
 	}
-	if person.Status == core.ActorStatusInvestigating {
+	if person.Status() == core.ActorStatusInvestigating {
 		return
 	}
 	if a.ReactToDangerousLocations(person) {
@@ -570,10 +555,13 @@ func (a *AIController) ReactToDangerousActor(person *core.Actor) bool {
 	} else {
 		if person.Type == core.ActorTypeGuard {
 			a.SwitchToInvestigation(person, contactReport)
+			return true
 		} else if a.IsGuardAvailable() {
 			a.SwitchToSnitch(person)
+			return true
 		} else if contactReport.Type.IsOpenViolence() {
 			a.SwitchToPanic(person, []geometry.Point{contactReport.Location})
+			return true
 		}
 	}
 	return false
@@ -605,8 +593,9 @@ func (a *AIController) IsGuardAvailable() bool {
 	return false
 }
 
-// PROBLEM: guard is handling one incident and switches to investigate
-// but the guard will also happily acquire another incident
+// ReactToDangerousLocations handles the highest-priority unhandled dangerous incident.
+// Only one incident is acted on per vision update; additional incidents accumulate in
+// knowledge and are handled sequentially once the current investigation finishes.
 func (a *AIController) ReactToDangerousLocations(person *core.Actor) bool {
 	incident, exists := person.AI.Knowledge.GetUnhandledIncident(func(r core.IncidentReport) bool {
 		return r.Type.IsDangerousLocation()
@@ -738,8 +727,12 @@ func (a *AIController) handleSplitOfTravelGroup(person *core.Actor, group mapset
 
 	leaverHasReturned := false
 	groupList := group.ToSlice()
-	avgPos := geometry.PointF{}
 	count := len(groupList) - 1
+	if count <= 0 {
+		// Person is the only member — nothing to coordinate.
+		return
+	}
+	avgPos := geometry.PointF{}
 	for _, other := range groupList {
 		if other == person {
 			continue
@@ -761,7 +754,7 @@ func (a *AIController) handleSplitOfTravelGroup(person *core.Actor, group mapset
 			continue
 		}
 		// push "wait for person to return" state
-		a.PushWaitWithStatus(other, core.ActorStatusIdle, func() bool { return leaverHasReturned })
+		a.PushWait(other, func() bool { return leaverHasReturned })
 		println(fmt.Sprintf("%s waiting for %s to return", other.Name, person.Name))
 	}
 }

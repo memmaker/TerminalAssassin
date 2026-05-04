@@ -14,10 +14,10 @@ type InvestigationMovement struct {
 	ReactionTimeAwaited bool
 }
 
+func (i *InvestigationMovement) Status() core.ActorState { return core.ActorStatusInvestigating }
+
 func (i *InvestigationMovement) NextAction() core.AIUpdate {
 	person := i.Person
-	person.Status = core.ActorStatusInvestigating
-
 	return person.AI.Movement.Action(i.Incident.Location, i)
 }
 

@@ -11,12 +11,12 @@ type PanicMovement struct {
 	ThreatActor        *core.Actor
 }
 
+func (p *PanicMovement) Status() core.ActorState { return core.ActorStatusPanic }
+
 func (p *PanicMovement) NextAction() core.AIUpdate {
-	//println(fmt.Sprintf("%s: next panic action", person.DebugDisplayName()))
 	person := p.Person
 	ai := person.AI
 	ai.SuspicionCounter = 0
-	person.Status = core.ActorStatusPanic
 	return p.runAway()
 }
 

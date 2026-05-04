@@ -72,8 +72,8 @@ func (sc *SearchableContainer) SetLockDifficulty(d core.LockDifficulty) { sc.Dif
 
 // ---- services.KeyBound ----
 
-func (sc *SearchableContainer) GetKey() string    { return sc.KeyString }
-func (sc *SearchableContainer) SetKey(k string)   { sc.KeyString = k }
+func (sc *SearchableContainer) GetKey() string  { return sc.KeyString }
+func (sc *SearchableContainer) SetKey(k string) { sc.KeyString = k }
 
 // ---- services.ContentHolder ----
 
@@ -82,11 +82,11 @@ func (sc *SearchableContainer) SetContents(c []string) { sc.ContentItemNames = c
 
 // ---- services.Object ----
 
-func (sc *SearchableContainer) Pos() geometry.Point         { return sc.position }
-func (sc *SearchableContainer) SetPos(p geometry.Point)     { sc.position = p }
-func (sc *SearchableContainer) IsWalkable(*core.Actor) bool { return false }
-func (sc *SearchableContainer) IsTransparent() bool         { return false }
-func (sc *SearchableContainer) IsPassableForProjectile() bool { return false }
+func (sc *SearchableContainer) Pos() geometry.Point                                 { return sc.position }
+func (sc *SearchableContainer) SetPos(p geometry.Point)                             { sc.position = p }
+func (sc *SearchableContainer) IsWalkable(*core.Actor) bool                         { return false }
+func (sc *SearchableContainer) IsTransparent() bool                                 { return false }
+func (sc *SearchableContainer) IsPassableForProjectile() bool                       { return false }
 func (sc *SearchableContainer) ApplyStimulus(_ services.Engine, _ stimuli.Stimulus) {}
 
 func (sc *SearchableContainer) Icon() rune { return sc.icon }
@@ -174,7 +174,7 @@ func (sc *SearchableContainer) beginSearch(m services.Engine, person *core.Actor
 	aic := m.GetAI()
 
 	done := false
-	aic.SetEngaged(person, core.ActorStatusEngaged, func() bool { return done })
+	aic.SetEngrossed(person, func() bool { return done })
 
 	animator.ActorEngagedAnimationWithCancel(person, core.GlyphEmptyHand, sc.Pos(), 3.0, func() {
 		done = true
@@ -209,4 +209,3 @@ func (sc *SearchableContainer) transferContentsToInventory(m services.Engine, pe
 func (sc *SearchableContainer) isUnlockableWithKeyFrom(person *core.Actor) bool {
 	return isUnlockableWithKeyFrom(sc.LockType, sc.KeyString, person)
 }
-

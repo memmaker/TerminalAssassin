@@ -114,7 +114,7 @@ func (cc *CorpseContainer) HidePerson(missionMap *gridmap.GridMap[*core.Actor, *
 	cc.IsUsedForHiding = true
 	cc.ContainedActor = person
 	missionMap.MoveActor(person, cc.Pos())
-	person.Status = core.ActorStatusInCloset
+	person.IsInCloset = true
 	person.IsHidden = true
 }
 
@@ -123,7 +123,7 @@ func (cc *CorpseContainer) GetOut(missionMap *gridmap.GridMap[*core.Actor, *core
 	cc.IsUsedForHiding = false
 	cc.ContainedActor = nil
 	missionMap.MoveActor(person, cc.GetOutPosition)
-	person.Status = core.ActorStatusIdle
+	person.IsInCloset = false
 	person.IsHidden = false
 }
 

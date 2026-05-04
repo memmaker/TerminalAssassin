@@ -5,7 +5,8 @@
 4. Steal Items
 
 # High Priority
- - Talking to NPCs (Taking the place of an NPC..)
+ - NPC Behaviour must make sense at all times
+ - Controls should be intuitive and feel good
  - Environmental Stuff
    - Rigging objects (Grill, Sauna, Gas Kitchen, Prop Firearms)
    - Electrification
@@ -13,22 +14,13 @@
    - Glass floor
 
 # Fix before next release
- - Allow disabling of hints for training mission
- - You can just open Windows from the outside: Give windows an orientation, and need a tool to open them
  - Make manholes covered by default and you need a tool to open them
  - Make the falling item be a construction wrecking ball
  - Non-lethal weapons (like stun gun, taser) leave a blood splatter: DrawsBloodOnHit flag for items..
- - Options are not persisted
- - Ask for retry on failure
-
-# DX Stuff
- - Updating the HUD when the player takes damage is unwieldy
- - Better integration of text messages
 
 # Non-Mechanical Bugs
  - Animations drawn over each other, especially busy & tackle
  - Taser sounds like a knife hit
- - the Top HUD Label can get too long and will overdraw the context indicator
  - Snap Neck doesn't have a sound effect
  - Melee Takedowns don't have a sound effect
 

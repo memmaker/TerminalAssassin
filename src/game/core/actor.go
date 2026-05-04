@@ -24,173 +24,174 @@ const ThrowingRange = 10
 type CoDDescription string
 
 type CauseOfDeath struct {
-    Description CoDDescription
-    Source      EffectSource
+	Description CoDDescription
+	Source      EffectSource
 }
 
 func (d CauseOfDeath) IsPlayer() bool {
-    return d.Source.Actor != nil && d.Source.Actor.IsPlayer()
+	return d.Source.Actor != nil && d.Source.Actor.IsPlayer()
 }
 
 // IsBodyDisappearing returns false for causes of death where the body (and
 // therefore the inventory) is physically unreachable — e.g. drowned or fallen
 // into a pit.
 func (d CauseOfDeath) IsBodyDisappearing() bool {
-    switch d.Description {
-    case CoDFalling, CoDDrowned:
-        return false
-    }
-    return true
+	switch d.Description {
+	case CoDFalling, CoDDrowned:
+		return false
+	}
+	return true
 }
 
 func (d CauseOfDeath) descriptionWithItem() string {
-    desc := string(d.Description)
-    if d.Source.Item != nil && strings.Contains(desc, "%s") {
-        return fmt.Sprintf(desc, d.Source.Item.Name)
-    }
-    return desc
+	desc := string(d.Description)
+	if d.Source.Item != nil && strings.Contains(desc, "%s") {
+		return fmt.Sprintf(desc, d.Source.Item.Name)
+	}
+	return desc
 }
 
 func (d CauseOfDeath) WithoutKiller() string {
-    return d.descriptionWithItem()
+	return d.descriptionWithItem()
 }
 
 func (d CauseOfDeath) WithKiller() string {
-    desc := d.descriptionWithItem()
-    if d.Source.Actor != nil {
-        return desc + " by " + d.Source.Actor.Name
-    }
-    return desc
+	desc := d.descriptionWithItem()
+	if d.Source.Actor != nil {
+		return desc + " by " + d.Source.Actor.Name
+	}
+	return desc
 }
 
 const (
-    CoDStrangledWithWire CoDDescription = "strangled with piano wire"
-    CoDStrangled         CoDDescription = "strangled"
-    CoDPoisoned          CoDDescription = "was lethally poisoned"
-    CoDDrowned           CoDDescription = "drowned"
-    CoDDrownedInToilet   CoDDescription = "drowned in a toilet"
-    CoDBrokenNeck        CoDDescription = "broke his neck"
-    CoDOnePistolRound    CoDDescription = "a straight shot using %s"
-    CodExploded          CoDDescription = "was blown to pieces by %s"
-    CoDBurned            CoDDescription = "was burned"
-    CoDElectrocuted      CoDDescription = "was electrocuted"
-    CoDSnipered          CoDDescription = "was sniped with %s"
-    CoDSubShot           CoDDescription = "bullets from %s"
-    CoDShotGun           CoDDescription = "was struck by %s"
-    CoDAutoShot          CoDDescription = "heavy lead injection from %s"
-    CoDStabbed           CoDDescription = "stabbed with %s"
-    CoDPenetrated        CoDDescription = "deadly penetration with %s"
-    CoDFalling           CoDDescription = "fell to his death"
+	CoDStrangledWithWire CoDDescription = "strangled with piano wire"
+	CoDStrangled         CoDDescription = "strangled"
+	CoDPoisoned          CoDDescription = "was lethally poisoned"
+	CoDDrowned           CoDDescription = "drowned"
+	CoDDrownedInToilet   CoDDescription = "drowned in a toilet"
+	CoDBrokenNeck        CoDDescription = "broke his neck"
+	CoDOnePistolRound    CoDDescription = "a straight shot using %s"
+	CodExploded          CoDDescription = "was blown to pieces by %s"
+	CoDBurned            CoDDescription = "was burned"
+	CoDElectrocuted      CoDDescription = "was electrocuted"
+	CoDSnipered          CoDDescription = "was sniped with %s"
+	CoDSubShot           CoDDescription = "bullets from %s"
+	CoDShotGun           CoDDescription = "was struck by %s"
+	CoDAutoShot          CoDDescription = "heavy lead injection from %s"
+	CoDStabbed           CoDDescription = "stabbed with %s"
+	CoDPenetrated        CoDDescription = "deadly penetration with %s"
+	CoDFalling           CoDDescription = "fell to his death"
 )
 
 func NewCauseOfDeath(description CoDDescription, killer *Actor) CauseOfDeath {
-    return CauseOfDeath{Description: description, Source: EffectSource{Actor: killer}}
+	return CauseOfDeath{Description: description, Source: EffectSource{Actor: killer}}
 }
 
 func NewCauseOfDeathFromEnvironment(description CoDDescription, killingTile gridmap.Tile) CauseOfDeath {
-    return CauseOfDeath{Description: description, Source: EffectSource{Tile: killingTile}}
+	return CauseOfDeath{Description: description, Source: EffectSource{Tile: killingTile}}
 }
 func NewCauseOfDeathFromStim(stim stimuli.StimulusType, source EffectSource) CauseOfDeath {
-    return CauseOfDeath{Description: source.ToCoDFromStim(stim), Source: source}
+	return CauseOfDeath{Description: source.ToCoDFromStim(stim), Source: source}
 }
 
 type ActorState string
 
 const (
-    ActorStatusIdle               ActorState = "idle"
-    ActorStatusOnSchedule         ActorState = "on schedule"
-    ActorStatusFollowing          ActorState = "following"
-    ActorStatusEngaged            ActorState = "engaged"
-    ActorStatusEngagedIllegal     ActorState = "engaged illegal"
-    ActorStatusVictimOfEngagement ActorState = "victim of engagement"
-    ActorStatusSleeping           ActorState = "sleeping"
-    ActorStatusDead               ActorState = "dead"
-    ActorStatusInvestigating      ActorState = "investigating"
-    ActorStatusCombat             ActorState = "combat"
-    ActorStatusVomiting           ActorState = "vomiting"
-    ActorStatusSearching          ActorState = "searching"
-    ActorStatusScripted           ActorState = "scripted"
-    ActorStatusWatching           ActorState = "watching"
-    ActorStatusCleanup            ActorState = "cleanup"
-    ActorStatusPanic              ActorState = "panic"
-    ActorStatusInCloset           ActorState = "in closet"
-    ActorStatusSnitching          ActorState = "snitching"
-    ActorStatusFrenzy             ActorState = "frenzy"
+	ActorStatusIdle               ActorState = "idle"
+	ActorStatusOnSchedule         ActorState = "on schedule"
+	ActorStatusFollowing          ActorState = "following"
+	ActorStatusEngaged            ActorState = "engaged"
+	ActorStatusEngagedIllegal     ActorState = "engaged illegal"
+	ActorStatusVictimOfEngagement ActorState = "victim of engagement"
+	ActorStatusSleeping           ActorState = "sleeping"
+	ActorStatusInvestigating      ActorState = "investigating"
+	ActorStatusCombat             ActorState = "combat"
+	ActorStatusVomiting           ActorState = "vomiting"
+	ActorStatusScripted           ActorState = "scripted"
+	ActorStatusWatching           ActorState = "watching"
+	ActorStatusCleanup            ActorState = "cleanup"
+	ActorStatusPanic              ActorState = "panic"
+	ActorStatusSnitching          ActorState = "snitching"
+	ActorStatusFrenzy             ActorState = "frenzy"
+	ActorStatusPlayerControlled   ActorState = "player"
 )
 
 type DamageInfo struct {
-    Amount int
-    Type   stimuli.StimulusType
+	Amount int
+	Type   stimuli.StimulusType
 }
 
 type ActorType string
 
 const (
-    ActorTypeCivilian ActorType = "civilian"
-    ActorTypeGuard    ActorType = "guard"
-    ActorTypeFence    ActorType = "fence"
-    ActorTypePredator ActorType = "predator"
+	ActorTypeCivilian ActorType = "civilian"
+	ActorTypeGuard    ActorType = "guard"
+	ActorTypeFence    ActorType = "fence"
+	ActorTypePredator ActorType = "predator"
 )
 
 type MovementMode rune
 
 const (
-    MovementModeWalking  MovementMode = 'ˁ'
-    MovementModeSneaking MovementMode = '˂'
-    MovementModeRunning  MovementMode = '˃'
+	MovementModeWalking  MovementMode = 'ˁ'
+	MovementModeSneaking MovementMode = '˂'
+	MovementModeRunning  MovementMode = '˃'
 )
 
 const (
-    WalkStepDelayMs    = 150
-    SneakStepDelayMs   = 400
-    RunningStepDelayMs = 80
+	WalkStepDelayMs    = 150
+	SneakStepDelayMs   = 400
+	RunningStepDelayMs = 80
 )
 
 // AutoMove represents the information for an automatic-movement step.
 type AutoMove struct {
-    // Delta represents a position variation such as (0,1), that
-    // will be used in position arithmetic to move from one position to an
-    // adjacent one in a certain direction.
-    Delta geometry.Point
-    Path  bool // whether following a Path (instead of a simple direction)
+	// Delta represents a position variation such as (0,1), that
+	// will be used in position arithmetic to move from one position to an
+	// adjacent one in a certain direction.
+	Delta geometry.Point
+	Path  bool // whether following a Path (instead of a simple direction)
 }
 
 type Actor struct {
-    MapPos            geometry.Point
-    LastPos           geometry.Point
-    Move              AutoMove         // automatic movement
-    Path              []geometry.Point // current Path (reverse highlighting)
-    LookDirection     float64          // angle in degrees = 270 = north = up
-    Fov               *geometry.FOV    // field of vision
-    FovMode           gridmap.FoVMode  // field of vision mode
-    FoVShift          geometry.Point   // field of vision shift for peeking
-    InteractionShift  geometry.Point   // shift to apply to position for interactions (talking, using items, etc)
-    Name              string
-    EquippedItem      *Item
-    Inventory         *InventoryComponent
-    Dialogue          *DialogueComponent
-    AutoMoveSpeed     int
-    Status            ActorState
-    Health            int
-    DamageTaken       []DamageInfo
-    FoVinDegrees      float64
-    Type              ActorType
-    Team              string
-    MovementMode      MovementMode
-    DebugFlag         bool
-    DraggedBody       *Actor
-    MaxVisionRange    int
-    AI                *AIComponent
-    Script            *ScriptComponent
-    IsEyeWitness      bool
-    IsHidden          bool
-    IsBodyBagged      bool
-    IsNauseous        bool
-    IsTarget          bool
+	MapPos           geometry.Point
+	LastPos          geometry.Point
+	Move             AutoMove         // automatic movement
+	Path             []geometry.Point // current Path (reverse highlighting)
+	LookDirection    float64          // angle in degrees = 270 = north = up
+	Fov              *geometry.FOV    // field of vision
+	FovMode          gridmap.FoVMode  // field of vision mode
+	FoVShift         geometry.Point   // field of vision shift for peeking
+	InteractionShift geometry.Point   // shift to apply to position for interactions (talking, using items, etc)
+	Name             string
+	EquippedItem     *Item
+	Inventory        *InventoryComponent
+	Dialogue         *DialogueComponent
+	AutoMoveSpeed    int
+	Dead             bool
+	Sleeping         bool // player only; NPCs use SleepingState on the AI stack
+	IsInCloset       bool
+	Engrossed        bool
+	Health           int
+	DamageTaken      []DamageInfo
+	FoVinDegrees     float64
+	Type             ActorType
+	Team             string
+	MovementMode     MovementMode
+	DebugFlag        bool
+	DraggedBody      *Actor
+	MaxVisionRange   int
+	AI               *AIComponent
+	Script           *ScriptComponent
+	IsEyeWitness     bool
+	IsHidden         bool
+	IsBodyBagged     bool
+	IsNauseous       bool
+	IsTarget         bool
 }
 type OrientedLocation struct {
-    Location  geometry.Point
-    Direction float64
+	Location  geometry.Point
+	Direction float64
 }
 
 type IndividualKnowledge struct {
@@ -246,157 +247,168 @@ func (k *IndividualKnowledge) GetUnhandledIncident(filter func(IncidentReport) b
 }
 
 type AIComponent struct {
-    PathBlockedCount    int
-    Knowledge           *IndividualKnowledge
-    Schedule            string // name of the schedule in GridMap.AllSchedules
-    CurrentTaskIndex    int    // index into the named schedule's Tasks slice
-    stateStack          []AIStateHandler
-    StartPosition       geometry.Point
-    StartLookDirection  float64
-    SuspicionCounter    int
-    LastSuspicionRaised time.Time
-    Movement            AIMovement
-    // NextUpdateIn is the remaining time in fractional seconds before the next AI update fires.
-    // Decremented each game tick by (timeFactor / TPS). The AI action runs when this reaches 0 or below.
-    NextUpdateIn    float64
-    UpdatePredicate func() bool
-    DebugFlag       bool
+	PathBlockedCount    int
+	Knowledge           *IndividualKnowledge
+	Schedule            string // name of the schedule in GridMap.AllSchedules
+	CurrentTaskIndex    int    // index into the named schedule's Tasks slice
+	stateStack          []AIStateHandler
+	StartPosition       geometry.Point
+	StartLookDirection  float64
+	SuspicionCounter    int
+	LastSuspicionRaised time.Time
+	Movement            AIMovement
+	// NextUpdateIn is the remaining time in fractional seconds before the next AI update fires.
+	// Decremented each game tick by (timeFactor / TPS). The AI action runs when this reaches 0 or below.
+	NextUpdateIn    float64
+	UpdatePredicate func() bool
+	DebugFlag       bool
 }
 
 func (a *AIComponent) GetState() AIStateHandler {
-    return a.stateStack[len(a.stateStack)-1]
+	return a.stateStack[len(a.stateStack)-1]
+}
+
+// PeekBelow returns the state one level below the top, or nil if the top is
+// the only entry. Used by transparent utility states (e.g. GotoBehaviour) to
+// inherit the semantic status of whatever pushed them.
+func (a *AIComponent) PeekBelow() AIStateHandler {
+	if len(a.stateStack) < 2 {
+		return nil
+	}
+	return a.stateStack[len(a.stateStack)-2]
 }
 func (a *AIComponent) SetState(state AIStateHandler) {
-    a.stateStack = []AIStateHandler{state}
+	a.stateStack = []AIStateHandler{state}
 }
 func (a *AIComponent) PushState(state AIStateHandler) {
-    a.stateStack = append(a.stateStack, state)
-    if !a.DebugFlag {
-        return
-    }
-    println(fmt.Sprintf("AI state pushed: %T", state))
-    a.debugPrintStateStack()
+	a.stateStack = append(a.stateStack, state)
+	if !a.DebugFlag {
+		return
+	}
+	println(fmt.Sprintf("AI state pushed: %T (%s)", state, state.Status()))
+	a.debugPrintStateStack()
 }
 func (a *AIComponent) ReplaceState(state AIStateHandler) {
-    a.stateStack[len(a.stateStack)-1] = state
-    if !a.DebugFlag {
-        return
-    }
-    println(fmt.Sprintf("AI state replaced with %T", state))
-    for i := len(a.stateStack) - 1; i >= 0; i-- {
-        println(fmt.Sprintf("  %T", a.stateStack[i]))
-    }
+	a.stateStack[len(a.stateStack)-1] = state
+	if !a.DebugFlag {
+		return
+	}
+	println(fmt.Sprintf("AI state replaced with %T (%s)", state, state.Status()))
+	a.debugPrintStateStack()
 }
+
+// PopState removes the top state. The actor's effective status is now derived
+// from the new top of the stack via Status().
 func (a *AIComponent) PopState() {
-    if len(a.stateStack) <= 1 {
-        println(fmt.Sprintf("WARNING: Tried to pop AI state, but stack would be empty"))
-        return
-    }
-    stateToPop := a.stateStack[len(a.stateStack)-1]
-    a.stateStack = a.stateStack[:len(a.stateStack)-1]
-    if !a.DebugFlag {
-        return
-    }
-    println(fmt.Sprintf("AI state popped: %T", stateToPop))
-    a.debugPrintStateStack()
+	if len(a.stateStack) <= 1 {
+		println(fmt.Sprintf("WARNING: Tried to pop AI state, but stack would be empty"))
+		return
+	}
+	popped := a.stateStack[len(a.stateStack)-1]
+	a.stateStack = a.stateStack[:len(a.stateStack)-1]
+	if !a.DebugFlag {
+		return
+	}
+	println(fmt.Sprintf("AI state popped: %T, restored to: %s", popped, a.stateStack[len(a.stateStack)-1].Status()))
+	a.debugPrintStateStack()
 }
 
 func (a *AIComponent) debugPrintStateStack() {
-    for i := len(a.stateStack) - 1; i >= 0; i-- {
-        println(fmt.Sprintf("| %T", a.stateStack[i]))
-    }
+	for i := len(a.stateStack) - 1; i >= 0; i-- {
+		println(fmt.Sprintf("| %T (%s)", a.stateStack[i], a.stateStack[i].Status()))
+	}
 }
 func (a *AIComponent) HasSchedule() bool {
-    return a.Schedule != ""
+	return a.Schedule != ""
 }
 
 // CurrentTask returns the task the actor is currently executing.
 func (a *AIComponent) CurrentTask(schedule *gridmap.Schedule) gridmap.ScheduledTask {
-    return schedule.TaskAt(a.CurrentTaskIndex)
+	return schedule.TaskAt(a.CurrentTaskIndex)
 }
 
 // AdvanceTask moves the actor to the next task in the schedule (wrapping around).
 func (a *AIComponent) AdvanceTask(schedule *gridmap.Schedule) {
-    a.CurrentTaskIndex = schedule.NextIndex(a.CurrentTaskIndex)
+	a.CurrentTaskIndex = schedule.NextIndex(a.CurrentTaskIndex)
 }
 
 func (a *AIComponent) LowerSuspicion() {
-    a.SuspicionCounter--
-    if a.SuspicionCounter < 0 {
-        a.SuspicionCounter = 0
-    }
+	a.SuspicionCounter--
+	if a.SuspicionCounter < 0 {
+		a.SuspicionCounter = 0
+	}
 }
 
 func (a *AIComponent) IsUpdateAllowed() bool {
-    return a.UpdatePredicate == nil || a.UpdatePredicate()
+	return a.UpdatePredicate == nil || a.UpdatePredicate()
 }
 
 func NewEmptyAIComponent() *AIComponent {
-    aiBehaviour := &AIComponent{
-        Knowledge: &IndividualKnowledge{},
-    }
-    return aiBehaviour
+	aiBehaviour := &AIComponent{
+		Knowledge: &IndividualKnowledge{},
+	}
+	return aiBehaviour
 }
 
 func NewActor(name string) *Actor {
-    newActor := &Actor{
-        Name:           name,
-        Type:           ActorTypeCivilian,
-        MovementMode:   MovementModeWalking,
-        AutoMoveSpeed:  3,
-        FoVinDegrees:   90,
-        MaxVisionRange: 12,
-        LookDirection:  float64(geometry.East),
-    }
-    newActor.Fov = geometry.NewFOV(geometry.NewRect(-newActor.MaxVisionRange, -newActor.MaxVisionRange, newActor.MaxVisionRange+1, newActor.MaxVisionRange+1))
-    newActor.AI = NewEmptyAIComponent()
-    newActor.Script = &ScriptComponent{}
-    newActor.Inventory = &InventoryComponent{Items: []*Item{}}
-    newActor.Dialogue = &DialogueComponent{Conversations: make(map[string]*Conversation), SpokenSpeech: mapset.NewSet[string](), HeardSpeech: mapset.NewSet[string]()}
-    return newActor
+	newActor := &Actor{
+		Name:           name,
+		Type:           ActorTypeCivilian,
+		MovementMode:   MovementModeWalking,
+		AutoMoveSpeed:  3,
+		FoVinDegrees:   90,
+		MaxVisionRange: 12,
+		LookDirection:  float64(geometry.East),
+	}
+	newActor.Fov = geometry.NewFOV(geometry.NewRect(-newActor.MaxVisionRange, -newActor.MaxVisionRange, newActor.MaxVisionRange+1, newActor.MaxVisionRange+1))
+	newActor.AI = NewEmptyAIComponent()
+	newActor.Script = &ScriptComponent{}
+	newActor.Inventory = &InventoryComponent{Items: []*Item{}}
+	newActor.Dialogue = &DialogueComponent{Conversations: make(map[string]*Conversation), SpokenSpeech: mapset.NewSet[string](), HeardSpeech: mapset.NewSet[string]()}
+	return newActor
 }
 
 func NewDefaultResponses() map[string]Utterance {
-    return map[string]Utterance{
-        string(ObservationDownedSpeaker): {
-            Line:      Text("Damn, what happened?!"),
-            EventCode: "DLG_observed_downed_00",
-        },
-    }
+	return map[string]Utterance{
+		string(ObservationDownedSpeaker): {
+			Line:      Text("Damn, what happened?!"),
+			EventCode: "DLG_observed_downed_00",
+		},
+	}
 }
 
 func (a *Actor) Pos() geometry.Point {
-    return a.MapPos
+	return a.MapPos
 }
 
 func (a *Actor) Icon() rune {
-    if a.DraggedBody != nil {
-        return '☠'
-    }
-    if a.IsFence() {
-        return 'F'
-    }
-    return '☺'
+	if a.DraggedBody != nil {
+		return '☠'
+	}
+	if a.IsFence() {
+		return 'F'
+	}
+	return '☺'
 }
 
 // IsFence returns true when this actor is a fence (criminal shopkeeper).
 func (a *Actor) IsFence() bool {
-    return a.Type == ActorTypeFence
+	return a.Type == ActorTypeFence
 }
 
 // IsPredator returns true when this actor is a predator.
 func (a *Actor) IsPredator() bool {
-    return a.Type == ActorTypePredator
+	return a.Type == ActorTypePredator
 }
 
 // IsCriminal returns true when this actor is a criminal who ignores all alerts.
 func (a *Actor) IsCriminal() bool {
-    return a.Type == ActorTypeFence
+	return a.Type == ActorTypeFence
 }
 
 func (a *Actor) SetPos(point geometry.Point) {
-    a.LastPos = a.MapPos
-    a.MapPos = point
+	a.LastPos = a.MapPos
+	a.MapPos = point
 }
 
 // what do we need to signal to the player?
@@ -408,658 +420,660 @@ func (a *Actor) SetPos(point geometry.Point) {
 // stateStack of enemy (sleeping, dead, engaged, etc)
 // Environmental hazards (fire, water, etc) - Must: Background Color, Optional: Foreground Color & icon
 
-
 func (a *Actor) IsVisible() bool {
-    return a.Status != ActorStatusInCloset && !a.IsHidden
+	return !a.IsInCloset && !a.IsHidden
 }
 
 func (a *Actor) CanBeDistracted() bool {
-    return a.IsActive() && !a.IsVictimOfEngagement() && !a.IsPlayer() && !a.IsInvestigating()
+	return a.IsActive() && !a.Engrossed && !a.IsPlayer() && !a.IsInvestigating()
 }
 
 func (a *Actor) CanUseActions() bool {
-    return a.IsActive() && !a.IsEngaged() && !a.IsVictimOfEngagement()
+	return a.IsActive() && !a.Engrossed
 }
 func (a *Actor) CanMove() bool {
-    return a.IsActive() && !a.IsEngaged() && !a.IsVictimOfEngagement() && a.Status != ActorStatusInCloset
+	return a.IsActive() && !a.Engrossed && !a.IsInCloset
 }
 
 func (a *Actor) CanPerceive() bool {
-    return a.IsActive() && !a.IsVictimOfEngagement()
+	return a.IsActive() && !a.Engrossed
 }
 func (a *Actor) CanUseItems() bool {
-    return a.IsActive() && !a.IsEngaged() && !a.IsVictimOfEngagement() && a.Status != ActorStatusInCloset
+	return a.IsActive() && !a.Engrossed && !a.IsInCloset
 }
 func (a *Actor) IsInDefaultState() bool {
-    return a.Status == ActorStatusIdle || a.Status == ActorStatusOnSchedule || a.Status == ActorStatusFollowing
+	s := a.Status()
+	return s == ActorStatusIdle || s == ActorStatusOnSchedule || s == ActorStatusFollowing
 }
 
-func (a *Actor) IsIdle() bool {
-    return a.Status == ActorStatusIdle
-}
+func (a *Actor) IsIdle() bool          { return a.Status() == ActorStatusIdle }
+func (a *Actor) IsInvestigating() bool { return a.Status() == ActorStatusInvestigating }
+func (a *Actor) IsFollowing() bool     { return a.Status() == ActorStatusFollowing }
+func (a *Actor) IsInCombat() bool      { return a.Status() == ActorStatusCombat }
+func (a *Actor) IsFrenzied() bool      { return a.Status() == ActorStatusFrenzy }
+func (a *Actor) IsDead() bool          { return a.Dead }
+func (a *Actor) IsAlive() bool         { return !a.Dead }
 
-func (a *Actor) IsInvestigating() bool {
-    return a.Status == ActorStatusInvestigating
-}
-func (a *Actor) IsEngaged() bool {
-    return a.Status == ActorStatusEngaged || a.Status == ActorStatusEngagedIllegal || a.Status == ActorStatusVomiting
-}
-
-func (a *Actor) IsVictimOfEngagement() bool {
-    return a.Status == ActorStatusVictimOfEngagement
-}
 func (a *Actor) IsActive() bool {
-    return a.Status != ActorStatusDead && a.Status != ActorStatusSleeping
+	return !a.Dead && !a.IsSleeping()
 }
 
 func (a *Actor) IsDowned() bool {
-    return a.Status == ActorStatusDead || a.Status == ActorStatusSleeping
-}
-
-func (a *Actor) IsFollowing() bool {
-    return a.Status == ActorStatusFollowing
-}
-
-func (a *Actor) IsInCombat() bool {
-    return a.Status == ActorStatusCombat
-}
-func (a *Actor) IsFrenzied() bool {
-    return a.Status == ActorStatusFrenzy
-}
-func (a *Actor) IsDead() bool {
-    return a.Status == ActorStatusDead
-}
-func (a *Actor) IsAlive() bool {
-    return a.Status != ActorStatusDead
-}
-func (a *Actor) IsEngagedInIllegalAction() bool {
-    return a.Status == ActorStatusEngagedIllegal
+	return a.Dead || a.IsSleeping()
 }
 
 func (a *Actor) HasIllegalItemEquipped() bool {
-    return a.EquippedItem != nil && !a.EquippedItem.IsLegalForActor(a)
+	return a.EquippedItem != nil && !a.EquippedItem.IsLegalForActor(a)
 }
 
 func (a *Actor) HasThrownItemEquipped() bool {
-    return a.EquippedItem != nil && a.EquippedItem.Type.IsThrowable()
+	return a.EquippedItem != nil && a.EquippedItem.Type.IsThrowable()
 }
 
 // AimDistance returns the maximum aiming distance for the player's currently
 // equipped item. Priority: per-weapon ProjectileRange > ThrowingRange > VisionRange.
 func (a *Actor) AimDistance() int {
-    if a.EquippedItem == nil || (!a.EquippedItem.Type.HasRangedAction() && a.EquippedItem.Type.HasMeleeAction()) {
-        return 1 // melee-only item
-    }
-    if a.EquippedItem.ProjectileRange > 0 {
-        return a.EquippedItem.ProjectileRange // per-weapon range (guns, snipers, throwables)
-    }
-    if a.HasThrownItemEquipped() {
-        return ThrowingRange // fallback for throwables without an explicit range
-    }
-    return a.VisionRange()
+	if a.EquippedItem == nil || (!a.EquippedItem.Type.HasRangedAction() && a.EquippedItem.Type.HasMeleeAction()) {
+		return 1 // melee-only item
+	}
+	if a.EquippedItem.ProjectileRange > 0 {
+		return a.EquippedItem.ProjectileRange // per-weapon range (guns, snipers, throwables)
+	}
+	if a.HasThrownItemEquipped() {
+		return ThrowingRange // fallback for throwables without an explicit range
+	}
+	return a.VisionRange()
 }
 func (a *Actor) AddDamage(Amount int, Type stimuli.StimulusType) {
-    a.DamageTaken = append(a.DamageTaken, DamageInfo{Amount, Type})
+	a.DamageTaken = append(a.DamageTaken, DamageInfo{Amount, Type})
 }
 
 // FoVSource returns the point from which this actor's field of vision should be calculated.
 // Must always return a walkable tile.
 func (a *Actor) FoVSource() geometry.Point {
-    return a.Pos().Add(a.FoVShift)
+	return a.Pos().Add(a.FoVShift)
 }
 
 // InteractSource returns the point from which this actor's interactions (talking, using items, etc) should be calculated.
 // Can be different from FoVSource if, for example, the actor is right next to a wall.
 func (a *Actor) InteractSource() geometry.Point {
-    return a.Pos().Add(a.InteractionShift)
+	return a.Pos().Add(a.InteractionShift)
 }
 
 type AIMoveDelay float64
 
 const (
-    MoveDelayRunning        AIMoveDelay = 0.3
-    MoveDelayBodyguardSpeed AIMoveDelay = 0.4
-    MoveDelayWalking        AIMoveDelay = 0.8
-    MoveDelayBrokenLegs     AIMoveDelay = 3
+	MoveDelayRunning        AIMoveDelay = 0.3
+	MoveDelayBodyguardSpeed AIMoveDelay = 0.4
+	MoveDelayWalking        AIMoveDelay = 0.8
+	MoveDelayBrokenLegs     AIMoveDelay = 3
 )
 
 func (a *Actor) MoveDelay() AIMoveDelay {
-    switch {
-    case a.Status == ActorStatusFollowing:
-        return MoveDelayBodyguardSpeed
-    case a.IsInCombat():
-        return MoveDelayRunning
-    case a.IsFrenzied():
-        return MoveDelayRunning
-    case a.Status == ActorStatusSnitching:
-        return MoveDelayRunning
-    default:
-        return MoveDelayWalking
-    }
+	switch {
+	case a.IsFollowing():
+		return MoveDelayBodyguardSpeed
+	case a.IsInCombat():
+		return MoveDelayRunning
+	case a.IsFrenzied():
+		return MoveDelayRunning
+	case a.Status() == ActorStatusSnitching:
+		return MoveDelayRunning
+	default:
+		return MoveDelayWalking
+	}
 }
 func (a *Actor) Symbol() rune {
-    switch a.Status {
-    case ActorStatusSleeping:
-        return 'z'
-    case ActorStatusDead:
-        return GlyphCorpse
-    default:
-        if a.IsFence() {
-            return 'F'
-        }
-        return a.runeFromDirection()
-    }
+	if a.IsSleeping() {
+		return 'z'
+	}
+	if a.Dead {
+		return GlyphCorpse
+	}
+	if a.IsFence() {
+		return 'F'
+	}
+	return a.runeFromDirection()
 }
 func (a *Actor) startSneaking() {
-    a.MovementMode = MovementModeSneaking
+	a.MovementMode = MovementModeSneaking
 }
 
 func (a *Actor) startRunning() {
-    a.MovementMode = MovementModeRunning
+	a.MovementMode = MovementModeRunning
 }
 
 func (a *Actor) startWalking() {
-    a.MovementMode = MovementModeWalking
+	a.MovementMode = MovementModeWalking
 }
 
 func (a *Actor) runeFromName() rune {
-    return bytes.Runes([]byte(a.Name))[0]
+	return bytes.Runes([]byte(a.Name))[0]
 }
 func (a *Actor) runeFromDirection() rune {
-    actorRune := runeFromDirection(a.LookDirection)
-    offset := runeOffsetFromStatus(a.Status)
-    actorRune += offset
-    return actorRune
+	actorRune := runeFromDirection(a.LookDirection)
+	if a.AI != nil {
+		state := a.AI.GetState()
+		if state != nil {
+			actorRune += runeOffsetFromStatus(state.Status())
+		}
+	}
+	return actorRune
 }
 
 func (a *Actor) Style(st common.Style) common.Style {
-    actorStyle := st.WithFg(CurrentTheme.ActorTypeColor(a.Type))
-    if a.IsTarget {
-        actorStyle = st.WithFg(common.NewHSVColorFromRGBBytes(255, 40, 40))
-    }
-    if a.IsEyeWitness {
-        fg := CurrentTheme.ActorTypeColor(a.Type)
-        actorStyle = st.WithFg(common.HSVColor{H: fg.H, S: fg.S, V: 4})
-    }
-    if a.IsNauseous {
-        actorStyle = actorStyle.WithFg(CurrentTheme.EmeticPoisonForeground)
-    }
-    if a.Dialogue.IsCurrentlySpeaking {
-        actorStyle = a.ChatStyle()
-    }
-    if a.DebugFlag {
-        actorStyle = st.WithBg(common.Yellow)
-    }
-    return actorStyle
+	actorStyle := st.WithFg(CurrentTheme.ActorTypeColor(a.Type))
+	if a.IsTarget {
+		actorStyle = st.WithFg(common.NewHSVColorFromRGBBytes(255, 40, 40))
+	}
+	if a.IsEyeWitness {
+		fg := CurrentTheme.ActorTypeColor(a.Type)
+		actorStyle = st.WithFg(common.HSVColor{H: fg.H, S: fg.S, V: 4})
+	}
+	if a.IsNauseous {
+		actorStyle = actorStyle.WithFg(CurrentTheme.EmeticPoisonForeground)
+	}
+	if a.Dialogue != nil && a.Dialogue.IsCurrentlySpeaking {
+		actorStyle = a.ChatStyle()
+	}
+	if a.DebugFlag {
+		actorStyle = st.WithBg(common.Yellow)
+	}
+	return actorStyle
 }
 
 func (a *Actor) CanSee(p geometry.Point) bool {
-    if geometry.DistanceChebyshev(p, a.Pos()) <= 1 {
-        return true
-    }
-    switch a.FovMode {
-    case gridmap.FoVModeScoped:
-        return a.canSeeInScope(p)
-    default:
-        visible := a.Fov.Visible(p)
-        return visible
-    }
+	if geometry.DistanceChebyshev(p, a.Pos()) <= 1 {
+		return true
+	}
+	switch a.FovMode {
+	case gridmap.FoVModeScoped:
+		return a.canSeeInScope(p)
+	default:
+		visible := a.Fov.Visible(p)
+		return visible
+	}
 }
 
 func (a *Actor) CanSeeActor(other *Actor) bool {
-    if a == other {
-        return true
-    }
-    return a.CanSee(other.Pos()) && other.IsVisible()
+	if a == other {
+		return true
+	}
+	return a.CanSee(other.Pos()) && other.IsVisible()
 }
 
 func (a *Actor) HasLineToSpeak(currentTick uint64) bool {
-    deltaTicks := int(currentTick - a.Dialogue.LastSpokenAtTick)
-    if deltaTicks < utils.SecondsToTicks(4) {
-        return false
-    }
-    atDialoguePosition := a.Dialogue.Situation == nil || a.Pos() == a.Dialogue.Situation.Location
-    return a.Dialogue.Available(a.Status) && (atDialoguePosition || a.IsPlayer())
-
+	deltaTicks := int(currentTick - a.Dialogue.LastSpokenAtTick)
+	if deltaTicks < utils.SecondsToTicks(4) {
+		return false
+	}
+	atDialoguePosition := a.Dialogue.Situation == nil || a.Pos() == a.Dialogue.Situation.Location
+	// For the player, SpeakInState is nil so Available ignores the status arg.
+	status := ActorState("")
+	if !a.IsPlayer() {
+		status = a.Status()
+	}
+	return a.Dialogue.Available(status) && (atDialoguePosition || a.IsPlayer())
 }
 func (a *Actor) TryRespondToSpeech(currentTick uint64, speechCode string) {
-    a.Dialogue.DidHear(speechCode, currentTick)
-    response, hasResponse := a.Dialogue.TryResponding(speechCode)
-    if hasResponse {
-        println(fmt.Sprintf("%s is responding to %s with %s", a.DebugDisplayName(), speechCode, response.EventCode))
-        a.SetNextUtterance(response)
-    }
+	a.Dialogue.DidHear(speechCode, currentTick)
+	response, hasResponse := a.Dialogue.TryResponding(speechCode)
+	if hasResponse {
+		println(fmt.Sprintf("%s is responding to %s with %s", a.DebugDisplayName(), speechCode, response.EventCode))
+		a.SetNextUtterance(response)
+	}
 }
 func (a *Actor) canSeeInScope(p geometry.Point) bool {
-    if a.EquippedItem == nil || !a.EquippedItem.Type.HasScope() {
-        return false
-    }
-    left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.EquippedItem.Type.ScopeFoV())
-    inCone := geometry.InVisionCone(a.FoVSource(), p, left, right)
-    visible := a.Fov.Visible(p)
-    return inCone && visible
+	if a.EquippedItem == nil || !a.EquippedItem.Type.HasScope() {
+		return false
+	}
+	left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.EquippedItem.Type.ScopeFoV())
+	inCone := geometry.InVisionCone(a.FoVSource(), p, left, right)
+	visible := a.Fov.Visible(p)
+	return inCone && visible
 }
 
 func (a *Actor) CanSeeInVisionCone(p geometry.Point) bool {
-    left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.FoVinDegrees)
-    inCone := geometry.InVisionCone(a.FoVSource(), p, left, right)
-    visible := a.Fov.Visible(p)
-    return visible && inCone
+	left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.FoVinDegrees)
+	inCone := geometry.InVisionCone(a.FoVSource(), p, left, right)
+	visible := a.Fov.Visible(p)
+	return visible && inCone
 }
 func (a *Actor) VisionCone(f func(p geometry.Point)) {
-    left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.FoVinDegrees)
-    a.Fov.IterSSC(func(p geometry.Point) {
-        if geometry.DistanceSquared(a.FoVSource(), p) <= (a.VisionRange()*a.VisionRange()) && geometry.InVisionCone(a.FoVSource(), p, left, right) {
-            f(p)
-        }
-    })
+	left, right := geometry.GetLeftAndRightBorderOfVisionCone(a.FoVSource(), a.LookDirection, a.FoVinDegrees)
+	a.Fov.IterSSC(func(p geometry.Point) {
+		if geometry.DistanceSquared(a.FoVSource(), p) <= (a.VisionRange()*a.VisionRange()) && geometry.InVisionCone(a.FoVSource(), p, left, right) {
+			f(p)
+		}
+	})
 }
 
 func (a *Actor) HasPath() bool {
-    return a.Path != nil && len(a.Path) > 0
+	return a.Path != nil && len(a.Path) > 0
 }
 
 func (a *Actor) HasPathTo(location geometry.Point) bool {
-    return a.Path != nil && len(a.Path) > 0 && a.Path[len(a.Path)-1] == location
+	return a.Path != nil && len(a.Path) > 0 && a.Path[len(a.Path)-1] == location
 }
 
 func (a *Actor) Str(delimiter string) string {
-    return strings.Join(a.StrList(), delimiter)
+	return strings.Join(a.StrList(), delimiter)
 }
 
 func (a *Actor) StrList() []string {
-    charSheet := []string{
-        fmt.Sprintf("name: %s", a.Name),
-        fmt.Sprintf("mapPos: %s", a.Pos()),
-        fmt.Sprintf("LookDirection: %f (%s)", a.LookDirection, DirectionAsString(a)),
-        fmt.Sprintf("Health: %d", a.Health),
-        fmt.Sprintf("AutoMoveSpeed: %d", a.AutoMoveSpeed),
-        fmt.Sprintf("Status: %s", a.Status),
-    }
-    charSheet = append(charSheet, "State Stack:")
-    for _, state := range a.AI.stateStack {
-        charSheet = append(charSheet, fmt.Sprintf("  %T", state))
-    }
-    charSheet = append(charSheet, "Damage Taken:")
-    for _, damage := range a.DamageTaken {
-        charSheet = append(charSheet, fmt.Sprintf("  %d of %s damage", damage.Amount, damage.Type))
-    }
+	charSheet := []string{
+		fmt.Sprintf("name: %s", a.Name),
+		fmt.Sprintf("mapPos: %s", a.Pos()),
+		fmt.Sprintf("LookDirection: %f (%s)", a.LookDirection, DirectionAsString(a)),
+		fmt.Sprintf("Health: %d", a.Health),
+		fmt.Sprintf("AutoMoveSpeed: %d", a.AutoMoveSpeed),
+	}
+	if a.AI != nil {
+		charSheet = append(charSheet, fmt.Sprintf("Status: %s", a.Status()))
+		charSheet = append(charSheet, "State Stack:")
+		for _, state := range a.AI.stateStack {
+			charSheet = append(charSheet, fmt.Sprintf("  %T (%s)", state, state.Status()))
+		}
+	}
+	charSheet = append(charSheet, "Damage Taken:")
+	for _, damage := range a.DamageTaken {
+		charSheet = append(charSheet, fmt.Sprintf("  %d of %s damage", damage.Amount, damage.Type))
+	}
 
-    charSheet = append(charSheet, "Inventory:")
-    if a.Inventory == nil || len(a.Inventory.Items) == 0 {
-        charSheet = append(charSheet, "  (empty)")
-    } else {
-        for _, item := range a.Inventory.Items {
-            usesStr := "∞"
-            if item.Uses != UnlimitedUses {
-                usesStr = fmt.Sprintf("%d", item.Uses)
-            }
-            equipped := ""
-            if a.EquippedItem == item {
-                equipped = " [E]"
-            }
-            charSheet = append(charSheet, fmt.Sprintf("  %s (%s)%s", item.Name, usesStr, equipped))
-        }
-    }
+	charSheet = append(charSheet, "Inventory:")
+	if a.Inventory == nil || len(a.Inventory.Items) == 0 {
+		charSheet = append(charSheet, "  (empty)")
+	} else {
+		for _, item := range a.Inventory.Items {
+			usesStr := "∞"
+			if item.Uses != UnlimitedUses {
+				usesStr = fmt.Sprintf("%d", item.Uses)
+			}
+			equipped := ""
+			if a.EquippedItem == item {
+				equipped = " [E]"
+			}
+			charSheet = append(charSheet, fmt.Sprintf("  %s (%s)%s", item.Name, usesStr, equipped))
+		}
+	}
 
-    return charSheet
+	return charSheet
 }
 
 func (a *Actor) TurnLeft(angleInDegrees float64) {
-    a.LookDirection -= angleInDegrees
-    for a.LookDirection < 0 {
-        a.LookDirection += 360
-    }
+	a.LookDirection -= angleInDegrees
+	for a.LookDirection < 0 {
+		a.LookDirection += 360
+	}
 }
 
 func (a *Actor) TurnRight(angleInDegrees float64) {
-    a.LookDirection = a.LookDirection + angleInDegrees
-    for a.LookDirection >= 360 {
-        a.LookDirection -= 360
-    }
+	a.LookDirection = a.LookDirection + angleInDegrees
+	for a.LookDirection >= 360 {
+		a.LookDirection -= 360
+	}
 }
 
 func (a *Actor) EquipWeapon() bool {
-    if a.Inventory == nil || len(a.Inventory.Items) == 0 {
-        return false
-    }
-    if a.EquippedItem != nil && a.EquippedItem.IsWeapon() {
-        return true
-    }
-    for _, item := range a.Inventory.Items {
-        if item.IsWeapon() {
-            a.EquippedItem = item
-            return true
-        }
-    }
-    return false
+	if a.Inventory == nil || len(a.Inventory.Items) == 0 {
+		return false
+	}
+	if a.EquippedItem != nil && a.EquippedItem.IsWeapon() {
+		return true
+	}
+	for _, item := range a.Inventory.Items {
+		if item.IsWeapon() {
+			a.EquippedItem = item
+			return true
+		}
+	}
+	return false
 }
 
 func (a *Actor) HasToolEquipped(tool ItemType) bool {
-    if a.EquippedItem == nil {
-        return false
-    }
-    return a.EquippedItem.Type == tool
+	if a.EquippedItem == nil {
+		return false
+	}
+	return a.EquippedItem.Type == tool
 }
 
 func (a *Actor) HasKeyInInventory(keyString string) bool {
-    if a.Inventory == nil || len(a.Inventory.Items) == 0 {
-        return false
-    }
-    for _, item := range a.Inventory.Items {
-        if item.Type == ItemTypeKey && item.KeyString == keyString {
-            return true
-        }
-    }
-    return false
+	if a.Inventory == nil || len(a.Inventory.Items) == 0 {
+		return false
+	}
+	for _, item := range a.Inventory.Items {
+		if item.Type == ItemTypeKey && item.KeyString == keyString {
+			return true
+		}
+	}
+	return false
 }
 func (a *Actor) HasKeyCardInInventory(keyString string) bool {
-    if a.Inventory == nil || len(a.Inventory.Items) == 0 {
-        return false
-    }
-    for _, item := range a.Inventory.Items {
-        if item.Type == ItemTypeKeyCard && item.KeyString == keyString {
-            return true
-        }
-    }
-    return false
+	if a.Inventory == nil || len(a.Inventory.Items) == 0 {
+		return false
+	}
+	for _, item := range a.Inventory.Items {
+		if item.Type == ItemTypeKeyCard && item.KeyString == keyString {
+			return true
+		}
+	}
+	return false
 }
 
 // CountItemTypeInInventory returns how many items of the given type the actor
 // currently carries. For lockpick types the Uses field acts as the stack counter,
 // so all Uses values are summed rather than counting item instances.
 func (a *Actor) CountItemTypeInInventory(itemType ItemType) int {
-    if a.Inventory == nil {
-        return 0
-    }
-    count := 0
-    for _, item := range a.Inventory.Items {
-        if item.Type != itemType {
-            continue
-        }
-        if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
-            if item.Uses > 0 {
-                count += item.Uses
-            }
-        } else {
-            count++
-        }
-    }
-    return count
+	if a.Inventory == nil {
+		return 0
+	}
+	count := 0
+	for _, item := range a.Inventory.Items {
+		if item.Type != itemType {
+			continue
+		}
+		if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
+			if item.Uses > 0 {
+				count += item.Uses
+			}
+		} else {
+			count++
+		}
+	}
+	return count
 }
 
 // ConsumeItemsFromInventory removes up to count units of the given type from
 // the actor's inventory. For lockpick types each unit is one Use; the item is
 // removed from inventory when its Uses reach zero.
 func (a *Actor) ConsumeItemsFromInventory(itemType ItemType, count int) {
-    if a.Inventory == nil {
-        return
-    }
-    if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
-        remaining := count
-        for i := len(a.Inventory.Items) - 1; i >= 0 && remaining > 0; i-- {
-            if a.Inventory.Items[i].Type != itemType {
-                continue
-            }
-            item := a.Inventory.Items[i]
-            if item.Uses <= remaining {
-                remaining -= item.Uses
-                item.HeldBy = nil
-                a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
-            } else {
-                item.Uses -= remaining
-                remaining = 0
-            }
-        }
-        return
-    }
-    consumed := 0
-    for i := len(a.Inventory.Items) - 1; i >= 0 && consumed < count; i-- {
-        if a.Inventory.Items[i].Type == itemType {
-            a.Inventory.Items[i].HeldBy = nil
-            a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
-            consumed++
-        }
-    }
+	if a.Inventory == nil {
+		return
+	}
+	if itemType == ItemTypeMechanicalLockpick || itemType == ItemTypeElectronicLockpick {
+		remaining := count
+		for i := len(a.Inventory.Items) - 1; i >= 0 && remaining > 0; i-- {
+			if a.Inventory.Items[i].Type != itemType {
+				continue
+			}
+			item := a.Inventory.Items[i]
+			if item.Uses <= remaining {
+				remaining -= item.Uses
+				item.HeldBy = nil
+				a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
+			} else {
+				item.Uses -= remaining
+				remaining = 0
+			}
+		}
+		return
+	}
+	consumed := 0
+	for i := len(a.Inventory.Items) - 1; i >= 0 && consumed < count; i-- {
+		if a.Inventory.Items[i].Type == itemType {
+			a.Inventory.Items[i].HeldBy = nil
+			a.Inventory.Items = append(a.Inventory.Items[:i], a.Inventory.Items[i+1:]...)
+			consumed++
+		}
+	}
 }
 
 // RemoveItem removes item from the actor's inventory and clears the equipped
 // slot if it references the same item.
 func (a *Actor) RemoveItem(item *Item) {
-    a.Inventory.RemoveItem(item)
-    if a.EquippedItem == item {
-        a.EquippedItem = nil
-    }
+	a.Inventory.RemoveItem(item)
+	if a.EquippedItem == item {
+		a.EquippedItem = nil
+	}
 }
 
 func (a *Actor) IsDraggingBody() bool {
-    return a.DraggedBody != nil
+	return a.DraggedBody != nil
 }
 
 func (a *Actor) IsBleeding() bool {
-    for _, damage := range a.DamageTaken {
-        if damage.Type == stimuli.StimulusPiercingDamage {
-            return true
-        }
-    }
-    return false
+	for _, damage := range a.DamageTaken {
+		if damage.Type == stimuli.StimulusPiercingDamage {
+			return true
+		}
+	}
+	return false
 }
 
 func (a *Actor) HasWeapon() bool {
-    for _, item := range a.Inventory.Items {
-        if item.IsWeapon() {
-            return true
-        }
-    }
-    return false
+	for _, item := range a.Inventory.Items {
+		if item.IsWeapon() {
+			return true
+		}
+	}
+	return false
 }
 
 func (a *Actor) HasBurstWeaponEquipped() bool {
-    if a.EquippedItem == nil {
-        return false
-    }
-    return a.EquippedItem.IsAutomaticRangedWeapon()
+	if a.EquippedItem == nil {
+		return false
+	}
+	return a.EquippedItem.IsAutomaticRangedWeapon()
 }
 
 func (a *Actor) LookAt(pos geometry.Point) {
-    directionVector := pos.Sub(a.Pos())
-    a.LookDirection = geometry.DirectionVectorToAngleInDegrees(directionVector)
+	directionVector := pos.Sub(a.Pos())
+	a.LookDirection = geometry.DirectionVectorToAngleInDegrees(directionVector)
 }
 
 func runeOffsetFromStatus(status ActorState) rune {
-    switch status {
-    default:
-        return 0
-    case ActorStatusInvestigating:
-        return 8
-    case ActorStatusCombat:
-        return 16
-    }
+	switch status {
+	default:
+		return 0
+	case ActorStatusInvestigating:
+		return 8
+	case ActorStatusCombat:
+		return 16
+	}
 }
 
 func DirectionAsString(a *Actor) string {
-    switch geometry.CompassDirection(a.LookDirection) {
-    case geometry.North:
-        return "North"
-    case geometry.NorthEast:
-        return "NorthEast"
-    case geometry.East:
-        return "East"
-    case geometry.SouthEast:
-        return "SouthEast"
-    case geometry.South:
-        return "South"
-    case geometry.SouthWest:
-        return "SouthWest"
-    case geometry.West:
-        return "West"
-    case geometry.NorthWest:
-        return "NorthWest"
-    default:
-        return "Unknown"
-    }
+	switch geometry.CompassDirection(a.LookDirection) {
+	case geometry.North:
+		return "North"
+	case geometry.NorthEast:
+		return "NorthEast"
+	case geometry.East:
+		return "East"
+	case geometry.SouthEast:
+		return "SouthEast"
+	case geometry.South:
+		return "South"
+	case geometry.SouthWest:
+		return "SouthWest"
+	case geometry.West:
+		return "West"
+	case geometry.NorthWest:
+		return "NorthWest"
+	default:
+		return "Unknown"
+	}
 }
 
 // runeFromDirection will map any look direction in degrees to a compass direction index.
 // eg. 12 degrees will map to 0 (East), 46 degrees will map to 1 (NorthEast), 90 degrees will map to 2 (North), etc.
 func runeFromDirection(lookDirInDegrees float64) rune {
-    // normalize to [0, 360]
-    lookDirInDegrees += 22.5
-    if lookDirInDegrees < 0 {
-        lookDirInDegrees += 360
-    } else if lookDirInDegrees > 360 {
-        lookDirInDegrees -= 360
-    }
-    for i := 0; i < 8; i++ {
-        compassDirectionDegrees := float64(i*45) + 22.5
-        if lookDirInDegrees >= compassDirectionDegrees-22.5 && lookDirInDegrees < compassDirectionDegrees+22.5 {
-            return rune(285) + rune(i)
-        }
-    }
-    return '@'
+	// normalize to [0, 360]
+	lookDirInDegrees += 22.5
+	if lookDirInDegrees < 0 {
+		lookDirInDegrees += 360
+	} else if lookDirInDegrees > 360 {
+		lookDirInDegrees -= 360
+	}
+	for i := 0; i < 8; i++ {
+		compassDirectionDegrees := float64(i*45) + 22.5
+		if lookDirInDegrees >= compassDirectionDegrees-22.5 && lookDirInDegrees < compassDirectionDegrees+22.5 {
+			return rune(285) + rune(i)
+		}
+	}
+	return '@'
 }
 func (a *Actor) FoV() *geometry.FOV {
-    return a.Fov
+	return a.Fov
 }
 func (a *Actor) FoVMode() gridmap.FoVMode {
-    return a.FovMode
+	return a.FovMode
 }
 func (a *Actor) VisionRange() int {
-    if a.FovMode == gridmap.FoVModeScoped && a.HasScopedItemEquipped() {
-        return a.EquippedItem.ProjectileRange
-    }
-    return a.MaxVisionRange
+	if a.FovMode == gridmap.FoVModeScoped && a.HasScopedItemEquipped() {
+		return a.EquippedItem.ProjectileRange
+	}
+	return a.MaxVisionRange
 }
 func (a *Actor) HasScopedItemEquipped() bool {
-    if a.EquippedItem == nil {
-        return false
-    }
-    return a.EquippedItem.Type.HasScope()
-}
-
-func (a *Actor) IsSleeping() bool {
-    return a.Status == ActorStatusSleeping
+	if a.EquippedItem == nil {
+		return false
+	}
+	return a.EquippedItem.Type.HasScope()
 }
 
 func (a *Actor) DiesFromDamage(damage int) bool {
-    a.Health -= damage
-    if a.Health <= 0 {
-        a.Health = 0
-        return true
-    }
-    return false
+	a.Health -= damage
+	if a.Health <= 0 {
+		a.Health = 0
+		return true
+	}
+	return false
 }
 
 func (a *Actor) DebugDisplayName() string {
-    if a.AI == nil {
-        return fmt.Sprintf("%s (%s - %s)", a.Name, a.Type, a.Status)
-    }
-    return fmt.Sprintf("%s (%s - %s / %T)", a.Name, a.Type, a.Status, a.AI.GetState())
+	if a.AI == nil {
+		return fmt.Sprintf("%s (%s - player)", a.Name, a.Type)
+	}
+	state := a.AI.GetState()
+	if state == nil {
+		return fmt.Sprintf("%s (%s - uninit)", a.Name, a.Type)
+	}
+	return fmt.Sprintf("%s (%s - %s / %T)", a.Name, a.Type, state.Status(), state)
 }
 
 func (a *Actor) IsAvailableGuard() bool {
-    return a.Type == ActorTypeGuard && a.IsActive() && !a.IsInCombat()
+	return a.Type == ActorTypeGuard && a.IsActive() && !a.IsInCombat()
 }
 
 func (a *Actor) IsPlayer() bool {
-    return a.AI == nil
+	return a.AI == nil
+}
+
+// Status returns the ActorState from the top of the AI state stack,
+// or ActorStatusPlayerControlled for the player.
+func (a *Actor) Status() ActorState {
+	if a.AI == nil {
+		return ActorStatusPlayerControlled
+	}
+	if len(a.AI.stateStack) == 0 {
+		return ActorStatusIdle
+	}
+	return a.AI.GetState().Status()
+}
+
+// IsSleeping returns true when this actor is knocked out.
+// For NPCs, sleeping is tracked by SleepingState on the AI stack.
+// For the player, it is tracked by the Sleeping field.
+func (a *Actor) IsSleeping() bool {
+	return a.Status() == ActorStatusSleeping
 }
 
 func (a *Actor) GetTeam() string {
-    return a.Team
+	return a.Team
 }
 
 func (a *Actor) SetNextUtterance(text Utterance) {
-    a.Dialogue.NextUtterance = text
+	a.Dialogue.NextUtterance = text
 }
 
 func (a *Actor) StartDialogue(name string) {
-    if conversation, ok := a.Dialogue.Conversations[name]; ok {
-        if starter, startOk := conversation.Responses[""]; startOk {
-            a.Dialogue.CurrentDialogue = name
-            a.SetNextUtterance(starter)
-        }
-    }
+	if conversation, ok := a.Dialogue.Conversations[name]; ok {
+		if starter, startOk := conversation.Responses[""]; startOk {
+			a.Dialogue.CurrentDialogue = name
+			a.SetNextUtterance(starter)
+		}
+	}
 }
 func (a *Actor) ChatStyle() common.Style {
-    fg := CurrentTheme.ActorTypeColor(a.Type)
-    return common.Style{
-        Foreground: fg.WithV(fg.V + 2),
-        Background: common.Black,
-    }
+	fg := CurrentTheme.ActorTypeColor(a.Type)
+	return common.Style{
+		Foreground: fg.WithV(fg.V + 2),
+		Background: common.Black,
+	}
 }
 
 func (a *Actor) EnableDebugTrace() {
-    a.DebugFlag = true
-    if a.AI != nil {
-        a.AI.DebugFlag = true
-    }
+	a.DebugFlag = true
+	if a.AI != nil {
+		a.AI.DebugFlag = true
+	}
 }
 
 func (a *Actor) DisableDebugTrace() {
-    a.DebugFlag = false
-    if a.AI != nil {
-        a.AI.DebugFlag = false
-    }
+	a.DebugFlag = false
+	if a.AI != nil {
+		a.AI.DebugFlag = false
+	}
 }
 
 func (a *Actor) TooltipText() string {
-    return fmt.Sprintf("%s / %s / %s", a.Name, a.Type, a.Status)
+	return fmt.Sprintf("%s / %s / %s", a.Name, a.Type, a.Status())
 }
 
 type ActorOnDisk struct {
-    Name          string
-    Inventory     []string
-    ActorType     ActorType
-    IsTarget      bool
-    Team          string
-    LookDirection float64
-    Position      geometry.Point
+	Name          string
+	Inventory     []string
+	ActorType     ActorType
+	IsTarget      bool
+	Team          string
+	LookDirection float64
+	Position      geometry.Point
 }
 
 func (d ActorOnDisk) ToRecord() []rec_files.Field {
-    record := []rec_files.Field{
-        {Name: "Name", Value: d.Name},
-        {Name: "ActorType", Value: string(d.ActorType)},
-        {Name: "Team", Value: d.Team},
-        {Name: "Position", Value: d.Position.String()},
-        {Name: "LookDirection", Value: strconv.FormatFloat(d.LookDirection, 'f', 2, 64)},
-    }
-    if d.IsTarget {
-        record = append(record, rec_files.Field{Name: "IsTarget", Value: "true"})
-    }
-    for _, item := range d.Inventory {
-        record = append(record, rec_files.Field{Name: "Inventory", Value: item})
-    }
-    return record
+	record := []rec_files.Field{
+		{Name: "Name", Value: d.Name},
+		{Name: "ActorType", Value: string(d.ActorType)},
+		{Name: "Team", Value: d.Team},
+		{Name: "Position", Value: d.Position.String()},
+		{Name: "LookDirection", Value: strconv.FormatFloat(d.LookDirection, 'f', 2, 64)},
+	}
+	if d.IsTarget {
+		record = append(record, rec_files.Field{Name: "IsTarget", Value: "true"})
+	}
+	for _, item := range d.Inventory {
+		record = append(record, rec_files.Field{Name: "Inventory", Value: item})
+	}
+	return record
 }
 func ActorOnDiskFromRecord(record []rec_files.Field) ActorOnDisk {
-    actor := ActorOnDisk{}
-    for _, field := range record {
-        switch field.Name {
-        case "Name":
-            actor.Name = strings.TrimSpace(field.Value)
-        case "ActorType":
-            v := ActorType(strings.TrimSpace(field.Value))
-            if v == "target" {
-                actor.IsTarget = true
-                actor.ActorType = ActorTypeCivilian
-            } else {
-                actor.ActorType = v
-            }
-        case "IsTarget":
-            actor.IsTarget = strings.TrimSpace(field.Value) == "true"
-        case "Team":
-            actor.Team = strings.TrimSpace(field.Value)
-        case "Position":
-            actor.Position, _ = geometry.NewPointFromString(field.Value)
-        case "LookDirection":
-            actor.LookDirection, _ = strconv.ParseFloat(field.Value, 64)
-        case "MoveSpeed", "FoVinDegrees", "VisionRange":
-            // ignored: hardcoded defaults used on load
-        case "Inventory":
-            actor.Inventory = append(actor.Inventory, strings.TrimSpace(field.Value))
-        }
-    }
-    return actor
+	actor := ActorOnDisk{}
+	for _, field := range record {
+		switch field.Name {
+		case "Name":
+			actor.Name = strings.TrimSpace(field.Value)
+		case "ActorType":
+			v := ActorType(strings.TrimSpace(field.Value))
+			if v == "target" {
+				actor.IsTarget = true
+				actor.ActorType = ActorTypeCivilian
+			} else {
+				actor.ActorType = v
+			}
+		case "IsTarget":
+			actor.IsTarget = strings.TrimSpace(field.Value) == "true"
+		case "Team":
+			actor.Team = strings.TrimSpace(field.Value)
+		case "Position":
+			actor.Position, _ = geometry.NewPointFromString(field.Value)
+		case "LookDirection":
+			actor.LookDirection, _ = strconv.ParseFloat(field.Value, 64)
+		case "MoveSpeed", "FoVinDegrees", "VisionRange":
+			// ignored: hardcoded defaults used on load
+		case "Inventory":
+			actor.Inventory = append(actor.Inventory, strings.TrimSpace(field.Value))
+		}
+	}
+	return actor
 }
