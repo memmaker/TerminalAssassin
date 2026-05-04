@@ -2,7 +2,8 @@ package director
 
 import (
 	"fmt"
-	"math/rand"
+
+	"github.com/memmaker/terminal-assassin/rng"
 
 	"github.com/memmaker/terminal-assassin/game/ai"
 	"github.com/memmaker/terminal-assassin/game/core"
@@ -75,7 +76,7 @@ func NewDropFromInventoryAction(engine services.Engine, item *core.Item) core.Sc
 func NewDanceAction(delayInSeconds float64) core.ScriptedAction {
 	scriptedAction := &AIAction{description: "dance"}
 	danceAction := func(person *core.Actor) core.AIUpdate {
-		person.LookDirection = rand.Float64() * 360
+            person.LookDirection = rng.R.Float64() * 360
 		return ai.NextUpdateIn(delayInSeconds)
 	}
 	scriptedAction.action = danceAction
@@ -90,7 +91,7 @@ func NewTurnTableAction(delayInSeconds float64) core.ScriptedAction {
 			firstCall = false
 			originalDirection = person.LookDirection
 		}
-		person.LookDirection = originalDirection + (rand.Float64() * 90) - 45
+            person.LookDirection = originalDirection + (rng.R.Float64() * 90) - 45
 		return ai.NextUpdateIn(delayInSeconds)
 	}
 	scriptedAction.action = turnTableAction

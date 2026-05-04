@@ -1,8 +1,9 @@
 package game
 
 import (
-    "math/rand"
     "path"
+
+    "github.com/memmaker/terminal-assassin/rng"
 
     "github.com/hajimehoshi/ebiten/v2"
 
@@ -682,7 +683,7 @@ func (a *Animator) GasDistribution(location geometry.Point, source core.EffectSo
 
     scheduleTileRemoval := func(p geometry.Point, distanceBias float64) {
         // distanceBias nudges outer tiles to clear sooner (max −25% at full radius).
-        delay := base - distanceBias + (rand.Float64()*jitter*2 - jitter)
+        delay := base - distanceBias + (rng.R.Float64()*jitter*2 - jitter)
         if delay < base*0.25 {
             delay = base * 0.25 // never clear in less than a quarter of base time
         }

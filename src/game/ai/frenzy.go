@@ -2,11 +2,11 @@ package ai
 
 import (
 	"fmt"
-	"math/rand"
 
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/game/stimuli"
 	"github.com/memmaker/terminal-assassin/geometry"
+	"github.com/memmaker/terminal-assassin/rng"
 )
 
 // FrenzyMovement is the AI state for a frenzied actor.
@@ -62,7 +62,7 @@ func (f *FrenzyMovement) NextAction() core.AIUpdate {
 		currentMap := f.Engine.GetGame().GetMap()
 		neighbors := currentMap.GetAllCardinalNeighbors(person.Pos())
 		if len(neighbors) > 0 {
-			dest := neighbors[rand.Intn(len(neighbors))]
+			dest := neighbors[rng.R.Intn(len(neighbors))]
 			return person.AI.Movement.Action(dest, f)
 		}
 		return f.timedUpdate(0.5)
@@ -113,7 +113,7 @@ func (f *FrenzyMovement) handleFiring(person *core.Actor) core.AIUpdate {
 
 	game.IllegalActionAt(person.Pos(), core.ObservationIllegalAction)
 
-	return f.timedUpdate(rand.Float64()*0.4 + 0.3)
+	return f.timedUpdate(rng.R.Float64()*0.4 + 0.3)
 }
 
 func (f *FrenzyMovement) handleMelee(person *core.Actor) core.AIUpdate {
@@ -151,7 +151,7 @@ func (f *FrenzyMovement) handleMelee(person *core.Actor) core.AIUpdate {
 
 	game.IllegalActionAt(person.Pos(), core.ObservationIllegalAction)
 
-	return f.timedUpdate(rand.Float64()*0.3 + 0.4)
+	return f.timedUpdate(rng.R.Float64()*0.3 + 0.4)
 }
 
 func (f *FrenzyMovement) exitFrenzy(person *core.Actor) {

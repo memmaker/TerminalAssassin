@@ -53,7 +53,7 @@ func (s *SnitchMovement) NextAction() core.AIUpdate {
 }
 
 func (s *SnitchMovement) nothingToTell() bool {
-	currentTick := s.Engine.CurrentTick()
+	currentTick := s.Engine.CurrentInGameTick()
 	sighting := s.Person.AI.Knowledge.LastSightingOfDangerous
 	return sighting.Tick == 0 || sighting.HandledByMe || currentTick-sighting.Tick >= uint64(120*ebiten.TPS())
 }

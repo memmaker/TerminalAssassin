@@ -353,13 +353,17 @@ type Engine interface {
 	LoadMap(name string) (*gridmap.GridMap[*core.Actor, *core.Item, Object], error)
 	Reset()
 
+	GetRecorder() *Recorder
+	SetInputOverride(InputInterface)
+
 	GetAvailableTextFonts() []string
 	SetTextFont(fontName string)
 	SetTileFont(fontName string)
 	SetFullscreen(enabled bool)
 	SetControllerMode(mode string)
 	SaveOptions()
-	CurrentTick() uint64
+	CurrentInGameTick() uint64
+	CurrentRawTick() uint64
 	ResetForGameplay()
 	PublishEvent(event GameEvent)
 	// SubscribeToEvents is meant to be used together with objects.NewFilter

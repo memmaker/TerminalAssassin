@@ -1,9 +1,8 @@
 package ai
 
 import (
-	"math/rand"
-
 	"github.com/memmaker/terminal-assassin/game/core"
+	"github.com/memmaker/terminal-assassin/rng"
 )
 
 type ScheduledMovement struct {
@@ -16,7 +15,7 @@ func (s *ScheduledMovement) NextAction() core.AIUpdate {
 	aic := s.Engine.GetAI()
 	if aic.IncidentsNeedCleanup(s.Person) && s.Person.Type == core.ActorTypeGuard {
 		aic.SwitchToCleanup(s.Person)
-		return NextUpdateIn(rand.Float64() + 1.0)
+		return NextUpdateIn(rng.R.Float64() + 1.0)
 	}
 
 	schedule := s.Engine.GetGame().GetMap().GetSchedule(s.Person.AI.Schedule)

@@ -3,12 +3,12 @@ package states
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"path"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/memmaker/terminal-assassin/rng"
 	"github.com/memmaker/terminal-assassin/utils"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -199,6 +199,16 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
 	stats := engine.GetGame().GetStats()
 	stats.StartMission()
 
+	// Seed RNG for this mission. Replay uses the stored seed; live play picks one now.
+	recorder := engine.GetRecorder()
+	if recorder == nil || !recorder.IsRecording() {
+		seed := time.Now().UnixNano()
+		rng.Seed(seed)
+		if recorder != nil && recorder.ShouldRecord {
+			recorder.StartRecording(currentMap.MapFileName(), currentMap.MapHash(), seed)
+		}
+	}
+
 	userInterface := g.engine.GetUI()
 	toolTipFunc := func(origin geometry.Point, stringLength int) geometry.Rect { // from screen to half screen
 		finalScreenHalfPos := userInterface.CalculateLabelPlacement(origin, stringLength)
@@ -251,7 +261,7 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
 		return true
 	}))
 	g.engine.SubscribeToEvents(services.NewFilter(func(e services.ActorKilledEvent) bool {
-		stats.AddKill(e.Victim, e.CauseOfDeath, e.Position, utils.UTicksToSeconds(g.engine.CurrentTick()))
+		stats.AddKill(e.Victim, e.CauseOfDeath, e.Position, utils.UTicksToSeconds(g.engine.CurrentInGameTick()))
 		return true
 	}))
 	// Ambience sound — reacts to zone changes instead of running in playerEnteredCell.
@@ -836,7 +846,7 @@ func (g *GameStateGameplay) updatePager() {
 // OUR FPS DROP SEEMS TO BE CAUSED BY THIS FUNCTION
 func (g *GameStateGameplay) Draw(con console.CellInterface) {
 	m := g.engine.GetGame()
-	if ebiten.ActualFPS() < 55 && g.engine.CurrentTick()%60 == 0 {
+	if ebiten.ActualFPS() < 55 && g.engine.CurrentInGameTick()%60 == 0 {
 		println(fmt.Sprintf("Low FPS: %.2f", ebiten.ActualFPS()))
 		defer utils.TimeTrack(time.Now(), "GameStateGameplay->Draw()")
 	}
@@ -1593,7 +1603,7 @@ func (g *GameStateGameplay) tryPickpocket(target *core.Actor) {
 	}
 
 	// Pick a random item.
-	chosen := stealable[rand.Intn(len(stealable))]
+	chosen := stealable[rng.R.Intn(len(stealable))]
 	target.Inventory.RemoveItem(chosen)
 	chosen.HeldBy = player
 	player.Inventory.AddItem(chosen)
@@ -1708,9 +1718,9 @@ func (g *GameStateGameplay) updateDialogue() {
 			continue
 		}
 
-		if actor.HasLineToSpeak(g.engine.CurrentTick()) {
+		if actor.HasLineToSpeak(g.engine.CurrentInGameTick()) {
 			g.showNextUtteranceFor(actor)
-		} else if !actor.Dialogue.Active(g.engine.CurrentTick()) && actor.Dialogue.CurrentDialogue != "" {
+		} else if !actor.Dialogue.Active(g.engine.CurrentInGameTick()) && actor.Dialogue.CurrentDialogue != "" {
 			println(fmt.Sprintf("%s ended dialogue (%s)", actor.DebugDisplayName(), actor.Dialogue.CurrentDialogue))
 			actor.Dialogue.CurrentDialogue = ""
 			actor.Dialogue.Situation = nil
@@ -1760,7 +1770,7 @@ func (g *GameStateGameplay) showNextUtteranceFor(actor *core.Actor) {
 		}
 	}
 
-	actor.Dialogue.DidSpeak(actor, g.engine.CurrentTick())
+	actor.Dialogue.DidSpeak(actor, g.engine.CurrentInGameTick())
 }
 
 func (g *GameStateGameplay) updateFlashlight() {

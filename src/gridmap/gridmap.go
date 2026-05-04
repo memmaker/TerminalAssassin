@@ -5,12 +5,13 @@ import (
 	"encoding/gob"
 	"fmt"
 	"math"
-	"math/rand"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/memmaker/terminal-assassin/rng"
 
 	"github.com/memmaker/terminal-assassin/common"
 	"github.com/memmaker/terminal-assassin/game/stimuli"
@@ -1329,8 +1330,8 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) SetAllExplored() {
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) RandomSpawnPosition() geometry.Point {
 	for {
-		x := rand.Intn(m.MapWidth)
-		y := rand.Intn(m.MapHeight)
+		x := rng.R.Intn(m.MapWidth)
+		y := rng.R.Intn(m.MapHeight)
 		pos := geometry.Point{X: x, Y: y}
 		if m.IsCurrentlyPassable(pos) {
 			return pos
@@ -1387,7 +1388,7 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) RandomPosAround(pos geometry.
 		return pos
 	}
 	neighbors = append(neighbors, pos)
-	return neighbors[rand.Intn(len(neighbors))]
+	return neighbors[rng.R.Intn(len(neighbors))]
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) TryGetActorAt(pos geometry.Point) (ActorType, bool) {

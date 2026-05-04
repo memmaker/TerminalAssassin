@@ -42,7 +42,17 @@ func (g *GameStateGameOver) Draw(con console.CellInterface) {
 func (g *GameStateGameOver) Init(engine services.Engine) {
 	g.engine = engine
 	stats := engine.GetGame().GetStats()
-	stats.SecondsNeeded = utils.UTicksToSeconds(engine.CurrentTick())
+	stats.SecondsNeeded = utils.UTicksToSeconds(engine.CurrentInGameTick())
+
+	// Clear any replay input override so the debriefing pager gets real input.
+	engine.SetInputOverride(nil)
+
+	// Stop any active recording.
+	if recorder := engine.GetRecorder(); recorder != nil && recorder.IsRecording() {
+		if path, err := recorder.StopAndSave(); err == nil {
+			println("Replay saved:", path)
+		}
+	}
 
 	g.debriefingMessage = g.createDebriefingMessage(g.MissionExitedWithGoalCompletion)
 

@@ -1,0 +1,80 @@
+BUGS & DESIGN FLAWS
+===================
+
+--- BUGS ---
+
+1. AIComponent.GetState() panics on empty stack
+   File: src/game/core/actor.go:268
+   stateStack[len-1] called with no bounds check. Empty stack = index OOB panic.
+   Status() at line 972 guards it, but GetState() called directly (e.g. DebugDisplayName,
+   TryPopScripted) does not.
+
+2. career.go — file closed before error check
+   File: src/game/career.go
+   Code:
+     fileReader, fileErr := os.Open("career.gob")
+     defer fileReader.Close()  // panics if fileErr != nil (fileReader is nil)
+     if fileErr != nil { ... }
+   defer runs even on error path, calling Close() on a nil file -> nil pointer dereference.
+
+3. cleanup.go — PickUpItem ignores incident location
+   File: src/game/ai/cleanup.go:130
+   Code:
+     itemAt := game.GetMap().ItemAt(c.currentIncident.Location)
+     if itemAt != nil {
+         game.PickUpItem(person)  // picks up from actor pos, not incident location
+   itemAt fetched from incident location, but PickUpItem(person) likely picks from actor's
+   current position. May pick wrong item or nothing.
+
+4. combat.go — step counter exits combat prematurely
+   File: src/game/ai/combat.go:31
+   stepCounter increments when target not visible, resets only in handleFiring.
+   If target keeps moving/hiding, counter hits 50 and guard exits combat even if fight ongoing.
+
+5. investigation.go — clears wrong sighting by proximity
+   File: src/game/ai/investigation.go:36-38
+   Any dangerous sighting within 3 tiles of the incident gets cleared.
+   Wrong (unrelated) sighting could be wiped if locations are close.
+
+6. panic.go — zero moveDelta when no passable neighbors
+   File: src/game/ai/panic.go
+   If possibleMoves is empty, moveDelta stays {0,0}.
+   MoveActor(person, person.Pos()) is called — actor stuck forever in panic with no exit.
+
+7. snitch.go — OnDestinationReached ignores trySnitching result
+   File: src/game/ai/snitch.go:77-79
+   Code:
+     func (s *SnitchMovement) OnDestinationReached() core.AIUpdate {
+         s.trySnitching()  // return value ignored
+         return NextUpdateIn(float64(person.MoveDelay()))
+   Always returns MoveDelay even if snitching succeeded.
+
+
+--- DESIGN FLAWS ---
+
+8. IndividualKnowledge — incidents list grows unbounded
+   File: src/game/core/actor.go
+   RemoveIncident only called on cleanup. Handled incidents marked but stay in slice forever.
+   Long missions with many incidents = linear scan every vision update for every actor.
+
+9. TransferKnowledge — only dangerous-actor sightings shared
+   File: src/game/ai/ai.go
+   Suspicious location incidents never shared between guards.
+   Two guards can investigate the same location independently.
+
+10. MissionStats.OnlyKilledTargets() — returns true with zero kills
+    File: src/game/core/stats.go
+    Empty Kills slice -> loop never runs -> returns true.
+    A mission where player killed nobody counts as "only killed targets."
+    Likely wrong for challenge logic.
+
+11. career.go — hardcoded relative path "career.gob"
+    File: src/game/services/career.go
+    No configurable location. Breaks if working directory is not the binary's dir
+    (common in tests or packaging).
+
+12. IsBodyDisappearing — inverted semantics
+    File: src/game/core/actor.go:38
+    Function name says "is disappearing" but returns true for normal deaths (body reachable)
+    and false for falling/drowning (body unreachable). Name is backwards from expected.
+

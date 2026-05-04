@@ -2,14 +2,15 @@ package states
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/memmaker/terminal-assassin/common"
 	"github.com/memmaker/terminal-assassin/game/services"
 	"github.com/memmaker/terminal-assassin/game/stimuli"
 	"github.com/memmaker/terminal-assassin/gridmap"
 	"github.com/memmaker/terminal-assassin/mapset"
-	"math/rand"
-	"strconv"
-	"strings"
+	"github.com/memmaker/terminal-assassin/rng"
 
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/game/director"
@@ -137,7 +138,7 @@ func (g *GameStateGameplay) registerPredicateAndAssignmentFunctions(parser Parse
 	})
 	parser.RegisterPredicate("IsMissionTimeInSeconds", func(args ...any) bool {
 		missionRunningSinceSeconds, _ := strconv.Atoi(args[0].(string))
-		if g.engine.CurrentTick() > uint64(utils.SecondsToTicks(float64(missionRunningSinceSeconds))) {
+		if g.engine.CurrentInGameTick() > uint64(utils.SecondsToTicks(float64(missionRunningSinceSeconds))) {
 			return true
 		}
 		return false
@@ -382,14 +383,14 @@ func (g *GameStateGameplay) registerActionFunctions(parser ParserLogicRegisterer
 		cumulativeDelay := 0.0
 		for i := 0; i < locationCount; i++ {
 			// pop a random position from the list
-			randomIndex := rand.Intn(len(zonePositions))
+			randomIndex := rng.R.Intn(len(zonePositions))
 			randomPos := zonePositions[randomIndex]
 			zonePositions = append(zonePositions[:randomIndex], zonePositions[randomIndex+1:]...)
 
 			g.engine.Schedule(cumulativeDelay, func() {
 				currentMap.AddStimulusToTile(randomPos, stimuli.Stim{StimType: nameOfStim, StimForce: amount / 2})
 			})
-			g.engine.Schedule(cumulativeDelay+(rand.Float64()*1), func() {
+			g.engine.Schedule(cumulativeDelay+(rng.R.Float64()*1), func() {
 				currentMap.AddStimulusToTile(randomPos, stimuli.Stim{StimType: nameOfStim, StimForce: amount / 2})
 			})
 			cumulativeDelay += secondsPerLocation
