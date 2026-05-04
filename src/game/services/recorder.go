@@ -12,7 +12,7 @@ import (
 	rec_files "github.com/memmaker/terminal-assassin/rec-files"
 )
 
-const ReplayDirectory = "datafiles/replays"
+const ReplayDirectory = "replays"
 
 // ReplayEntry is a single recorded input event, keyed to a WorldTick.
 type ReplayEntry struct {
