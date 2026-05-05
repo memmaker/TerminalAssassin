@@ -18,6 +18,9 @@ func (g *GameStateEditor) openObjectsMenu() {
             Label: "clear object",
             Handler: g.setBrushHandlerWithLightUpdate(addObjectsUI, 'X', func(pos geometry.Point) {
                 if currentMap.IsObjectAt(pos) {
+                    if r, ok := currentMap.ObjectAt(pos).(services.Removable); ok {
+                        r.OnRemoved(g.engine)
+                    }
                     currentMap.RemoveObjectAt(pos)
                 }
             }),
@@ -58,6 +61,9 @@ func (g *GameStateEditor) removeSelectedObject() {
     }
     currentMap := g.engine.GetGame().GetMap()
     position := g.selectedObject.Pos()
+    if r, ok := g.selectedObject.(services.Removable); ok {
+        r.OnRemoved(g.engine)
+    }
     currentMap.RemoveObjectAt(position)
     description := g.selectedObject.Description()
 
