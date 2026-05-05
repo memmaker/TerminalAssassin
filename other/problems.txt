@@ -1,3 +1,201 @@
+# NPC AI Requirements
+
+## 1) Default States
+
+Every NPC has a default state set at spawn. It is either **Idle/Guard** (returns to spawn and watches) or a **Schedule** (repeating route with tasks).
+
+The default state lives at the bottom of the state stack and is never removed or replaced — only pushed over.
+
+When all pushed states are popped, the NPC resumes its default state: continues on schedule or walks back to spawn and resumes look direction.
+
+---
+
+## 2) Suspicious Sightings (Location)
+
+Something out of place but not immediately dangerous.
+
+**Examples:** broken window, unknown sound (non-combat), suspicious item on the ground, activated distractor object.
+
+**Rules:**
+- Each suspicious location is investigated by exactly one NPC, exactly once.
+- Before investigating, the NPC checks a global list of already-investigated or currently-investigated locations to avoid duplicates.
+- The NPC only investigates if no active danger or responsible actor is visible.
+- On arrival, the NPC looks around (~7 × 45° turns, updating FoV each time), then marks done and pops state.
+- Not stored in personal knowledge — acted on directly and tracked via a global hash list only.
+
+---
+
+## 3) Suspicious Actor Sightings
+
+An actor out of place or behaving strangely, not immediately threatening.
+
+**Examples:** player in restricted zone, player openly carrying an illegal weapon, player near an active crime scene.
+
+**Rules:**
+- The NPC watches the actor and raises a suspicion meter over time.
+- Raise rate depends on severity (hostile zone trespassing = fastest; open carry = slowest).
+- If the actor fixes the condition before suspicion maxes, suspicion drains and Watch state is popped.
+- If suspicion maxes, transitions to a Dangerous Actor reaction (§4).
+- Only one NPC watches a given suspicious actor at a time.
+- If the actor leaves FoV, the NPC chases briefly (~20 steps). No re-sighting → suspicion drains, Watch popped.
+
+---
+
+## 4) Dangerous Actor Sightings
+
+The NPC has confirmed a hostile or overtly criminal actor.
+
+**Rules:**
+- **Guard:** immediately enters Combat.
+- **Civilian (guard available):** runs to nearest guard and snitches.
+- **Civilian (no guard):** panics and flees.
+- If the dangerous actor is no longer visible, the Guard investigates the last known position before giving up.
+- The sighting is stored in `LastSightingOfDangerous` and shared between guards via knowledge transfer.
+
+---
+
+## 5) Combat
+
+Guards engage the dangerous actor.
+
+**Rules:**
+- Guard moves toward the target's last known position when out of sight.
+- Guard fires when target is visible and projectile path is clear.
+- Step-counter only increments when target is fully out of sight; resets whenever target is visible (even without a clear shot).
+- ~50 consecutive steps with zero sighting → exit combat, investigate last known position.
+- On exit: scheduled guards resume schedule; idle guards return to spawn.
+
+---
+
+## 6) Investigation
+
+NPC walks to an incident location and searches the area.
+
+**Rules:**
+- On arrival, turns 45° at a time, updating FoV (~7 turns / ~3.5 s total).
+- Environmental objects at the location (door, switch) may be interacted with.
+- After looking around, incident is marked done and state is popped.
+- If a new dangerous observation is made mid-investigation, the NPC reacts immediately.
+- A location already being investigated by another NPC is skipped — no duplicates.
+
+---
+
+## 7) Cleanup
+
+Guards clean up evidence in their map zone.
+
+**Rules:**
+- Bodies are bagged and dragged to the drop-off zone (if one exists).
+- Illegal weapons/items are picked up from their exact location and secured.
+- Blood is cleaned (stimulus removed from tile).
+- Only incidents inside the guard's own zone are handled.
+- After all tasks done, guard returns to default state.
+
+---
+
+## 8) Snitching (Civilian → Guard)
+
+A civilian who witnessed danger and cannot fight runs to the nearest available guard.
+
+**Rules:**
+- Pathfinds to nearest available (non-downed, non-combat) guard.
+- On arrival within 3 tiles with LoS, knowledge is transferred and the guard reacts.
+- If snitching fails on arrival (guard moved), immediately replan to next nearest guard.
+- If no guards exist, switch to Panic.
+- After successful snitch, civilian's eyewitness flag is cleared.
+
+---
+
+## 9) Panic
+
+Civilian or NPC with no other recourse after witnessing open violence.
+
+**Rules:**
+- Flees to the passable neighbor that maximizes summed distance from all danger locations.
+- Threat actor (if present) weighted at 2× for flee direction.
+- If no passable neighbor exists, wait one move cycle and retry.
+- Panic lasts until popped externally (danger gone, script, etc.).
+
+---
+
+## 10) Knowledge & Alertness
+
+### Personal Knowledge
+- Each NPC holds a list of `IncidentReport` entries (type, location, tick).
+- `LastSightingOfDangerous` is a dedicated single slot for the most recent confirmed dangerous actor.
+- Handled incidents are marked and skipped; removed only when cleaned up.
+
+### Knowledge Transfer
+- Guards on the same team swap `LastSightingOfDangerous` — more recent tick wins.
+- Suspicious location sightings are personal, never shared (global hash list prevents duplicates).
+
+### Heightened Alertness — Alert Flag
+
+A guard becomes **Alerted** when it processes a **Dangerous Sighting** (see §13).
+
+Effects of the Alert flag:
+- Suspicion meter in the Watch state fills at 2× the normal rate.
+- Default movement speed is ~20% faster (move delay reduced from 0.8 s to ~0.64 s).
+- The flag persists for the remainder of the mission once set.
+
+---
+
+## 11) NPC Reaction Matrix
+
+| Situation                          | Guard                      | Civilian (guard nearby) | Civilian (no guard) |
+|------------------------------------|----------------------------|-------------------------|---------------------|
+| Suspicious location                | Investigate                | Ignore                  | Ignore              |
+| Suspicious actor                   | Watch → Combat             | Watch → Snitch          | Watch → Panic       |
+| Dangerous actor (seen)             | Combat                     | Snitch                  | Panic               |
+| Dangerous actor (gone)             | Investigate LKP            | Snitch                  | Panic               |
+| Dangerous location                 | Investigate                | Snitch                  | —                   |
+| Dangerous sighting (no actor)      | AlarmRun / Shout+Investigate | —                     | —                   |
+
+---
+
+## 12) State Priority (high → low)
+
+1. Combat / Frenzy
+2. **AlarmRun**
+3. Panic
+4. Snitching
+5. Watch (suspicious actor)
+6. Investigation (dangerous location / actor LKP)
+7. Investigation (suspicious location)
+8. Cleanup
+9. Scripted
+10. **Default** (Schedule / Idle-Guard) — never popped
+
+---
+
+## 13) Dangerous Sightings (Location)
+
+A dangerous sighting is evidence of serious crime with no obvious responsible actor currently visible.
+
+**Examples:** an unattended corpse, a pool of blood with no suspect nearby, an explosion crater.
+
+### Global tracking
+- Dangerous sightings are **not** stored on individual actors.
+- They are tracked in a **global map: `hash → investigator count`**.
+- A sighting's hash encodes its type and location (same scheme as suspicious sightings).
+- Up to **2 guards** may investigate the same dangerous sighting independently.
+  A guard only claims a slot when it begins investigating; the counter is incremented then.
+
+### Guard reaction
+1. When a guard observes a dangerous sighting and the global count for that hash is < 2:
+   - The guard registers itself (increments the counter).
+   - Sets its own **Alert flag**.
+   - **If the map has an alarm**: the guard enters **AlarmRun** state and moves to the nearest alarm to activate it.
+   - **If no alarm exists**: the guard emits a shout sound event at regular intervals (~every 3 s) while investigating, alerting any guard within hearing range. Those guards also become Alerted and may claim an investigation slot.
+2. If the global count is already 2, the guard ignores the sighting and continues its current state.
+
+### Alarm objects
+- Alarm objects are placed by map designers.
+- Activating an alarm publishes a map-wide `AlarmTriggeredEvent`, which sets the Alert flag on every guard on the map.
+- The last known position of the dangerous sighting is included in the event, allowing guards to investigate it if they weren't already aware.
+- A guard heading for an alarm is in the **AlarmRun** state.
+
+
 BUGS & DESIGN FLAWS
 ===================
 

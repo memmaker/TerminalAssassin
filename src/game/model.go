@@ -571,7 +571,7 @@ func (m *Model) Kill(victim *core.Actor, causeOfDeath core.CauseOfDeath) {
 	victim.Dead = true
 	victim.IsEyeWitness = false
 
-	if causeOfDeath.IsBodyDisappearing() {
+	if !causeOfDeath.IsBodyDisappearing() {
 		m.DropInventory(victim)
 	}
 	println("KILLED -> " + victim.DebugDisplayName())
