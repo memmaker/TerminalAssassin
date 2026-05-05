@@ -57,7 +57,7 @@ func (l *Lamp) Icon() rune {
 	if l.lightSource == nil && l.state == DeviceStateOn && l.engine != nil && l.position.X != 0 && l.position.Y != 0 {
 		l.addLightToMap(l.engine)
 	}
-	return core.GlyphLamp
+	return core.GlyphStreetLight
 }
 
 func (l *Lamp) Style(st common.Style) common.Style {
@@ -106,6 +106,12 @@ func (l *Lamp) Pos() geometry.Point {
 
 func (l *Lamp) SetPos(pos geometry.Point) {
 	l.position = pos
+}
+
+// OnRemoved implements services.Removable — cleans up the dynamic light when
+// the lamp object is deleted from the map (e.g. in the editor).
+func (l *Lamp) OnRemoved(m services.Engine) {
+	l.removeLightFromMap(m)
 }
 
 // Initialize should be called after the lamp is placed and SetPos has been called

@@ -42,6 +42,12 @@ type KeyBound interface {
 	SetKey(key string)
 }
 
+// Removable is implemented by objects that need to clean up external state
+// (e.g. dynamic light sources) when they are removed from the map.
+type Removable interface {
+	OnRemoved(engine Engine)
+}
+
 // ContentHolder is implemented by objects that contain items (e.g. a safe).
 // Each content entry is an item name that can be decoded by the item factory.
 // The serialiser writes one "Content" field per entry and restores them on load.
