@@ -10,10 +10,11 @@ import (
 )
 
 type Lamp struct {
-	position geometry.Point
-	Name     string
-	state    DeviceState
-	engine   services.Engine
+	position    geometry.Point
+	Name        string
+	state       DeviceState
+	engine      services.Engine
+	lightSource *gridmap.LightSource
 }
 
 func CreateLamp(engine services.Engine, description string) *Lamp {
@@ -22,6 +23,7 @@ func CreateLamp(engine services.Engine, description string) *Lamp {
 		state:  DeviceStateOn,
 		engine: engine,
 	}
+	// Note: Initialize() must be called after SetPos sets the position
 	return lamp
 }
 
@@ -51,6 +53,10 @@ func (l *Lamp) ApplyStimulus(m services.Engine, stim stimuli.Stimulus) {
 }
 
 func (l *Lamp) Icon() rune {
+	// Lazy initialization: add light if not yet initialized
+	if l.lightSource == nil && l.state == DeviceStateOn && l.engine != nil && l.position.X != 0 && l.position.Y != 0 {
+		l.addLightToMap(l.engine)
+	}
 	return core.GlyphLamp
 }
 
@@ -79,15 +85,15 @@ func (l *Lamp) Action(m services.Engine, person *core.Actor) {
 }
 
 func (l *Lamp) IsActionAllowed(m services.Engine, person *core.Actor) bool {
-	return true
+	return l.state != DeviceStateBroken
 }
 
 func (l *Lamp) IsWalkable(*core.Actor) bool {
-	return false
+	return l.state == DeviceStateBroken
 }
 
 func (l *Lamp) IsPassableForProjectile() bool {
-	return false
+	return l.state == DeviceStateBroken
 }
 
 func (l *Lamp) IsTransparent() bool {
@@ -100,24 +106,38 @@ func (l *Lamp) Pos() geometry.Point {
 
 func (l *Lamp) SetPos(pos geometry.Point) {
 	l.position = pos
-	if l.state == DeviceStateOn && l.engine != nil {
+}
+
+// Initialize should be called after the lamp is placed and SetPos has been called
+func (l *Lamp) Initialize() {
+	if l.state == DeviceStateOn && l.engine != nil && l.lightSource == nil {
 		l.addLightToMap(l.engine)
 	}
 }
 
 func (l *Lamp) addLightToMap(m services.Engine) {
+	if l.lightSource != nil {
+		return // light already exists
+	}
 	currentMap := m.GetGame().GetMap()
-	lightSource := &gridmap.LightSource{
+	l.lightSource = &gridmap.LightSource{
 		Pos:          l.position,
 		Radius:       7,
 		Color:        common.RGBAColor{R: 1.0, G: 0.9, B: 0.7, A: 1.0},
 		MaxIntensity: 1.0,
 	}
-	currentMap.AddDynamicLightSource(l.position, lightSource)
+	currentMap.AddDynamicLightSource(l.position, l.lightSource)
 	currentMap.UpdateDynamicLights()
 }
 
 func (l *Lamp) removeLightFromMap(m services.Engine) {
+	if l.lightSource == nil {
+		return // no light to remove
+	}
 	currentMap := m.GetGame().GetMap()
-	currentMap.RemoveDynamicLightAt(l.position)
+	// Only remove if the light at this position is our own light source
+	if existingLight, exists := currentMap.DynamicLights[l.position]; exists && existingLight == l.lightSource {
+		currentMap.RemoveDynamicLightAt(l.position)
+	}
+	l.lightSource = nil
 }
