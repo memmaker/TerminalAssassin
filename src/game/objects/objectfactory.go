@@ -209,6 +209,13 @@ func (f ObjectFactory) SimpleObjects() []services.ObjectCreator {
                 return NewGravestone("illegible")
             },
         },
+        {
+            Name: "lamp",
+            Icon: core.GlyphLamp,
+            Create: func(name string) services.Object {
+                return CreateLamp(f.engine, name)
+            },
+        },
         // ── SearchableContainers ─────────────────────────────────────────────
         {
             Name: "chest of drawers",

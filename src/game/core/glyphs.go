@@ -88,4 +88,5 @@ const (
     GlyphCageClosed           = 'ɯ'
     GlyphCageOpen             = 'ɰ'
     GlyphBow                  = 'ƶ'
+    GlyphLamp                 = 'ƴ'
 )
