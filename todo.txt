@@ -13,6 +13,47 @@
    - Burnables & Fire
    - Glass floor
 
+# Ghost of Tsushima style melee combat
+
+## Core Pillars
+ - Every attack is telegraphed with a clear visual cue before it hits
+ - Player can respond: block/parry OR dodge — but not always both
+ - Rhythm of attack → read → react creates satisfying flow
+
+## Attack Types (Enemy)
+ - BLOCKABLE attack: enemy flashes white ◈ — player can parry, block or dodge
+ - UNBLOCKABLE attack: enemy flashes red ✦ — MUST dodge (step to farther cell or dodge roll)
+ - COMBO attack: series of blockable hits ending in an unblockable finisher
+
+## Parry & Block
+ - BLOCK: hold melee while enemy attacks → reduces damage, costs stamina (guard meter)
+ - PERFECT PARRY: press melee at exact moment of impact → staggers enemy, no damage taken
+ - Guard meter: each blocked hit reduces it; when empty, next hit breaks guard (player stunned briefly)
+ - Perfect parry resets guard meter and gives a free counter-attack window
+
+## Dodge (Unblockable response)
+ - Player must move to any adjacent free cell before the hit lands
+ - Moving INTO the enemy cell = invalid (counts as eating the hit)
+ - Successful dodge grants a brief counter window (1 free attack)
+ - Failed dodge (no move or blocked path) = full damage + knockback
+
+## Stagger & Counter Windows
+ - After perfect parry or dodge: counter window opens (e.g. 1–2 turns / short timer)
+ - Attacks during counter window deal bonus damage (e.g. ×2) and ignore enemy guard
+ - Counter window is lost if player moves away or does nothing
+
+## Enemy Telegraph Timing
+ - Turn 0: enemy shows intent icon (◈ or ✦) above their cell
+ - Turn 1: player must respond (parry key or move to dodge)
+ - Turn 2: attack resolves — outcome based on player response
+
+## Grid Adaptation Notes
+ - Parry = press action key when ◈ flashes (timing window: ~0.5s or one input frame)
+ - Dodge = move to adjacent cell when ✦ flashes (any direction except into enemy)
+ - Unblockable sweep attacks can cover multiple adjacent cells (force longer dodge)
+ - Chokepoints (walls, corners) make dodge harder — positional awareness matters
+
+
 # Fix before next release
  - Make manholes covered by default and you need a tool to open them
  - Make the falling item be a construction wrecking ball

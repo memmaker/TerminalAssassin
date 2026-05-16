@@ -42,7 +42,7 @@ Inventory: Submachine Gun
 Name: Club Bouncer 1
 ActorType: guard
 Team: Tuxedo
-Position: (36,3)
+Position: (37,5)
 LookDirection: 90.00
 Inventory: KeyCard(Security Night Club)
 Inventory: Submachine Gun
@@ -50,7 +50,7 @@ Inventory: Submachine Gun
 Name: Club Bouncer 2
 ActorType: guard
 Team: Tuxedo
-Position: (36,14)
+Position: (37,11)
 LookDirection: 270.00
 Inventory: KeyCard(Security Night Club)
 Inventory: Submachine Gun

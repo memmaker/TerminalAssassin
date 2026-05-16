@@ -1,12 +1,14 @@
 package core
 
 import (
-    "io/fs"
-    "os"
+	"fmt"
+	"io/fs"
+	"os"
+	"strconv"
 
-    "github.com/memmaker/terminal-assassin/common"
-    "github.com/memmaker/terminal-assassin/gridmap"
-    rec_files "github.com/memmaker/terminal-assassin/rec-files"
+	"github.com/memmaker/terminal-assassin/common"
+	"github.com/memmaker/terminal-assassin/gridmap"
+	rec_files "github.com/memmaker/terminal-assassin/rec-files"
 )
 
 // ColorTheme defines every color used during gameplay.
@@ -105,6 +107,13 @@ type ColorTheme struct {
 
     // ── Animation (background only) ──────────────────────────────────────
     EngagedInTaskBackground common.Color // bg: NPC task-animation flash
+
+    // ── FOV darkness ─────────────────────────────────────────────────────
+    // OutOfFOVDarken is the Darken() factor applied to explored tiles that
+    // are currently outside the player's field of view. 0.5 = half brightness
+    // (good for white/light themes); use a lower value like 0.15 for dark
+    // themes where tiles are already near-black and need stronger contrast.
+    OutOfFOVDarken float64
 
     // ── Actors (foreground only) ──────────────────────────────────────────
     // ActorCivilianForeground is the default actor color for civilians and
@@ -216,6 +225,7 @@ func WhiteTheme() *ColorTheme {
 
         EngagedInTaskBackground:  common.NewHSVColorFromRGBBytes(255, 203, 51),
         ActorCivilianForeground:  common.NewHSVColorFromRGBBytes(0, 0, 0),
+        OutOfFOVDarken:           0.5,
     }
 }
 
@@ -302,6 +312,7 @@ func BlackTheme() *ColorTheme {
 
         EngagedInTaskBackground:  common.NewRGBColorFromBytes(80, 60, 0),
         ActorCivilianForeground:  common.NewHSVColorFromRGBBytes(200, 200, 200),
+        OutOfFOVDarken:           0.15,
     }
 }
 
@@ -370,6 +381,7 @@ func (t *ColorTheme) ToRecord() rec_files.Record {
         {Name: "EditorBuriedItemBackground", Value: t.EditorBuriedItemBackground.EncodeAsString()},
         {Name: "EditorTaskNumberForeground", Value: t.EditorTaskNumberForeground.EncodeAsString()},
         {Name: "EngagedInTaskBackground", Value: t.EngagedInTaskBackground.EncodeAsString()},
+        {Name: "OutOfFOVDarken", Value: fmt.Sprintf("%f", t.OutOfFOVDarken)},
     }
     return fields
 }
@@ -558,6 +570,10 @@ func ThemeFromRecord(record rec_files.Record) *ColorTheme {
             t.EditorTaskNumberForeground = common.NewColorFromString(field.Value)
         case "EngagedInTaskBackground", "EngagedInTaskColor":
             t.EngagedInTaskBackground = common.NewColorFromString(field.Value)
+        case "OutOfFOVDarken":
+            if v, err := strconv.ParseFloat(field.Value, 64); err == nil {
+                t.OutOfFOVDarken = v
+            }
         }
     }
     return t

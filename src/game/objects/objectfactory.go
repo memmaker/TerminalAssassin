@@ -280,5 +280,12 @@ func (f ObjectFactory) SimpleObjects() []services.ObjectCreator {
 				return newLockedElectronicSearchableContainer("desk", core.GlyphDesk)
 			},
 		},
+		{
+			Name: "alarm",
+			Icon: core.GlyphAlarm,
+			Create: func(name string) services.Object {
+				return NewAlarmObject(name)
+			},
+		},
 	}
 }

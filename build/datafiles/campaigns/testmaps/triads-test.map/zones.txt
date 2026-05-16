@@ -55,3 +55,7 @@ Allowed_Team: Stylish Jacket
 Allowed_Team: Tech crew
 Allowed_Team: Tuxedo
 
+Name: Night Club Drop-off
+Type: Drop Off
+Ambience_Cue: 
+

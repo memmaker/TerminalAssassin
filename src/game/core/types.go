@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/memmaker/terminal-assassin/game/stimuli"
 	//"github.com/memmaker/terminal-assassin/game/services"
@@ -64,7 +65,7 @@ const (
 type IncidentReport struct {
 	Type        Observation
 	Location    geometry.Point
-	Tick        uint64
+	Time        time.Time
 	HandledByMe bool
 }
 

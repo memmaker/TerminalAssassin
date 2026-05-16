@@ -286,7 +286,7 @@ func (m *Model) SoundEventAt(soundLocation geometry.Point, kindOfSound core.Obse
 						if !actorAt.IsInCombat() {
 							actorAt.LookAt(soundLocation)
 						}
-						aic.ReportIncident(actorAt, soundLocation, kindOfSound)
+						aic.HandleIncident(actorAt, core.IncidentReport{Type: kindOfSound, Location: soundLocation, Time: m.engine.CurrentGameTime()})
 						aic.SwitchStateBecauseOfNewKnowledge(actorAt)
 					}
 				}
@@ -301,7 +301,7 @@ func (m *Model) SuspiciousActionAt(pos geometry.Point, kindOfEvent core.Observat
 		if a == currentMap.Player || !a.CanSeeInVisionCone(pos) || a.IsInvestigating() || a.IsCriminal() {
 			continue
 		}
-		aic.ReportIncident(a, pos, kindOfEvent)
+		aic.HandleIncident(a, core.IncidentReport{Type: kindOfEvent, Location: pos, Time: m.engine.CurrentGameTime()})
 		return // only need one report
 	}
 }
@@ -322,12 +322,14 @@ func (m *Model) IllegalActionAt(pos geometry.Point, kindOfEvent core.Observation
 				m.engine.PublishEvent(services.PlayerSpottedEvent{})
 			}
 			if kindOfEvent.IsOpenViolence() {
-				a.AI.Knowledge.AddDangerousSighting(a, actorAt, kindOfEvent, m.engine.CurrentInGameTick())
+				a.AI.Knowledge.AddDangerousSighting(a, actorAt, kindOfEvent, m.engine.CurrentGameTime())
+			} else if kindOfEvent.IsSuspiciousActor() {
+				aic.SwitchToWatch(a, actorAt, core.IncidentReport{Type: kindOfEvent, Location: actorAt.Pos(), Time: m.engine.CurrentGameTime()})
 			} else {
-				a.AI.Knowledge.AddIncident(core.IncidentReport{Type: kindOfEvent, Location: actorAt.Pos(), Tick: m.engine.CurrentInGameTick()})
+				aic.HandleIncident(a, core.IncidentReport{Type: kindOfEvent, Location: actorAt.Pos(), Time: m.engine.CurrentGameTime()})
 			}
 		} else {
-			aic.ReportIncident(a, pos, kindOfEvent)
+			aic.HandleIncident(a, core.IncidentReport{Type: kindOfEvent, Location: pos, Time: m.engine.CurrentGameTime()})
 		}
 	}
 }
@@ -718,6 +720,12 @@ func (m *Model) ActorEnteredCell(person *core.Actor, oldPosition geometry.Point,
 		m.gridMap.UpdateFieldOfView(person)
 	} else {
 		aic.UpdateVision(person)
+	}
+	if !person.IsDowned() {
+		person.StepsTaken++
+		if person.AI != nil {
+			m.engine.GetAI().SyncKnowledgeIfDue(person)
+		}
 	}
 	m.handleDragging(person, oldPosition)
 	m.ReEmitStimuliOnTileToThings(core.NewEffectSourceFromActor(person), newPosition)
@@ -1145,6 +1153,7 @@ func (m *Model) GetOffensiveActionAt(position geometry.Point) services.ContextAc
 
 func (m *Model) UpdateKnowledgeFromVision(person *core.Actor) {
 	a := person.AI
+	aic := m.engine.GetAI()
 	left, right := geometry.GetLeftAndRightBorderOfVisionCone(person.Pos(), person.LookDirection, person.FoVinDegrees)
 	currentMap := m.GetMap()
 	visionRangeSquared := person.VisionRange() * person.VisionRange()
@@ -1163,14 +1172,14 @@ func (m *Model) UpdateKnowledgeFromVision(person *core.Actor) {
 		dangerObservation := m.GetDangerObservation(person, actorAt)
 		if dangerObservation != core.ObservationNull {
 			person.IsEyeWitness = true
-			a.Knowledge.AddDangerousSighting(person, actorAt, dangerObservation, m.engine.CurrentInGameTick())
+			a.Knowledge.AddDangerousSighting(person, actorAt, dangerObservation, m.engine.CurrentGameTime())
 			if actorAt.IsPlayer() {
 				m.engine.PublishEvent(services.PlayerSpottedEvent{})
 			}
 		} else {
 			suspicionObservation := m.GetSuspicionObservation(person, actorAt)
 			if suspicionObservation != core.ObservationNull {
-				a.Knowledge.AddIncident(core.IncidentReport{Type: suspicionObservation, Location: actorAt.Pos(), Tick: m.engine.CurrentInGameTick()})
+				aic.SwitchToWatch(person, actorAt, core.IncidentReport{Type: suspicionObservation, Location: actorAt.Pos(), Time: m.engine.CurrentGameTime()})
 				if actorAt.IsPlayer() {
 					m.engine.PublishEvent(services.PlayerSpottedEvent{})
 				}
@@ -1224,24 +1233,29 @@ func (m *Model) createIncidentsForSuspiciousActivity(person *core.Actor, p geome
 		downedActorAt := currentMap.DownedActorAt(p)
 		if !downedActorAt.IsBodyBagged {
 			m.engine.PublishEvent(services.BodyDiscoveredEvent{Discoverer: person, BodyPos: p})
-			aic.ReportIncident(person, p, core.ObservationBodyFound)
+			aic.HandleIncident(person, core.IncidentReport{Type: core.ObservationBodyFound, Location: p, Time: m.engine.CurrentGameTime()})
 		}
 	}
 
 	if currentMap.IsItemAt(p) {
 		itemAt := currentMap.ItemAt(p)
 		if !itemAt.Buried {
+			zone := currentMap.ZoneAt(p)
+			if zone != nil && zone.IsDropOff() {
+				return
+			}
+
 			if itemAt.IsObviousWeapon() && itemAt.WasMoved() {
-				aic.ReportIncident(person, p, core.ObservationWeaponFound)
+				aic.HandleIncident(person, core.IncidentReport{Type: core.ObservationWeaponFound, Location: p, Time: m.engine.CurrentGameTime()})
 			}
 			if itemAt.IsMine() {
-				aic.ReportIncident(person, p, core.ObservationMineFound)
+				aic.HandleIncident(person, core.IncidentReport{Type: core.ObservationMineFound, Location: p, Time: m.engine.CurrentGameTime()})
 			}
 		}
 	}
 
 	if currentMap.IsStimulusOnTile(p, stimuli.StimulusBlood) {
-		aic.ReportIncident(person, p, core.ObservationBloodFound)
+		aic.HandleIncident(person, core.IncidentReport{Type: core.ObservationBloodFound, Location: p, Time: m.engine.CurrentGameTime()})
 	}
 }
 

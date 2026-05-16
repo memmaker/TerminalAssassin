@@ -49,13 +49,13 @@ func (v *WatchMovement) NextAction() core.AIUpdate {
 		return NextUpdateIn(float64(suspicionDelayInMS) / float64(1000.0))
 	}
 
-	person.AI.LowerSuspicion()
-	v.chaseCounter++
 	if v.chaseCounter > 20 || person.AI.SuspicionCounter == 0 {
 		person.AI.SuspicionCounter = 0
 		person.AI.PopState()
 		return NextUpdateIn(1)
 	}
+
+	v.chaseCounter++
 	return person.AI.Movement.Action(v.lastKnownLocation, v)
 }
 

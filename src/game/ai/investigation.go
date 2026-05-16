@@ -2,6 +2,7 @@ package ai
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/geometry"
@@ -18,6 +19,19 @@ func (i *InvestigationMovement) Status() core.ActorState { return core.ActorStat
 
 func (i *InvestigationMovement) NextAction() core.AIUpdate {
 	person := i.Person
+	engine := i.Engine
+
+	// Discard stale suspicious-sighting investigations (2 in-game hours old)
+	if i.Incident.Type.IsSuspiciousLocation() {
+		gameTime := engine.CurrentGameTime()
+		if gameTime.Sub(i.Incident.Time) > 2*time.Hour {
+			aic := engine.GetAI()
+			aic.MarkAsDone(person, i.Incident)
+			aic.UntrackInvestigation(i.Incident.Hash())
+			person.AI.PopState()
+			return NextUpdateIn(0.3)
+		}
+	}
 	return person.AI.Movement.Action(i.Incident.Location, i)
 }
 
@@ -35,7 +49,7 @@ func (i *InvestigationMovement) OnDestinationReached() core.AIUpdate {
 	if i.Incident.Type.IsContact() {
 		if person.AI.Knowledge.LastSightingOfDangerous.Location == i.Incident.Location {
 			person.AI.Knowledge.LastSightingOfDangerous.HandledByMe = true
-			person.AI.Knowledge.LastSightingOfDangerous.Tick = 0
+			person.AI.Knowledge.LastSightingOfDangerous.Time = time.Time{}
 		}
 		println(fmt.Sprintf("%s FINISHED HANDLING contact. Could not confirm sighting of '%s'", person.Name, i.Incident.Type))
 	} else if i.Incident.Type.IsEnvironmentalToggle() {
@@ -52,6 +66,7 @@ func (i *InvestigationMovement) OnDestinationReached() core.AIUpdate {
 		}
 	}
 	aic.MarkAsDone(person, i.Incident)
+	aic.UntrackInvestigation(i.Incident.Hash())
 	person.AI.PopState()
 	return NextUpdateIn(0.5)
 }

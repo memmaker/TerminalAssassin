@@ -15,10 +15,6 @@ func (u *GuardMovement) OnDestinationReached() core.AIUpdate {
 	ai := u.Person.AI
 	aic := u.Engine.GetAI()
 	u.Person.LookDirection = ai.StartLookDirection
-	if aic.IncidentsNeedCleanup(u.Person) && u.Person.Type == core.ActorTypeGuard {
-		aic.SwitchToCleanup(u.Person)
-		return NextUpdateIn(rng.R.Float64() + 1.0)
-	}
 	aic.UpdateVision(u.Person)
 	return NextUpdateIn(rng.R.Float64() + 1.0)
 }

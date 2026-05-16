@@ -13,6 +13,7 @@ type CombatMovement struct {
 	isAimingAt        geometry.Point
 	LastKnownPosition *geometry.Point
 	stepCounter       int
+	noShotCounter     int // ticks where target is visible but shot is blocked
 }
 
 func (t *CombatMovement) Status() core.ActorState { return core.ActorStatusCombat }
@@ -28,7 +29,7 @@ func (t *CombatMovement) OnCannotReachDestination() core.AIUpdate {
 func (t *CombatMovement) NextAction() core.AIUpdate {
 	person := t.Person
 	aic := t.Engine.GetAI()
-	if t.Target.IsDowned() || !person.EquipWeapon() || t.stepCounter > 50 {
+	if t.Target.IsDowned() || !person.EquipWeapon() || t.stepCounter > 50 || t.noShotCounter > 30 {
 		t.exitCombat(person)
 		return NextUpdateIn(0.4)
 	}
@@ -37,30 +38,37 @@ func (t *CombatMovement) NextAction() core.AIUpdate {
 	if person.CanSeeActor(t.Target) && currentMap.IsPathPassableForProjectile(person.Pos(), t.Target.Pos()) {
 		targetPosition := t.Target.Pos()
 		t.LastKnownPosition = &targetPosition
+		t.noShotCounter = 0
 		return t.handleFiring(person, aic)
 	}
 	if person.CanSeeActor(t.Target) {
 		targetPosition := t.Target.Pos()
 		t.LastKnownPosition = &targetPosition
 		t.stepCounter = 0
+		t.noShotCounter++
 	} else {
 		t.stepCounter++
+		t.noShotCounter = 0
 	}
 	return person.AI.Movement.Action(currentMap.GetRandomFreeNeighbor(*t.LastKnownPosition), t)
 }
 
 // exitCombat cleans up the combat state.
-// - Scheduled actors are reset directly to ScheduledMovement.
-// - Unscheduled actors return to their spawn position and initial look direction.
+// Pops Combat, then pushes Investigation for the last known position so the
+// guard searches where the target was last seen (§5).
 func (t *CombatMovement) exitCombat(person *core.Actor) {
 	ai := person.AI
+	aic := t.Engine.GetAI()
 	ai.PopState()
 
-	if !person.AI.HasSchedule() {
-		aic := t.Engine.GetAI()
-		aic.PushGotoWithCall(person, ai.StartPosition, func() {
-			person.LookDirection = ai.StartLookDirection
-		})
+	if t.LastKnownPosition != nil && !person.IsInvestigating() {
+		lkp := *t.LastKnownPosition
+		report := core.IncidentReport{
+			Type:     core.ObservationCombatSeen,
+			Location: lkp,
+			Time:     t.Engine.CurrentGameTime(),
+		}
+		aic.SwitchToInvestigation(person, report)
 	}
 }
 

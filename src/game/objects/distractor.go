@@ -92,10 +92,9 @@ func (r *ZoneDistractor) tryToDistract(m services.Engine) {
         if target == nil {
             return
         }
-        aic := m.GetAI()
+		aic := m.GetAI()
 
-		report := aic.ReportIncident(target, r.Pos(), core.ObservationDeviceDistraction)
-		aic.SwitchToInvestigation(target, report)
+		aic.SwitchToInvestigation(target, core.IncidentReport{Type: core.ObservationDeviceDistraction, Location: r.Pos(), Time: m.CurrentGameTime()})
 
         m.Schedule(60*5, func() {
             r.tryToDistract(m)

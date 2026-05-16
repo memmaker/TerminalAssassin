@@ -113,6 +113,7 @@ const (
 	ActorStatusPanic              ActorState = "panic"
 	ActorStatusSnitching          ActorState = "snitching"
 	ActorStatusFrenzy             ActorState = "frenzy"
+	ActorStatusAlarmRun           ActorState = "alarm run"
 	ActorStatusPlayerControlled   ActorState = "player"
 )
 
@@ -188,6 +189,7 @@ type Actor struct {
 	IsBodyBagged     bool
 	IsNauseous       bool
 	IsTarget         bool
+	StepsTaken       uint64 // total steps ever taken by this actor
 }
 type OrientedLocation struct {
 	Location  geometry.Point
@@ -196,61 +198,23 @@ type OrientedLocation struct {
 
 type IndividualKnowledge struct {
 	LastSightingOfDangerous IncidentReport
-	Incidents               []IncidentReport
 }
 
-func (k *IndividualKnowledge) AddDangerousSighting(witness, dangerMan *Actor, obs Observation, tick uint64) {
-	first := k.LastSightingOfDangerous.Tick == 0
-	k.LastSightingOfDangerous = IncidentReport{Location: dangerMan.Pos(), Type: obs, Tick: tick}
+func (k *IndividualKnowledge) AddDangerousSighting(witness, dangerMan *Actor, obs Observation, gameTime time.Time) {
+	first := k.LastSightingOfDangerous.Time.IsZero()
+	k.LastSightingOfDangerous = IncidentReport{Location: dangerMan.Pos(), Type: obs, Time: gameTime}
 	if first {
 		println(fmt.Sprintf("%s saw a hostile person doing '%s' at %s", witness.DebugDisplayName(), obs, dangerMan.Pos()))
 	}
 }
 
-func (k *IndividualKnowledge) AddIncident(report IncidentReport) {
-	for i, existing := range k.Incidents {
-		if existing.Hash() == report.Hash() {
-			if !existing.HandledByMe {
-				k.Incidents[i].Tick = report.Tick
-			}
-			return
-		}
-	}
-	k.Incidents = append(k.Incidents, report)
-}
-
-func (k *IndividualKnowledge) MarkHandled(hash string) {
-	for i, r := range k.Incidents {
-		if r.Hash() == hash {
-			k.Incidents[i].HandledByMe = true
-			return
-		}
-	}
-}
-
-func (k *IndividualKnowledge) RemoveIncident(hash string) {
-	for i, r := range k.Incidents {
-		if r.Hash() == hash {
-			k.Incidents = append(k.Incidents[:i], k.Incidents[i+1:]...)
-			return
-		}
-	}
-}
-
-func (k *IndividualKnowledge) GetUnhandledIncident(filter func(IncidentReport) bool) (IncidentReport, bool) {
-	for _, r := range k.Incidents {
-		if !r.HandledByMe && filter(r) {
-			return r, true
-		}
-	}
-	return EmptyReport, false
-}
 
 type AIComponent struct {
 	PathBlockedCount    int
 	Knowledge           *IndividualKnowledge
 	Schedule            string // name of the schedule in GridMap.AllSchedules
 	CurrentTaskIndex    int    // index into the named schedule's Tasks slice
+	IsAlerted           bool   // set when guard processes a dangerous sighting; persists for the mission
 	stateStack          []AIStateHandler
 	StartPosition       geometry.Point
 	StartLookDirection  float64
@@ -454,6 +418,7 @@ func (a *Actor) IsInvestigating() bool { return a.Status() == ActorStatusInvesti
 func (a *Actor) IsFollowing() bool     { return a.Status() == ActorStatusFollowing }
 func (a *Actor) IsInCombat() bool      { return a.Status() == ActorStatusCombat }
 func (a *Actor) IsFrenzied() bool      { return a.Status() == ActorStatusFrenzy }
+func (a *Actor) IsInAlarmRun() bool    { return a.Status() == ActorStatusAlarmRun }
 func (a *Actor) IsDead() bool          { return a.Dead }
 func (a *Actor) IsAlive() bool         { return !a.Dead }
 
@@ -522,7 +487,12 @@ func (a *Actor) MoveDelay() AIMoveDelay {
 		return MoveDelayRunning
 	case a.Status() == ActorStatusSnitching:
 		return MoveDelayRunning
+	case a.Status() == ActorStatusAlarmRun:
+		return MoveDelayRunning
 	default:
+		if a.AI != nil && a.AI.IsAlerted {
+			return MoveDelayWalking * 0.8 // ~20% faster when alerted
+		}
 		return MoveDelayWalking
 	}
 }
@@ -956,7 +926,9 @@ func (a *Actor) DebugDisplayName() string {
 }
 
 func (a *Actor) IsAvailableGuard() bool {
-	return a.Type == ActorTypeGuard && a.IsActive() && !a.IsInCombat()
+	s := a.Status()
+	return a.Type == ActorTypeGuard && a.IsActive() && !a.IsInCombat() &&
+		s != ActorStatusAlarmRun && s != ActorStatusCleanup
 }
 
 func (a *Actor) IsPlayer() bool {

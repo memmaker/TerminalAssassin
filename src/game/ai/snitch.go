@@ -3,8 +3,7 @@ package ai
 import (
 	"fmt"
 	"math"
-
-	"github.com/hajimehoshi/ebiten/v2"
+	"time"
 
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/geometry"
@@ -12,7 +11,8 @@ import (
 
 type SnitchMovement struct {
 	AIContext
-	KnownGuard *core.Actor
+	KnownGuard       *core.Actor
+	failedReplanCount int
 }
 
 func (s *SnitchMovement) Status() core.ActorState { return core.ActorStatusSnitching }
@@ -53,9 +53,8 @@ func (s *SnitchMovement) NextAction() core.AIUpdate {
 }
 
 func (s *SnitchMovement) nothingToTell() bool {
-	currentTick := s.Engine.CurrentInGameTick()
 	sighting := s.Person.AI.Knowledge.LastSightingOfDangerous
-	return sighting.Tick == 0 || sighting.HandledByMe || currentTick-sighting.Tick >= uint64(120*ebiten.TPS())
+	return sighting.Time.IsZero() || sighting.HandledByMe || s.Engine.CurrentGameTime().Sub(sighting.Time) >= 2*time.Hour
 }
 
 func (s *SnitchMovement) hasGuardLocation() bool {
@@ -78,8 +77,13 @@ func (s *SnitchMovement) OnDestinationReached() core.AIUpdate {
 	if s.trySnitching() {
 		return NextUpdateIn(2)
 	}
-	// Snitching failed (guard moved away) — replan to nearest available guard
+	// Snitching failed (guard moved away) — replan to next nearest guard
 	s.KnownGuard = nil
+	s.failedReplanCount++
+	if s.failedReplanCount >= 3 {
+		s.noGuards()
+		return NextUpdateIn(0.1)
+	}
 	if !s.hasGuardLocation() {
 		s.noGuards()
 		return NextUpdateIn(0.1)
