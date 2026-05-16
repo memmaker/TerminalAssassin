@@ -68,6 +68,9 @@ Name: light window (closed)
 ObjectAt: (22,73)
 Name: light window (closed)
 
+ObjectAt: (25,14)
+Name: alarm
+
 ObjectAt: (25,63)
 Name: light window (closed)
 
@@ -142,6 +145,9 @@ Name: water barrel (liquid container)
 ObjectAt: (37,89)
 Name: light door (open)
 Difficulty: easy
+
+ObjectAt: (38,88)
+Name: alarm
 
 ObjectAt: (41,35)
 Name: light window (closed)

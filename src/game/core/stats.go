@@ -57,11 +57,12 @@ type ObjectSighting struct {
 }
 
 type MissionStats struct {
-	SecondsNeeded float64
-	Kills         []KillStatistics
-	Photos        []PhotoMetadata
-	BodiesFound   bool
-	BeenSpotted   bool
+	SecondsNeeded  float64
+	Kills          []KillStatistics
+	Photos         []PhotoMetadata
+	BodiesFound    bool
+	BeenSpotted    bool
+	AlarmTriggered bool
 }
 
 func NewMissionStats() *MissionStats {
@@ -145,5 +146,6 @@ func (m *MissionStats) StartMission() {
     m.SecondsNeeded = 0
     m.BodiesFound = false
     m.BeenSpotted = false
+    m.AlarmTriggered = false
     m.Kills = []KillStatistics{}
 }

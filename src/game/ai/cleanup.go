@@ -1,8 +1,6 @@
 package ai
 
 import (
-	"fmt"
-
 	"github.com/memmaker/terminal-assassin/game/core"
 	"github.com/memmaker/terminal-assassin/game/stimuli"
 )
@@ -52,6 +50,9 @@ func (c *CleanupMovement) dropOffItems() {
 
 func (c *CleanupMovement) OnCannotReachDestination() core.AIUpdate {
 	person := c.Person
+	if c.currentIncident != core.EmptyReport {
+		c.Engine.GetAI().UntrackCleanup(c.currentIncident.Hash())
+	}
 	person.AI.PopState()
 	return NextUpdateIn(0.1)
 }
@@ -59,23 +60,14 @@ func (c *CleanupMovement) OnCannotReachDestination() core.AIUpdate {
 func (c *CleanupMovement) NextAction() core.AIUpdate {
 	person := c.Person
 
-	if person.IsDraggingBody() {
+	if len(c.securedItems) > 0 || person.IsDraggingBody() {
 		return c.gotoDropoff()
 	}
-
-	if c.noMoreCleaningTasks() {
-		if len(c.securedItems) > 0 || person.IsDraggingBody() {
-			return c.gotoDropoff()
-		} else {
-			person.AI.PopState()
-			return NextUpdateIn(0.1)
-		}
+	if c.currentIncident != core.EmptyReport && !c.cleaningIsDone {
+		return person.AI.Movement.Action(c.currentIncident.Location, c)
 	}
-	return person.AI.Movement.Action(c.currentIncident.Location, c)
-}
-
-func (c *CleanupMovement) noMoreCleaningTasks() bool {
-	return (c.currentIncident == core.EmptyReport || c.cleaningIsDone) && !c.tryAcquireNewCleanupTask()
+	person.AI.PopState()
+	return NextUpdateIn(0.1)
 }
 
 func (c *CleanupMovement) gotoDropoff() core.AIUpdate {
@@ -94,20 +86,11 @@ func (c *CleanupMovement) gotoDropoff() core.AIUpdate {
 	return person.AI.Movement.Action(dropOffLocation, c)
 }
 
-func (c *CleanupMovement) tryAcquireNewCleanupTask() bool {
-	person := c.Person
-	aic := c.Engine.GetAI()
-	incident := aic.GetIncidentForCleanup(person)
-	if incident == core.EmptyReport {
-		return false
-	}
-	c.currentIncident = incident
-	c.cleaningIsDone = false
-	println(fmt.Sprintf("%s aims to clean up %s at %s", person.Name, incident.Type, incident.Location))
-	return true
-}
-
 func (c *CleanupMovement) performCleanup() core.AIUpdate {
+	if c.currentIncident == core.EmptyReport {
+		c.Person.AI.PopState()
+		return NextUpdateIn(0.1)
+	}
 	person := c.Person
 	aic := c.Engine.GetAI()
 	game := c.Engine.GetGame()
@@ -118,24 +101,28 @@ func (c *CleanupMovement) performCleanup() core.AIUpdate {
 		aic.SetEngrossed(person, until)
 		c.Engine.GetAnimator().ActorEngagedAnimation(person, 'c', c.currentIncident.Location, 3.0, func() {
 			game.GetMap().RemoveStimulusFromTile(c.currentIncident.Location, stimuli.StimulusBlood)
-			aic.MarkAsCleaned(person, c.currentIncident)
+			c.Engine.GetAI().UntrackCleanup(c.currentIncident.Hash())
 			c.cleaningIsDone = true
 		})
 		return DeferredUpdate(func() bool {
 			return c.cleaningIsDone
 		})
 	} else if c.currentIncident.Type == core.ObservationWeaponFound || c.currentIncident.Type == core.ObservationMineFound {
-		itemAt := game.GetMap().ItemAt(c.currentIncident.Location)
-		if itemAt != nil {
+		isItemAt := game.GetMap().IsItemAt(c.currentIncident.Location)
+		if isItemAt {
+			itemAt := game.GetMap().ItemAt(c.currentIncident.Location)
 			game.PickUpItemAt(person, c.currentIncident.Location)
 			c.securedItems = append(c.securedItems, itemAt)
 		}
 		return c.cleanupCompleted()
 	} else if c.currentIncident.Type == core.ObservationBodyFound {
-		body := game.GetMap().DownedActorAt(c.currentIncident.Location)
-		if body != nil {
-			person.DraggedBody = body
-			body.IsBodyBagged = true
+		isBodyAt := game.GetMap().IsDownedActorAt(c.currentIncident.Location)
+		if isBodyAt {
+			body := game.GetMap().DownedActorAt(c.currentIncident.Location)
+			if !body.IsAlive() {
+				person.DraggedBody = body
+				body.IsBodyBagged = true
+			}
 		}
 		return c.cleanupCompleted()
 	}
@@ -144,8 +131,7 @@ func (c *CleanupMovement) performCleanup() core.AIUpdate {
 }
 
 func (c *CleanupMovement) cleanupCompleted() core.AIUpdate {
-	aic := c.Engine.GetAI()
 	c.cleaningIsDone = true
-	aic.MarkAsCleaned(c.Person, c.currentIncident)
+	c.Engine.GetAI().UntrackCleanup(c.currentIncident.Hash())
 	return NextUpdateIn(0.3)
 }

@@ -16,14 +16,10 @@ type Movement struct {
 }
 
 // passableForPerson returns a passable predicate that wraps the base safety
-// check. For actors in their default state it additionally rejects tiles that
-// hold a visible (unburied) mine.
+// check. All actors avoid visible (unburied) mines.
 func (m *Movement) passableForPerson() func(geometry.Point) bool {
 	currentMap := m.Engine.GetGame().GetMap()
 	base := currentMap.CurrentlyPassableAndSafeForActor(m.Person)
-	if !m.Person.IsInDefaultState() {
-		return base
-	}
 	return func(p geometry.Point) bool {
 		if !base(p) {
 			return false

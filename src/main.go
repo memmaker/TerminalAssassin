@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"math"
 	"os"
+	"time"
 
 	"log"
 
@@ -476,6 +477,10 @@ func (g *ConsoleEngine) GetAnimator() services.AnimationInterface {
 }
 func (g *ConsoleEngine) CurrentInGameTick() uint64 {
 	return g.InGameTicks
+}
+
+func (g *ConsoleEngine) CurrentGameTime() time.Time {
+	return g.Model.GetMap().TimeOfDay
 }
 
 func (g *ConsoleEngine) CurrentRawTick() uint64 {

@@ -2,7 +2,6 @@ package ai
 
 import (
 	"github.com/memmaker/terminal-assassin/game/core"
-	"github.com/memmaker/terminal-assassin/rng"
 )
 
 type ScheduledMovement struct {
@@ -12,12 +11,6 @@ type ScheduledMovement struct {
 func (s *ScheduledMovement) Status() core.ActorState { return core.ActorStatusOnSchedule }
 
 func (s *ScheduledMovement) NextAction() core.AIUpdate {
-	aic := s.Engine.GetAI()
-	if aic.IncidentsNeedCleanup(s.Person) && s.Person.Type == core.ActorTypeGuard {
-		aic.SwitchToCleanup(s.Person)
-		return NextUpdateIn(rng.R.Float64() + 1.0)
-	}
-
 	schedule := s.Engine.GetGame().GetMap().GetSchedule(s.Person.AI.Schedule)
 	if schedule == nil || len(schedule.Tasks) == 0 {
 		return NextUpdateIn(5)

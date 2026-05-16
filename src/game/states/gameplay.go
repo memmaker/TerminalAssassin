@@ -260,6 +260,11 @@ func (g *GameStateGameplay) Init(engine services.Engine) {
 		g.UpdateStatusLine()
 		return true
 	}))
+	g.engine.SubscribeToEvents(services.NewFilter(func(_ services.AlarmTriggeredEvent) bool {
+		stats.AlarmTriggered = true
+		g.UpdateStatusLine()
+		return true
+	}))
 	g.engine.SubscribeToEvents(services.NewFilter(func(e services.ActorKilledEvent) bool {
 		stats.AddKill(e.Victim, e.CauseOfDeath, e.Position, utils.UTicksToSeconds(g.engine.CurrentInGameTick()))
 		return true
@@ -886,7 +891,7 @@ func (g *GameStateGameplay) Draw(con console.CellInterface) {
 				icon, style = m.DrawMapAtPosition(p, c)
 				style = m.ApplyLighting(p, c, style)
 				style = style.Desaturate()
-				style = style.Darken(0.5)
+				style = style.Darken(core.CurrentTheme.OutOfFOVDarken)
 			}
 			posRelativeToPlayer := p.Sub(player.Pos())
 			if action, isActionAtPos := g.ActionMap[posRelativeToPlayer]; isActionAtPos {
@@ -990,6 +995,12 @@ func (g *GameStateGameplay) UpdateStatusLine() {
 			challengeInformation += "@rB@N"
 		} else {
 			challengeInformation += "@gB@N"
+		}
+
+		if stats.AlarmTriggered {
+			challengeInformation += "@rA@N"
+		} else {
+			challengeInformation += "@gA@N"
 		}
 
 	}

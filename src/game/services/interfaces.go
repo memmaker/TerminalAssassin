@@ -37,6 +37,13 @@ type Object interface {
 	EncodeAsString() string
 }
 
+// AlarmDevice is implemented by alarm objects that guards can run to and trigger.
+type AlarmDevice interface {
+	IsActiveAlarm() bool
+	TriggerAlarm(engine Engine, sightingLocation geometry.Point)
+	SilenceAlarm()
+}
+
 type KeyBound interface {
 	GetKey() string
 	SetKey(key string)
@@ -251,14 +258,17 @@ type AIInterface interface {
 	IsControlledByAI(a *core.Actor) bool
 
 	SwitchToInvestigation(person *core.Actor, incidentReport core.IncidentReport)
+	UntrackInvestigation(hash string)
+	UntrackCleanup(hash string)
 	SwitchToCombat(person *core.Actor, target *core.Actor)
 	SwitchToVomit(person *core.Actor)
 	SwitchToFrenzy(person *core.Actor)
 	SwitchToSnitch(person *core.Actor)
-	SwitchToCleanup(person *core.Actor)
 	SwitchToPanic(person *core.Actor, dangerLocations []geometry.Point)
 	SwitchToWait(actor *core.Actor)
+	SwitchToAlarmRun(person *core.Actor, incident core.IncidentReport)
 	SwitchStateBecauseOfNewKnowledge(person *core.Actor)
+	SetAlerted(person *core.Actor)
 
 	PushGotoWithCall(person *core.Actor, destination geometry.Point, callOnArrival func())
 
@@ -266,7 +276,8 @@ type AIInterface interface {
 	CalculateAllTaskPaths(person *core.Actor)
 	TaskCountFor(actor *core.Actor) int
 
-	ReportIncident(person *core.Actor, location geometry.Point, incidentType core.Observation) core.IncidentReport
+	HandleIncident(person *core.Actor, report core.IncidentReport)
+	SwitchToWatch(person *core.Actor, target *core.Actor, report core.IncidentReport)
 	IsNearActiveIllegalIncident(person *core.Actor, location geometry.Point) bool
 	MoveOnPath(person *core.Actor) core.AIUpdate
 	PathSet(person *core.Actor, point geometry.Point, passable func(point geometry.Point) bool) bool
@@ -277,11 +288,7 @@ type AIInterface interface {
 	RaiseSuspicionAt(witness *core.Actor, suspiciousActor *core.Actor, delayInMS int)
 
 	TransferKnowledge(one *core.Actor, two *core.Actor)
-	IncidentsNeedCleanup(person *core.Actor) bool
-	GetIncidentForCleanup(person *core.Actor) core.IncidentReport
-	MarkAsCleaned(person *core.Actor, incident core.IncidentReport)
 	IsGuardAvailable() bool
-	GetDangerousIncidents(person *core.Actor) []core.IncidentReport
 
 	Update()
 	SwitchToScript(target *core.Actor)
@@ -289,6 +296,7 @@ type AIInterface interface {
 	SetEngrossed(person *core.Actor, until func() bool)
 	CreateTravelGroup(group mapset.Set[*core.Actor])
 	DeleteTravelGroup(group mapset.Set[*core.Actor])
+	SyncKnowledgeIfDue(person *core.Actor)
 }
 
 type FileInterface interface {
@@ -370,6 +378,7 @@ type Engine interface {
 	SaveOptions()
 	CurrentInGameTick() uint64
 	CurrentRawTick() uint64
+	CurrentGameTime() time.Time
 	ResetForGameplay()
 	PublishEvent(event GameEvent)
 	// SubscribeToEvents is meant to be used together with objects.NewFilter
