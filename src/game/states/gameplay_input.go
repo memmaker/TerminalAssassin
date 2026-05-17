@@ -251,21 +251,24 @@ func (g *GameStateGameplay) AdjustPlayerAimFromPad(xAxis float64, yAxis float64)
 		return
 	}
 
-	// Bow uses a different aiming model: no position accumulation.
-	if player.EquippedItem.Type == core.ItemTypeBow {
-		g.aimBowFromPad(player, xAxis, yAxis)
-		return
-	}
-
 	if g.Ui.ID != aimingUIState.ID {
-		// Entering aim mode: mirror what BeginMouseAiming does for keyboard/mouse.
+		g.padAimPos = player.Pos().ToPointF()
 		g.Ui = aimingUIState
 		g.padAimActive = true
-		g.padAimPos = player.Pos().ToPointF()
 		if player.EquippedItem != nil && player.EquippedItem.Type.HasScope() {
 			player.FovMode = gridmap.FoVModeScoped
 			currentMap.UpdateFieldOfView(player)
 		}
+	}
+
+	// Bow and flashlight use direct direction aiming: no position accumulation.
+	if player.EquippedItem.Type == core.ItemTypeBow {
+		g.aimBowFromPad(player, xAxis, yAxis)
+		return
+	}
+	if player.EquippedItem.Type == core.ItemTypeFlashlight {
+		g.aimFlashlightFromPad(player, xAxis, yAxis)
+		return
 	}
 
 	g.padAimPos.X += xAxis * aimSpeed
@@ -308,11 +311,6 @@ const maxBowLosLength = 5 // tiles shown in LoS indicator at full stick deflecti
 // Its length is stick-magnitude × maxBowLosLength (always ≤ 5 tiles).
 // The raw stick vector is stored so the release can fire in the opposite direction.
 func (g *GameStateGameplay) aimBowFromPad(player *core.Actor, xAxis, yAxis float64) {
-	if g.Ui.ID != aimingUIState.ID {
-		g.Ui = aimingUIState
-		g.padAimActive = true
-	}
-
 	magnitude := math.Sqrt(xAxis*xAxis + yAxis*yAxis)
 	losLength := int(math.Round(magnitude * maxBowLosLength))
 	if losLength < 1 {
@@ -325,6 +323,13 @@ func (g *GameStateGameplay) aimBowFromPad(player *core.Actor, xAxis, yAxis float
 	g.bowPullDir = geometry.PointF{X: xAxis, Y: yAxis}
 	g.bowLoSEnd = aimTarget
 
+	g.AdjustPlayerAim(aimTarget)
+}
+
+// aimFlashlightFromPad points the flashlight directly in the stick direction.
+// No position accumulation — the beam always follows the raw stick angle.
+func (g *GameStateGameplay) aimFlashlightFromPad(player *core.Actor, xAxis, yAxis float64) {
+	aimTarget := player.Pos().ToPointF().Add(geometry.PointF{X: xAxis, Y: yAxis}.Mul(float64(6))).ToPoint()
 	g.AdjustPlayerAim(aimTarget)
 }
 
@@ -415,6 +420,17 @@ func (g *GameStateGameplay) aimInLookDirection() {
 	dy := math.Sin(radians)
 	target := geometry.VectorInDirectionWithLength(player.FoVSource(), dx, dy, player.AimDistance())
 	g.AdjustPlayerAim(target)
+}
+
+// lookInAimDirection sets LookDirection to face the current aim target (last
+// point of TargetLoS). Analogous to aimInLookDirection but in reverse.
+func (g *GameStateGameplay) lookInAimDirection() {
+	if len(g.TargetLoS) == 0 {
+		return
+	}
+	player := g.engine.GetGame().GetMap().Player
+	aimPoint := g.TargetLoS[len(g.TargetLoS)-1]
+	player.LookDirection = geometry.DirectionVectorToAngleInDegrees(aimPoint.Sub(player.Pos()))
 }
 
 func (g *GameStateGameplay) setAimFromPeekDirection(direction geometry.Point) {

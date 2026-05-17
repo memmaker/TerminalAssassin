@@ -1081,7 +1081,6 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) IterAllLights(f func(p geomet
 func (m *GridMap[ActorType, ItemType, ObjectType]) onStimAdded(p geometry.Point, s stimuli.Stimulus) {
 	if s.Type() == stimuli.StimulusFire {
 		m.AddDynamicLightSource(p, &LightSource{Pos: p, Color: common.RGBAColor{R: 2.0, G: 0.4, B: 0.0, A: 1.0}, Radius: 3, MaxIntensity: 4})
-		m.DynamicLightsChanged = true
 	}
 }
 
@@ -1093,7 +1092,7 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) onStimRemoved(p geometry.Poin
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) RemoveDynamicLightAt(p geometry.Point) {
 	delete(m.DynamicLights, p)
-	m.UpdateDynamicLights()
+	m.DynamicLightsChanged = true
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) GetNearestDropOffPosition(pos geometry.Point) geometry.Point {

@@ -11,6 +11,7 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) AddDynamicLightSource(pos geo
 		return
 	}
 	m.DynamicLights[pos] = light
+	m.DynamicLightsChanged = true
 }
 
 // AddBakedLightSource adds a light source to the map. It will automatically call UpdateBakedLights and UpdateDynamicLights.
@@ -44,7 +45,7 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) MoveLightSource(lightSource *
 	delete(m.DynamicLights, lightSource.Pos)
 	lightSource.Pos = to
 	m.DynamicLights[to] = lightSource
-	m.UpdateDynamicLights()
+	m.DynamicLightsChanged = true
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) LightAt(p geometry.Point) common.Color {

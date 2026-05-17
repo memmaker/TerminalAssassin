@@ -56,13 +56,20 @@ type TargetedItemAction func(source *core.Actor, item *core.Item, target geometr
 
 func (g *ActionProvider) meleeAttack(source *core.Actor, item *core.Item, target geometry.Point) {
 	m := g.engine.GetGame()
-	m.IllegalActionAt(source.Pos(), core.ObservationCombatSeen)
-	g.TryFeedbackForImpact("flesh_hit", source.Pos(), target, 5)
-	m.SendTriggerStimuli(source, item, target, core.TriggerOnMeleeAttack)
+	currentMap := m.GetMap()
 	if item.Type.CooldownSecs() > 0 {
 		item.OnCooldown = true
 		g.engine.Schedule(item.Type.CooldownSecs(), func() { item.OnCooldown = false })
 	}
+	if currentMap.IsActorAt(target) {
+		actorAtTarget := currentMap.ActorAt(target)
+		if actorAtTarget == source {
+			return
+		}
+		m.IllegalActionAt(source.Pos(), core.ObservationCombatSeen)
+		g.TryFeedbackForImpact("flesh_hit", source.Pos(), target, 5)
+	}
+	m.SendTriggerStimuli(source, item, target, core.TriggerOnMeleeAttack)
 }
 
 func (g *ActionProvider) toolUsage(source *core.Actor, item *core.Item, target geometry.Point) {

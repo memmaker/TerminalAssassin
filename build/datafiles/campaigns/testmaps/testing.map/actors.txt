@@ -1,0 +1,6 @@
+Name: Tim
+ActorType: guard
+Team: 
+Position: (17,8)
+LookDirection: 0.00
+

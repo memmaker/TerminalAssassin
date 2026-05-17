@@ -257,6 +257,8 @@ func (s EffectSource) ToCoDFromPiercingDamage() CoDDescription {
 			return CoDPenetrated
 		case ItemTypeKnife:
 			return CoDStabbed
+		case ItemTypeKatana:
+			return CoDKatana
 		default:
 			return CoDDescription("pierced by %s")
 		}

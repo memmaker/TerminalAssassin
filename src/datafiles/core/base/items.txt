@@ -133,6 +133,13 @@ projectile_range: 8
 trigger_effects: PiercingTrigger(50)
 loot_value: 100
 
+name: Katana
+icon: Ɨ
+type: katana
+projectile_range: 6
+trigger_effects: PiercingTrigger(80)
+loot_value: 200
+
 name: Scissors
 icon: ʵ
 type: melee_sharp

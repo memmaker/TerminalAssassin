@@ -1,0 +1,105 @@
+ItemAt: (1,2)
+Name: Smoke Grenade
+
+ItemAt: (1,3)
+Name: Poison (lethal)
+
+ItemAt: (1,5)
+Name: Poison (emetic)
+
+ItemAt: (1,7)
+Name: Poison (sleep)
+
+ItemAt: (11,0)
+Name: Flashlight
+
+ItemAt: (11,5)
+Name: Cigarette
+
+ItemAt: (13,0)
+Name: Lockpick
+
+ItemAt: (14,0)
+Name: Lockpick (electronic)
+
+ItemAt: (16,0)
+Name: Shovel
+
+ItemAt: (17,0)
+Name: Camera
+
+ItemAt: (18,11)
+Name: Gasoline Can
+
+ItemAt: (19,0)
+Name: Coin
+
+ItemAt: (2,1)
+Name: Grenade (sleep poison)
+
+ItemAt: (2,9)
+Name: Cloth
+
+ItemAt: (21,0)
+Name: Pistol (silenced)
+
+ItemAt: (21,2)
+Name: Bow
+
+ItemAt: (23,0)
+Name: Sniper Rifle (silenced)
+
+ItemAt: (25,0)
+Name: Dart Gun (sleep)
+
+ItemAt: (27,0)
+Name: Dart Gun (emetic)
+
+ItemAt: (28,10)
+Name: Gas Canister
+
+ItemAt: (28,11)
+Name: Gas Canister
+
+ItemAt: (29,0)
+Name: Dart Gun (frenzy)
+
+ItemAt: (3,2)
+Name: Grenade (lethal poison)
+
+ItemAt: (3,3)
+Name: Grenade (fragmentation)
+
+ItemAt: (3,5)
+Name: Bomb (remote)
+
+ItemAt: (3,7)
+Name: Taser (remote)
+
+ItemAt: (30,2)
+Name: Mine (proximity)
+
+ItemAt: (31,0)
+Name: Taser
+
+ItemAt: (31,2)
+Name: Mine (proximity)
+
+ItemAt: (31,2)
+Name: Trip Mine (lethal poison)
+
+ItemAt: (32,2)
+Name: Trip Mine (sleep poison)
+
+ItemAt: (5,0)
+Name: Wrench
+
+ItemAt: (7,0)
+Name: Fiber Wire
+
+ItemAt: (9,0)
+Name: Knife
+
+ItemAt: (9,1)
+Name: Katana
+
