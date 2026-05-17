@@ -5,6 +5,6 @@ MasterVolume: 0.20
 MusicVolume: 0.50
 SoundVolume: 0.80
 ShowHints: true
-ControllerMode: Keyboard & Mouse
+ControllerMode: Gamepad
 TextFont: 
 

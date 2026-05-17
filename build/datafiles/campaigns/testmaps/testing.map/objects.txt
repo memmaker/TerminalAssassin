@@ -1,0 +1,89 @@
+ObjectAt: (11,13)
+Name: lamp
+
+ObjectAt: (12,13)
+Name: oil drum (liquid container)
+
+ObjectAt: (13,13)
+Name: oil drum (liquid container)
+
+ObjectAt: (14,3)
+Name: lamp
+
+ObjectAt: (15,4)
+Name: light door (closed)
+Difficulty: easy
+
+ObjectAt: (16,5)
+Name: lamp
+
+ObjectAt: (17,11)
+Name: lamp
+
+ObjectAt: (17,13)
+Name: lamp
+
+ObjectAt: (21,11)
+Name: lamp
+
+ObjectAt: (21,3)
+Name: lamp
+
+ObjectAt: (21,5)
+Name: lamp
+
+ObjectAt: (26,10)
+Name: lamp
+
+ObjectAt: (26,11)
+Name: cage
+
+ObjectAt: (26,13)
+Name: lamp
+
+ObjectAt: (26,5)
+Name: alarm
+
+ObjectAt: (26,6)
+Name: lamp
+
+ObjectAt: (28,12)
+Name: lamp
+
+ObjectAt: (28,4)
+Name: lamp
+
+ObjectAt: (28,5)
+Name: water barrel (liquid container)
+
+ObjectAt: (28,6)
+Name: water barrel (liquid container)
+
+ObjectAt: (5,7)
+Name: lamp
+
+ObjectAt: (5,9)
+Name: lamp
+
+ObjectAt: (6,8)
+Name: light window (open)
+
+ObjectAt: (7,10)
+Name: drawers
+Difficulty: easy
+
+ObjectAt: (7,11)
+Name: lamp
+
+ObjectAt: (7,3)
+Name: lamp
+
+ObjectAt: (7,5)
+Name: a sink (liquid faucet)
+
+ObjectAt: (7,5)
+Name: lamp
+
+ObjectAt: (7,9)
+Name: radio (distractor)
+

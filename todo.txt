@@ -17,13 +17,14 @@
 
 ## Core Pillars
  - Every attack is telegraphed with a clear visual cue before it hits
- - Player can respond: block/parry OR dodge — but not always both
+ - Player can respond: block, parry OR dodge
  - Rhythm of attack → read → react creates satisfying flow
 
-## Attack Types (Enemy)
- - BLOCKABLE attack: enemy flashes white ◈ — player can parry, block or dodge
- - UNBLOCKABLE attack: enemy flashes red ✦ — MUST dodge (step to farther cell or dodge roll)
- - COMBO attack: series of blockable hits ending in an unblockable finisher
+## Melee Attack Types (Enemy)
+ - Enemies use attack patterns, that can be mixed and matched to create variety and challenge
+ - Default attack    : enemy flashes white — player can parry, block or dodge
+ - Unblockable attack: enemy flashes blue  — player can parry or dodge
+ - Unparriable attack: enemy flashes red   — player can only dodge
 
 ## Parry & Block
  - BLOCK: hold melee while enemy attacks → reduces damage, costs stamina (guard meter)

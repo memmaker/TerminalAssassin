@@ -374,8 +374,8 @@ func (g *ConsoleEngine) LayoutF(outsideWidth, outsideHeight float64) (screenWidt
 
 	g.Console.SetRenderParams(renderScale, offsetX, offsetY)
 	g.Input.SetRenderParams(
-		float64(g.Config.TileSize)*renderScale,
-		float64(g.Config.TileSize)*renderScale,
+		math.Ceil(float64(g.Config.TileSize)*renderScale),
+		math.Ceil(float64(g.Config.TileSize)*renderScale),
 		offsetX, offsetY,
 	)
 

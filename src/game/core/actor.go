@@ -79,6 +79,7 @@ const (
 	CoDShotGun           CoDDescription = "was struck by %s"
 	CoDAutoShot          CoDDescription = "heavy lead injection from %s"
 	CoDStabbed           CoDDescription = "stabbed with %s"
+	CoDKatana            CoDDescription = "cut down by %s"
 	CoDPenetrated        CoDDescription = "deadly penetration with %s"
 	CoDFalling           CoDDescription = "fell to his death"
 )
@@ -994,6 +995,10 @@ func (a *Actor) DisableDebugTrace() {
 
 func (a *Actor) TooltipText() string {
 	return fmt.Sprintf("%s / %s / %s", a.Name, a.Type, a.Status())
+}
+
+func (a *Actor) HasFlashlightEquipped() bool {
+	return a.EquippedItem != nil && a.EquippedItem.Type == ItemTypeFlashlight
 }
 
 type ActorOnDisk struct {

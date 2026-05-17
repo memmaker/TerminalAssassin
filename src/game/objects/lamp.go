@@ -126,6 +126,12 @@ func (l *Lamp) addLightToMap(m services.Engine) {
 		return // light already exists
 	}
 	currentMap := m.GetGame().GetMap()
+	// Adopt a pre-existing light at this position (e.g. loaded from dynamic_lights.txt)
+	// so that removeLightFromMap can remove it by pointer comparison.
+	if existing, ok := currentMap.DynamicLights[l.position]; ok {
+		l.lightSource = existing
+		return
+	}
 	l.lightSource = &gridmap.LightSource{
 		Pos:          l.position,
 		Radius:       7,

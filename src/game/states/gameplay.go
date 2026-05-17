@@ -95,16 +95,6 @@ type GameplayUIState struct {
 
 var defaultUIState, aimingUIState, examineUIState, lookUIState GameplayUIState
 
-func (g *GameStateGameplay) ToNormalUIState() {
-	g.Pager = nil
-	currentMap := g.engine.GetGame().GetMap()
-	currentMap.Player.FovMode = gridmap.FoVModeNormal
-	currentMap.Player.FoVShift = geometry.PointZero
-	currentMap.Player.InteractionShift = geometry.PointZero
-	g.Ui = defaultUIState
-	currentMap.UpdateFieldOfView(currentMap.Player)
-}
-
 func (g *GameStateGameplay) Init(engine services.Engine) {
 	g.engine = engine
 	game := g.engine.GetGame()
@@ -479,13 +469,14 @@ func (g *GameStateGameplay) updateContextActions() {
 }
 
 func (g *GameStateGameplay) playerMoved(oldPosition geometry.Point, newPosition geometry.Point) {
-	g.Ui = defaultUIState
 
 	defer g.UpdateHUD()
 
 	g.updatePlayerMovementMode(newPosition)
 
 	g.printTileContentsMessage(newPosition)
+
+	g.engine.GetGame().GetMap().UpdateDynamicLights()
 
 	borderSize := 4
 
@@ -720,7 +711,7 @@ func (g *GameStateGameplay) clearTooltip() {
 func (g *GameStateGameplay) scrollCameraForScope() {
 	game := g.engine.GetGame()
 	player := game.GetMap().Player
-	if player == nil || player.FovMode != gridmap.FoVModeScoped {
+	if player == nil || player.FovMode != gridmap.FoVModeScoped || player.HasFlashlightEquipped() {
 		return
 	}
 	if g.aimScrollTimer == 0 {
@@ -831,11 +822,23 @@ func (g *GameStateGameplay) playerMovementFromInput(pdelta geometry.Point) {
 		oldPos := player.Pos()
 		np := oldPos.Add(pdelta)
 		if currentMap.CurrentlyPassableForActor(player)(np) {
-			player.LookDirection = geometry.DirectionVectorToAngleInDegrees(pdelta)
-			g.resetPlayerState()
+			wasAiming := g.padAimActive
+			if !wasAiming {
+				player.LookDirection = geometry.DirectionVectorToAngleInDegrees(pdelta)
+				g.resetPlayerState()
+			}
 			m.MoveActor(player, np)
 			g.playerMoved(oldPos, np)
-			g.aimInLookDirection()
+			if wasAiming {
+				// iterate targetlos and move them too
+				for index, pos := range g.TargetLoS {
+					pos = pos.Add(pdelta)
+					g.TargetLoS[index] = pos
+				}
+			} else {
+				g.aimInLookDirection()
+			}
+
 		}
 	}
 	return
@@ -1130,7 +1133,7 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
 	case core.HolsterItem:
 		g.holsterItem(player)
 		g.UpdateHUD()
-	case core.UseRangedItem:
+	case core.PressFire:
 		if player.EquippedItem != nil && player.EquippedItem.Type == core.ItemTypeBow {
 			break
 		}
@@ -1154,13 +1157,13 @@ func (g *GameStateGameplay) handleCommand(command core.GameCommand) {
 		g.OpenPauseMenu()
 	case core.StopAiming:
 		if g.padAimActive {
-			if player.EquippedItem != nil && player.EquippedItem.Type == core.ItemTypeBow {
-				g.handleBowRelease()
-			} else {
-				g.resetPlayerState()
-				g.ensureWorldPosInView(player.Pos(), 4)
-				model.GetMap().UpdateFieldOfView(player)
-			}
+			g.resetPlayerState()
+			g.ensureWorldPosInView(player.Pos(), 4)
+			model.GetMap().UpdateFieldOfView(player)
+		}
+	case core.ReleaseFire:
+		if g.padAimActive && player.EquippedItem != nil && player.EquippedItem.Type == core.ItemTypeBow {
+			g.handleBowRelease()
 		}
 	case core.ToggleLookMode:
 		g.toggleLookMode()
@@ -1348,6 +1351,9 @@ func (g *GameStateGameplay) contextAction() {
 			continue
 		}
 		absPos := player.Pos().Add(dir)
+		if !currentMap.Contains(absPos) {
+			continue
+		}
 		if fallbackAction == nil {
 			fallbackDir, fallbackAction = dir, action
 		}
@@ -1497,7 +1503,7 @@ func (g *GameStateGameplay) playerUseItem() {
 	game := g.engine.GetGame()
 	currentMap := game.GetMap()
 	player := currentMap.Player
-	direction := player.FoVShift
+
 	actions := game.GetActions()
 
 	if !player.CanUseActions() {
@@ -1510,14 +1516,11 @@ func (g *GameStateGameplay) playerUseItem() {
 		return
 	}
 
-	targetPos := player.Pos()
-	if direction.X != 0 || direction.Y != 0 {
-		targetPos = player.Pos().Add(direction)
-	}
+	targetPos := player.FoVSource()
 
 	dist := geometry.DistanceManhattan(player.Pos(), targetPos)
 	isSelf := dist == 0
-	isMelee := dist == 1
+	isMelee := dist <= 2
 
 	if player.EquippedItem == nil {
 		if isMelee && currentMap.IsActorAt(targetPos) {
@@ -1545,6 +1548,14 @@ func (g *GameStateGameplay) playerUseItem() {
 		if player.EquippedItem.Type.MeleeDecreaseUses() {
 			player.EquippedItem.DecreaseUsesLeft()
 		}
+		// For melee weapons: Fall back to look direction when no peek is active.
+		direction := player.FoVShift
+		if direction.X == 0 && direction.Y == 0 {
+			radians := player.LookDirection * math.Pi / 180.0
+			direction = geometry.Point{X: int(math.Round(math.Cos(radians))), Y: int(math.Round(math.Sin(radians)))}
+			targetPos = player.Pos().Add(direction)
+		}
+
 		actions.UseEquippedItemForMelee(player, targetPos)
 	}
 
@@ -1792,9 +1803,9 @@ func (g *GameStateGameplay) updateFlashlight() {
 	currentMap := game.GetMap()
 	player := currentMap.Player
 
-	flashlightActive := player.EquippedItem != nil &&
+	flashlightActive := (player.EquippedItem != nil &&
 		player.EquippedItem.Type == core.ItemTypeFlashlight &&
-		player.FovMode == gridmap.FoVModeScoped
+		player.FovMode == gridmap.FoVModeScoped) && len(g.TargetLoS) > 0
 
 	if !flashlightActive {
 		// Remove the light if it was previously placed.
@@ -1804,20 +1815,20 @@ func (g *GameStateGameplay) updateFlashlight() {
 		return
 	}
 
-	if len(g.TargetLoS) == 0 {
-		return
-	}
-
 	// Reuse TargetLoS from AdjustPlayerAim – same path the sniper scope uses.
 	aimPoint := g.TargetLoS[len(g.TargetLoS)-1]
-
+	changed := false
 	if currentMap.IsDynamicLightSource(g.flashlightLight.Pos) {
 		if aimPoint != g.flashlightLight.Pos {
 			currentMap.MoveLightSource(g.flashlightLight, aimPoint)
+			changed = true
 		}
 	} else {
 		g.flashlightLight.Pos = aimPoint
 		currentMap.AddDynamicLightSource(aimPoint, g.flashlightLight)
+		changed = true
+	}
+	if changed {
 		currentMap.UpdateDynamicLights()
 	}
 }

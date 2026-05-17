@@ -35,6 +35,7 @@ var itemTypeNames = map[ItemType]string{
     ItemTypeRemoteTaser:         "remote_taser",
     ItemTypeCrowbar:             "crowbar",
     ItemTypeKnife:               "knife",
+    ItemTypeKatana:              "katana",
     ItemTypePianoWire:           "piano_wire",
     ItemTypeMechanicalLockpick:  "mechanical_lockpick",
     ItemTypeElectronicLockpick:  "electronic_lockpick",
@@ -99,6 +100,7 @@ const (
     ItemTypeRemoteTaser
     ItemTypeCrowbar
     ItemTypeKnife
+    ItemTypeKatana
     ItemTypePianoWire
     ItemTypeMechanicalLockpick
     ItemTypeElectronicLockpick
@@ -161,6 +163,7 @@ var itemTraitsTable = map[ItemType]itemTypeTraits{
     ItemTypeRemoteTaser:         {hasRangedAction: true, isThrowable: true, isRemoteDetonated: true},
     ItemTypeCrowbar:             {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
     ItemTypeKnife:               {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
+    ItemTypeKatana:              {hasMeleeAction: true, hasRangedAction: true, isThrowable: true, isMeleeWeapon: true},
     ItemTypePianoWire:           {hasMeleeAction: true, isMeleeWeapon: true},
     ItemTypeCleaner:             {hasMeleeAction: true, isMeleeTool: true, meleeDecreaseUses: true},
     ItemTypeLoot:                {hasRangedAction: true, isThrowable: true},
@@ -475,7 +478,7 @@ func (i *Item) IsLockpickType() bool {
 
 func (i *Item) IsWeapon() bool                { return i.IsRangedWeapon() || i.IsMeleeWeapon() }
 func (i *Item) IsMeleeWeapon() bool           { return itemTraitsTable[i.Type].isMeleeWeapon }
-func (i *Item) IsObviousWeapon() bool         { return i.IsRangedWeapon() || i.Type == ItemTypeKnife }
+func (i *Item) IsObviousWeapon() bool         { return i.IsRangedWeapon() || i.Type == ItemTypeKnife || i.Type == ItemTypeKatana }
 func (i *Item) IsRangedWeapon() bool          { return itemTraitsTable[i.Type].isRangedWeapon }
 func (i *Item) IsAutomaticRangedWeapon() bool { return itemTraitsTable[i.Type].isAutomaticRangedWeapon }
 

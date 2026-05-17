@@ -89,4 +89,6 @@ const (
 	GlyphCageOpen             = 'ɰ'
 	GlyphBow                  = 'ƶ'
 	GlyphAlarm                = '!'
+	GlyphKatana               = 'Ɨ'
+	GlyphFourPointStar        = 'ж'
 )

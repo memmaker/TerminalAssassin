@@ -292,11 +292,11 @@ func (i *InputState) PollGameCommands() []core.InputCommand {
 	}
 	i.inputConsumed = true
 	var commands = make([]core.InputCommand, 0)
-	if i.controllerMode != services.ControllerGamepad {
-		commands = append(commands, i.pollKeyBoardForGameplay()...)
+	commands = append(commands, i.pollKeyBoardForGameplay()...)
+	if i.controllerMode == services.ControllerKeyboardMouse {
 		commands = append(commands, i.pollMouse()...)
 	}
-	if i.controllerMode != services.ControllerKeyboardMouse {
+	if i.controllerMode == services.ControllerGamepad {
 		commands = append(commands, i.pollGamePadForGameplay()...)
 	}
 	return commands
@@ -809,7 +809,10 @@ func (i *InputState) pollGamePadForGameplay() []core.InputCommand {
 
 		// ── R2 (FrontBottomRight) → fire/throw at aimed position ────────────
 		if ebiten.IsStandardGamepadButtonPressed(padId, ebiten.StandardGamepadButtonFrontBottomRight) {
-			msgs = append(msgs, core.UseRangedItem)
+			msgs = append(msgs, core.PressFire)
+		}
+		if inpututil.IsStandardGamepadButtonJustReleased(padId, ebiten.StandardGamepadButtonFrontBottomRight) {
+			msgs = append(msgs, core.ReleaseFire)
 		}
 
 		// -- L1 (FrontTopLeft) held -> Run ─────────────────────────
