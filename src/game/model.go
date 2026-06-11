@@ -246,11 +246,11 @@ func (m *Model) ApplyStimulusToTile(atLocation geometry.Point, source core.Effec
 	switch stim.Type() {
 	case stimuli.StimulusFire:
 		m.ApplyFireToTile(atLocation, source, stim)
-	case stimuli.StimulusBurnableLiquid:
+	case stimuli.StimulusBurnable:
 		m.ApplyBurnableToTile(atLocation, source, stim)
 	case stimuli.StimulusWater:
 		currentMap.RemoveStimulusFromTile(atLocation, stimuli.StimulusFire)
-		currentMap.RemoveStimulusFromTile(atLocation, stimuli.StimulusBurnableLiquid)
+		currentMap.RemoveStimulusFromTile(atLocation, stimuli.StimulusBurnable)
 		currentMap.AddStimulusToTile(atLocation, stim)
 		// todo check if a neighbor has electricity
 		electroNeighbor := currentMap.GetNeighborWithStim(atLocation, stimuli.StimulusHighVoltage)
@@ -361,11 +361,11 @@ func (m *Model) ApplyStimulusToThings(atLocation geometry.Point, source core.Eff
 func (m *Model) ApplyFireToTile(atLocation geometry.Point, source core.EffectSource, stim stimuli.Stimulus) {
 	gridMap := m.GetMap()
 	// also emit a delayed fire stim to all burnable neighbors
-	if gridMap.IsStimulusOnTile(atLocation, stimuli.StimulusBurnableLiquid) {
+	if gridMap.IsStimulusOnTile(atLocation, stimuli.StimulusBurnable) {
 		stim = stim.WithForce(80) // spark to flames..
 		gridMap.AddStimulusToTile(atLocation, stim)
 		for _, n := range gridMap.GetFilteredCardinalNeighbors(atLocation, func(p geometry.Point) bool {
-			return gridMap.IsStimulusOnTile(p, stimuli.StimulusBurnableLiquid) && !gridMap.IsStimulusOnTile(p, stimuli.StimulusFire)
+			return gridMap.IsStimulusOnTile(p, stimuli.StimulusBurnable) && !gridMap.IsStimulusOnTile(p, stimuli.StimulusFire)
 		}) {
 			m.ApplyDelayed(n, source, stimuli.StimEffect{Stimuli: []stimuli.Stimulus{stim}}, rng.R.Float64()*0.5)
 		}
@@ -430,13 +430,13 @@ func (m *Model) ApplyStimulusToActor(a *core.Actor, source core.EffectSource, st
 		m.TakeBluntDamage(a, source, stim.Force())
 	case stimuli.StimulusFire:
 		m.TakeFireDamage(a, source, stim.Force())
-	case stimuli.StimulusLethalPoison:
+	case stimuli.StimulusLethal:
 		m.TakeLethalPoisonDamage(a, source, stim.Force())
-	case stimuli.StimulusEmeticPoison:
+	case stimuli.StimulusEmetic:
 		m.TakeEmeticPoisonDamage(a, source, stim.Force())
 	case stimuli.StimulusExplosionDamage:
 		m.TakeExplosionDamage(a, source, stim.Force())
-	case stimuli.StimulusInducedSleep:
+	case stimuli.StimulusSleep:
 		m.TakeInducedSleep(a, source, stim.Force())
 	case stimuli.StimulusHighVoltage:
 		m.TakeElectricalDamage(a, source, stim.Force())
@@ -491,7 +491,7 @@ func (m *Model) TakeFireDamage(a *core.Actor, source core.EffectSource, force in
 func (m *Model) TakeLethalPoisonDamage(a *core.Actor, source core.EffectSource, force int) {
 	randomDelay := rng.R.Float64() * 5
 	m.engine.ScheduleGameTime(randomDelay, func() {
-		m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusLethalPoison, source))
+		m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusLethal, source))
 	})
 }
 
@@ -817,7 +817,7 @@ func (m *Model) tryCleaning(position geometry.Point) {
 	isSneaking := currentMap.Player.MovementMode == core.MovementModeSneaking
 	isNotDragging := !currentMap.Player.IsDraggingBody()
 	if hasCleanerEquipped && isSneaking && isNotDragging {
-		currentMap.RemoveStimulusFromTile(position, stimuli.StimulusBurnableLiquid)
+		currentMap.RemoveStimulusFromTile(position, stimuli.StimulusBurnable)
 		currentMap.RemoveStimulusFromTile(position, stimuli.StimulusWater)
 		currentMap.RemoveStimulusFromTile(position, stimuli.StimulusBlood)
 	}

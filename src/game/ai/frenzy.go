@@ -47,6 +47,7 @@ func (f *FrenzyMovement) timedUpdate(delaySecs float64) core.AIUpdate {
 
 func (f *FrenzyMovement) NextAction() core.AIUpdate {
 	person := f.Person
+	person.EquipBestWeapon()
 
 	if !person.IsPredator() && f.elapsedSeconds >= frenzyDurationSeconds {
 		f.exitFrenzy(person)
@@ -71,7 +72,7 @@ func (f *FrenzyMovement) NextAction() core.AIUpdate {
 	currentMap := f.Engine.GetGame().GetMap()
 
 	// Try ranged attack first.
-	if person.EquipWeapon() && person.EquippedItem.IsRangedWeapon() &&
+	if person.HasRangedWeaponEquipped() &&
 		person.CanSeeActor(f.target) &&
 		currentMap.IsPathPassableForProjectile(person.Pos(), f.target.Pos()) {
 		return f.handleFiring(person)

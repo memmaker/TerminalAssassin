@@ -236,6 +236,7 @@ type AnimationInterface interface {
 	ActorEngagedAnimation(person *core.Actor, rune int32, pos geometry.Point, time float64, finished func())
 	ActorEngagedAnimationWithCancel(person *core.Actor, icon rune, pos geometry.Point, time float64, finished func(), cancelled func())
 	AssassinationAnimation(targets []*core.Actor, icon rune, finishedCallback func())
+	MeleeSignalAnimation(attacker *core.Actor, attackType core.MeleeAttackType, windowSecs float64, onAttack func(), onCancel func())
 	BriefingAnimation(script *core.BriefingAnimation, finish func())
 	ImageFadeIn(pixels [][]common.Color, cancel, finish func())
 	ImageToImageFade(src, dest [][]common.Color, draw, cancel, finish func())

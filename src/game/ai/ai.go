@@ -470,12 +470,12 @@ func (a *AIController) ConsumeFoodAt(person *core.Actor, foodPos geometry.Point,
 	until := func() bool { return animationCompleted }
 	a.SetEngrossed(person, until)
 	completed := func() {
-		if currentMap.IsStimulusOnTile(foodPos, stimuli.StimulusLethalPoison) {
-			game.ApplyStimulusToActor(person, core.NewEffectSourceFromTile(currentMap.CellAt(foodPos).TileType), stimuli.Stim{StimType: stimuli.StimulusLethalPoison, StimForce: 100})
-		} else if currentMap.IsStimulusOnTile(foodPos, stimuli.StimulusEmeticPoison) {
-			game.ApplyStimulusToActor(person, core.NewEffectSourceFromTile(currentMap.CellAt(foodPos).TileType), stimuli.Stim{StimType: stimuli.StimulusEmeticPoison, StimForce: 100})
-		} else if currentMap.IsStimulusOnTile(foodPos, stimuli.StimulusInducedSleep) {
-			game.ApplyStimulusToActor(person, core.NewEffectSourceFromTile(currentMap.CellAt(foodPos).TileType), stimuli.Stim{StimType: stimuli.StimulusInducedSleep, StimForce: 100})
+		if currentMap.IsStimulusOnTile(foodPos, stimuli.StimulusLethal) {
+			game.ApplyStimulusToActor(person, core.NewEffectSourceFromTile(currentMap.CellAt(foodPos).TileType), stimuli.Stim{StimType: stimuli.StimulusLethal, StimForce: 100})
+		} else if currentMap.IsStimulusOnTile(foodPos, stimuli.StimulusEmetic) {
+			game.ApplyStimulusToActor(person, core.NewEffectSourceFromTile(currentMap.CellAt(foodPos).TileType), stimuli.Stim{StimType: stimuli.StimulusEmetic, StimForce: 100})
+		} else if currentMap.IsStimulusOnTile(foodPos, stimuli.StimulusSleep) {
+			game.ApplyStimulusToActor(person, core.NewEffectSourceFromTile(currentMap.CellAt(foodPos).TileType), stimuli.Stim{StimType: stimuli.StimulusSleep, StimForce: 100})
 		}
 		finishedCallback()
 		animationCompleted = true

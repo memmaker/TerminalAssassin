@@ -209,7 +209,6 @@ func (k *IndividualKnowledge) AddDangerousSighting(witness, dangerMan *Actor, ob
 	}
 }
 
-
 type AIComponent struct {
 	PathBlockedCount    int
 	Knowledge           *IndividualKnowledge
@@ -688,20 +687,26 @@ func (a *Actor) TurnRight(angleInDegrees float64) {
 	}
 }
 
-func (a *Actor) EquipWeapon() bool {
-	if a.Inventory == nil || len(a.Inventory.Items) == 0 {
-		return false
+// EquipBestWeapon equips the best available weapon: ranged first, then melee.
+func (a *Actor) EquipBestWeapon() {
+	if a.HasWeaponEquipped() {
+		return
 	}
-	if a.EquippedItem != nil && a.EquippedItem.IsWeapon() {
-		return true
+	if a.Inventory == nil || a.Inventory.IsEmpty() {
+		return
 	}
 	for _, item := range a.Inventory.Items {
-		if item.IsWeapon() {
+		if item.IsRangedWeapon() {
 			a.EquippedItem = item
-			return true
+			return
 		}
 	}
-	return false
+	for _, item := range a.Inventory.Items {
+		if item.IsMeleeWeapon() {
+			a.EquippedItem = item
+			return
+		}
+	}
 }
 
 func (a *Actor) HasToolEquipped(tool ItemType) bool {
@@ -952,7 +957,7 @@ func (a *Actor) Status() ActorState {
 // For NPCs, sleeping is tracked by SleepingState on the AI stack.
 // For the player, it is tracked by the Sleeping field.
 func (a *Actor) IsSleeping() bool {
-	return a.Status() == ActorStatusSleeping
+	return a.Sleeping || a.Status() == ActorStatusSleeping
 }
 
 func (a *Actor) GetTeam() string {
@@ -999,6 +1004,14 @@ func (a *Actor) TooltipText() string {
 
 func (a *Actor) HasFlashlightEquipped() bool {
 	return a.EquippedItem != nil && a.EquippedItem.Type == ItemTypeFlashlight
+}
+
+func (a *Actor) HasWeaponEquipped() bool {
+	return a.EquippedItem != nil && a.EquippedItem.IsWeapon()
+}
+
+func (a *Actor) HasRangedWeaponEquipped() bool {
+	return a.EquippedItem != nil && a.EquippedItem.IsRangedWeapon()
 }
 
 type ActorOnDisk struct {

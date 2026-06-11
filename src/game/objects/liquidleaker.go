@@ -52,13 +52,13 @@ func (l *LiquidLeaker) Icon() rune {
 func (l *LiquidLeaker) Style(st common.Style) common.Style {
 	st = common.Style{Foreground: core.CurrentTheme.ObjectForeground, Background: st.Background}
 	switch l.LeakingStimulusType {
-	case stimuli.StimulusBurnableLiquid:
+	case stimuli.StimulusBurnable:
 		st = st.WithFg(core.CurrentTheme.OilForeground)
 	case stimuli.StimulusWater:
 		st = st.WithFg(core.CurrentTheme.WaterForeground)
-	case stimuli.StimulusLethalPoison:
+	case stimuli.StimulusLethal:
 		st = st.WithFg(core.CurrentTheme.LethalPoisonForeground)
-	case stimuli.StimulusEmeticPoison:
+	case stimuli.StimulusEmetic:
 		st = st.WithFg(core.CurrentTheme.EmeticPoisonForeground)
 	}
 	return st

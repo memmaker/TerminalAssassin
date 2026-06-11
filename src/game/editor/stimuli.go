@@ -51,7 +51,7 @@ func (g *GameStateEditor) openStimuliMenu() {
 			Icon:  core.GlyphWater,
 			Handler: g.setBrushHandler(addStimuliUI, core.GlyphWater, func(pos geometry.Point) {
 				g.engine.GetGame().GetMap().AddStimulusToTile(pos, stimuli.Stim{
-					StimType:  stimuli.StimulusBurnableLiquid,
+					StimType:  stimuli.StimulusBurnable,
 					StimForce: 80,
 				})
 			}),
