@@ -232,7 +232,7 @@ func (s EffectSource) ToCoDFromStim(sType stimuli.StimulusType) CoDDescription {
 		return CoDBurned
 	case stimuli.StimulusExplosionDamage:
 		return CodExploded
-	case stimuli.StimulusLethalPoison:
+	case stimuli.StimulusLethal:
 		return CoDPoisoned
 	}
 	return CoDDescription(fmt.Sprintf("killed by %s under mysterious circumstances", sType))

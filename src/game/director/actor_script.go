@@ -76,7 +76,7 @@ func NewDropFromInventoryAction(engine services.Engine, item *core.Item) core.Sc
 func NewDanceAction(delayInSeconds float64) core.ScriptedAction {
 	scriptedAction := &AIAction{description: "dance"}
 	danceAction := func(person *core.Actor) core.AIUpdate {
-            person.LookDirection = rng.R.Float64() * 360
+		person.LookDirection = rng.R.Float64() * 360
 		return ai.NextUpdateIn(delayInSeconds)
 	}
 	scriptedAction.action = danceAction
@@ -91,7 +91,7 @@ func NewTurnTableAction(delayInSeconds float64) core.ScriptedAction {
 			firstCall = false
 			originalDirection = person.LookDirection
 		}
-            person.LookDirection = originalDirection + (rng.R.Float64() * 90) - 45
+		person.LookDirection = originalDirection + (rng.R.Float64() * 90) - 45
 		return ai.NextUpdateIn(delayInSeconds)
 	}
 	scriptedAction.action = turnTableAction
@@ -125,13 +125,14 @@ func NewMoveToItem(engine services.Engine, predicate func(item *core.Item) bool)
 func NewUseItemAtRangeAction(engine services.Engine, target *core.Actor) core.ScriptedAction {
 	scriptedAction := &AIAction{description: "use item", actionFinished: true}
 	combatAction := func(person *core.Actor) core.AIUpdate {
-		person.EquipWeapon()
+		person.EquipBestWeapon()
 		engine.GetGame().GetActions().UseEquippedItemAtRange(person, target.Pos())
 		return ai.NextUpdateIn(1)
 	}
 	scriptedAction.action = combatAction
 	return scriptedAction
 }
+
 func NewMoveAction(destination geometry.Point) core.ScriptedAction {
 	scriptedAction := &AIAction{description: "move"}
 	moveAction := func(person *core.Actor) core.AIUpdate {

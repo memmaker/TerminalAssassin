@@ -13,14 +13,14 @@ const (
 	StimulusPiercingDamage  StimulusType = "piercing_damage"
 	StimulusBluntDamage     StimulusType = "blunt_damage"
 	StimulusChokingDamage   StimulusType = "choking_damage"
-	StimulusEmeticPoison    StimulusType = "emetic_poison"
-	StimulusLethalPoison    StimulusType = "lethal_poison"
-	StimulusInducedSleep    StimulusType = "sleep"
+	StimulusEmetic          StimulusType = "emetic_poison"
+	StimulusLethal          StimulusType = "lethal_poison"
+	StimulusSleep           StimulusType = "sleep"
 	StimulusFire            StimulusType = "fire"
 	StimulusExplosionDamage StimulusType = "explosion_damage"
 	StimulusWater           StimulusType = "water"
 	StimulusBlood           StimulusType = "blood"
-	StimulusBurnableLiquid  StimulusType = "make_burnable"
+	StimulusBurnable        StimulusType = "make_burnable"
 	StimulusHighVoltage     StimulusType = "high_voltage"
 	StimulusFrenzy          StimulusType = "frenzy"
 	StimulusSmoke           StimulusType = "smoke"
@@ -136,7 +136,7 @@ func EffectLeak(stimType StimulusType, stimForce int, leakSize int) StimEffect {
 
 // EffectGas creates a gas cloud that lingers on tiles for durationSecs seconds.
 // Any actor entering a gassed tile is automatically affected.
-// Use StimulusInducedSleep for knockout gas, StimulusLethalPoison for deadly gas.
+// Use StimulusSleep for knockout gas, StimulusLethal for deadly gas.
 func EffectGas(stimType StimulusType, stimForce, radius, durationSecs int) StimEffect {
 	return StimEffect{
 		Distribution:         DistributeGas,

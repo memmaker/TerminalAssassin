@@ -113,13 +113,13 @@ func (a PoisonAction) Action(m services.Engine, person *core.Actor, position geo
 	person.Inventory.RemoveItem(poisonItem)
 	switch poisonItem.Type {
 	case core.ItemTypeEmeticPoison:
-		currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusEmeticPoison, StimForce: 10})
+		currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusEmetic, StimForce: 10})
 		m.GetGame().PrintMessage("You lace the food with emetic poison.")
 	case core.ItemTypeLethalPoison:
-		currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusLethalPoison, StimForce: 10})
+		currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusLethal, StimForce: 10})
 		m.GetGame().PrintMessage("You lace the food with lethal poison.")
 	case core.ItemTypeSleepPoison:
-		currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusInducedSleep, StimForce: 10})
+		currentMap.AddStimulusToTile(position, stimuli.Stim{StimType: stimuli.StimulusSleep, StimForce: 10})
 		m.GetGame().PrintMessage("You lace the food with sleeping poison.")
 	}
 	m.GetGame().IllegalActionAt(position, core.ObservationIllegalAction)
@@ -130,9 +130,9 @@ func (a PoisonAction) IsActionPossible(m services.Engine, person *core.Actor, ac
 	isFoodOrDrinkTile := currentMap.IsTileWithSpecialAt(actionAt, gridmap.SpecialTileTypeFood)
 	return a.hasPoison(person) &&
 		isFoodOrDrinkTile &&
-		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusLethalPoison) &&
-		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusEmeticPoison) &&
-		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusInducedSleep)
+		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusLethal) &&
+		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusEmetic) &&
+		!currentMap.IsStimulusOnTile(actionAt, stimuli.StimulusSleep)
 }
 
 func (a PoisonAction) hasPoison(actor *core.Actor) bool {

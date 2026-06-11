@@ -136,7 +136,7 @@ func (f ObjectFactory) SimpleObjects() []services.ObjectCreator {
 			Name: "oil drum (liquid container)",
 			Icon: core.GlyphOilDrum,
 			Create: func(name string) services.Object {
-				return NewLiquidContainer(name, core.GlyphOilDrum, stimuli.StimulusBurnableLiquid)
+				return NewLiquidContainer(name, core.GlyphOilDrum, stimuli.StimulusBurnable)
 			},
 		},
 		{
