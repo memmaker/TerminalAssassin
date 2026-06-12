@@ -84,6 +84,14 @@ func (p *Projectile) Update() {
             p.onHitWithBullet(currentPos)
             return
         } else if !p.ItemIsWeapon && (endOfFlightPathReached || hitSomething) {
+            if hitSomething && !endOfFlightPathReached {
+            	p.applyImpactEffects(currentPos)
+            	if currentMap.IsPassableForProjectile(currentPos) {
+            		p.onTravel(currentPos)
+            		p.currentPathIndex++
+            		return
+            	}
+            }
             p.onHitWithItem(currentPos)
             return
         }
@@ -103,10 +111,8 @@ func (p *Projectile) onHitWithBullet(pos geometry.Point) {
     p.die(pos)
 }
 
-func (p *Projectile) onHitWithItem(pos geometry.Point) {
+func (p *Projectile) applyImpactEffects(pos geometry.Point) {
     game := p.engine.GetGame()
-    actions := game.GetActions()
-    actions.TryFeedbackForImpact("flesh_hit", p.travelPath[0], pos, 5)
     if effects, ok := p.WrappedItem.TriggerEffects[core.TriggerOnItemImpact]; ok {
         if effects.DestroyOnApplication {
             p.DestroyOnImpact = true
@@ -119,7 +125,13 @@ func (p *Projectile) onHitWithItem(pos geometry.Point) {
         }
         game.Apply(pos, core.NewEffectSourceUsedItem(p.User, p.WrappedItem), effects)
     }
+}
 
+func (p *Projectile) onHitWithItem(pos geometry.Point) {
+    game := p.engine.GetGame()
+    actions := game.GetActions()
+    actions.TryFeedbackForImpact("flesh_hit", p.travelPath[0], pos, 5)
+    p.applyImpactEffects(pos)
     p.die(pos)
 }
 func (p *Projectile) onTravel(pos geometry.Point) {
