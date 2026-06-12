@@ -195,8 +195,7 @@ func (g *ActionProvider) rangedThrow(source *core.Actor, item *core.Item, target
 	// basic bookkeeping
 	source.EquippedItem = nil
 	source.Inventory.RemoveItem(item)
-	currentMap := g.engine.GetGame().GetMap()
-	los := currentMap.LineOfSight(source.FoVSource(), target)
+	los := geometry.LineOfSight(source.FoVSource(), target, func(p geometry.Point) bool { return true })
 	if len(los) <= 1 { // no path or only path to self -> misfire
 		return
 	}
