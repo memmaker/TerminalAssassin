@@ -87,6 +87,9 @@ func (p *Projectile) Update() {
             if hitSomething && !endOfFlightPathReached {
             	p.applyImpactEffects(currentPos)
             	if currentMap.IsPassableForProjectile(currentPos) {
+            		if len(p.travelPath) > p.currentPathIndex+1 {
+            			p.travelPath = p.travelPath[:len(p.travelPath)-1]
+            		}
             		p.onTravel(currentPos)
             		p.currentPathIndex++
             		return
