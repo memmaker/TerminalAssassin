@@ -98,7 +98,7 @@ func (w *Window) IsTransparent() bool {
 	return true
 }
 func (w *Window) IsPassableForProjectile() bool {
-	return true
+	return w.State != WindowStateClosed
 }
 func (w *Window) EncodeAsString() string {
 	return w.uniqueIdentifier
