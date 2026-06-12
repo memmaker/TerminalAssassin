@@ -1297,15 +1297,13 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) IsPassableForProjectile(p geo
 	if !m.Contains(p) {
 		return false
 	}
-	isTileWalkable := m.IsTileWalkable(p)
-	isActorOnTile := m.IsActorAt(p)
-	isObjectOnTile := m.IsObjectAt(p)
-	isObjectBlocking := false
-	if isObjectOnTile {
-		objectOnTile := m.ObjectAt(p)
-		isObjectBlocking = !objectOnTile.IsPassableForProjectile()
+	if m.IsActorAt(p) {
+		return false
 	}
-	return isTileWalkable && !isActorOnTile && !isObjectBlocking
+	if m.IsObjectAt(p) {
+		return m.ObjectAt(p).IsPassableForProjectile()
+	}
+	return m.IsTileWalkable(p)
 }
 func (m *GridMap[ActorType, ItemType, ObjectType]) IsPathPassableForProjectile(source geometry.Point, target geometry.Point) bool {
 	los := m.LineOfSight(source, target)
