@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/memmaker/terminal-assassin/game/stimuli"
 	"github.com/memmaker/terminal-assassin/rng"
 	"github.com/memmaker/terminal-assassin/utils"
 
@@ -67,6 +68,7 @@ type GameStateGameplay struct {
 	lookCursorPos  geometry.PointF // accumulated look cursor position in world space
 
 	lastHolsteredItem *core.Item // player-only holster slot
+	lastPlayerPos     geometry.Point
 
 	// timeAccumulator counts Update ticks since the last in-game minute was
 	// advanced.  At 60 TPS one real second equals one in-game minute, so a full
@@ -469,7 +471,7 @@ func (g *GameStateGameplay) updateContextActions() {
 }
 
 func (g *GameStateGameplay) playerMoved(oldPosition geometry.Point, newPosition geometry.Point) {
-
+	g.lastPlayerPos = oldPosition
 	defer g.UpdateHUD()
 
 	g.updatePlayerMovementMode(newPosition)
@@ -699,8 +701,25 @@ func (g *GameStateGameplay) tickTimeProgression() {
 	currentMap := g.engine.GetGame().GetMap()
 	currentMap.TimeOfDay = currentMap.TimeOfDay.Add(time.Minute)
 	currentMap.SetAmbientLight(common.GetAmbientLightFromDayTime(currentMap.TimeOfDay).ToRGB())
+	g.decayFire(currentMap)
 	g.isDirty = true
 	g.UpdateStatusLine()
+}
+
+const fireDecayPerSecond = 2
+
+func (g *GameStateGameplay) decayFire(currentMap *gridmap.GridMap[*core.Actor, *core.Item, services.Object]) {
+	if currentMap.FireTiles == nil || currentMap.FireTiles.Cardinality() == 0 {
+		return
+	}
+	currentMap.FireTiles.Iter(func(p geometry.Point) {
+		newForce := currentMap.ForceOfStimulusOnTile(p, stimuli.StimulusFire) - fireDecayPerSecond
+		if newForce <= 0 {
+			currentMap.RemoveStimulusFromTile(p, stimuli.StimulusFire)
+		} else {
+			currentMap.AddStimulusToTile(p, stimuli.Stim{StimType: stimuli.StimulusFire, StimForce: newForce})
+		}
+	})
 }
 
 func (g *GameStateGameplay) clearTooltip() {
@@ -825,7 +844,7 @@ func (g *GameStateGameplay) playerMovementFromInput(pdelta geometry.Point) {
 			wasAiming := g.padAimActive
 			if !wasAiming {
 				player.LookDirection = geometry.DirectionVectorToAngleInDegrees(pdelta)
-				g.resetPlayerState()
+				//g.resetPlayerState()
 			}
 			m.MoveActor(player, np)
 			g.playerMoved(oldPos, np)
@@ -1436,6 +1455,21 @@ func angularDistance(a, b float64) float64 {
 	return diff
 }
 
+// lookAngleToDirection maps a look angle (degrees, 0=East clockwise) to one of
+// the 8 surrounding tile directions with equal 45° sectors.
+func lookAngleToDirection(degrees float64) geometry.Point {
+	degrees = math.Mod(degrees, 360)
+	if degrees < 0 {
+		degrees += 360
+	}
+	sector := int(math.Floor((degrees+22.5)/45)) % 8
+	directions := [8]geometry.Point{
+		{X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1}, {X: -1, Y: 1},
+		{X: -1, Y: 0}, {X: -1, Y: -1}, {X: 0, Y: -1}, {X: 1, Y: -1},
+	}
+	return directions[sector]
+}
+
 // playerDiveTackle performs the Dive & Tackle action in the given direction.
 //
 //   - Both tiles clear → player jumps/dives two tiles instantly.
@@ -1446,9 +1480,9 @@ func (g *GameStateGameplay) playerDiveTackle() {
 	currentMap := game.GetMap()
 	player := currentMap.Player
 
-	direction := player.FoVShift
+	direction := player.Pos().Sub(g.lastPlayerPos)
 	if direction.X == 0 && direction.Y == 0 {
-		return
+		direction = lookAngleToDirection(player.LookDirection)
 	}
 
 	if !player.CanMove() {
@@ -1466,8 +1500,15 @@ func (g *GameStateGameplay) playerDiveTackle() {
 	tile2HasNPC := currentMap.Contains(tile2) && currentMap.IsActorAt(tile2)
 
 	// Prod any NPCs in the direction first (tackle).
+	// Katana equipped: instantly kill the adjacent target and dive through.
+	hasKatana := player.EquippedItem != nil && player.EquippedItem.Type == core.ItemTypeKatana
 	if tile1HasNPC {
-		game.TryPushActorInDirection(currentMap.ActorAt(tile1), direction)
+		npc := currentMap.ActorAt(tile1)
+		if hasKatana {
+			game.Kill(npc, core.CauseOfDeath{Description: core.CoDStabbed, Source: core.EffectSource{Actor: player, Item: player.EquippedItem}})
+		} else {
+			game.TryPushActorInDirection(npc, direction)
+		}
 	}
 	if tile2HasNPC {
 		game.TryPushActorInDirection(currentMap.ActorAt(tile2), direction)
@@ -1475,6 +1516,20 @@ func (g *GameStateGameplay) playerDiveTackle() {
 
 	// Determine how far the player can travel.
 	passable := currentMap.CurrentlyPassableForActor(player)
+
+	// Break closed windows the player dives through (costs 1 HP).
+	if !passable(tile1) && game.IsWindowAt(tile1) {
+		game.BreakWindowAt(tile1)
+		objectAt, _ := currentMap.TryGetObjectAt(tile1)
+		game.ApplyStimulusToActor(player, core.EffectSource{Object: objectAt}, stimuli.Stim{StimType: stimuli.StimulusPiercingDamage, StimForce: 20})
+		//player.Health--
+	}
+	if currentMap.Contains(tile2) && !passable(tile2) && game.IsWindowAt(tile2) {
+		game.BreakWindowAt(tile2)
+		objectAt, _ := currentMap.TryGetObjectAt(tile2)
+		game.ApplyStimulusToActor(player, core.EffectSource{Object: objectAt}, stimuli.Stim{StimType: stimuli.StimulusPiercingDamage, StimForce: 20})
+	}
+
 	tile1Clear := passable(tile1) && !currentMap.IsActorAt(tile1)
 	tile2Clear := currentMap.Contains(tile2) && passable(tile2) && !currentMap.IsActorAt(tile2)
 
@@ -1491,7 +1546,7 @@ func (g *GameStateGameplay) playerDiveTackle() {
 	oldPos := player.Pos()
 	player.LookDirection = geometry.DirectionVectorToAngleInDegrees(direction)
 	player.MovementMode = core.MovementModeRunning
-	g.resetPlayerState()
+	//g.resetPlayerState()
 	game.MoveActor(player, diveTarget)
 	g.playerMoved(oldPos, diveTarget)
 }

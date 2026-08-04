@@ -202,6 +202,7 @@ type GameInterface interface {
 
 	IsDoorAt(pos geometry.Point) bool
 	IsWindowAt(pos geometry.Point) bool
+	BreakWindowAt(pos geometry.Point)
 	Destroy(item *core.Item)
 	AreAllies(actorOne, actorTwo *core.Actor) bool
 	EndMissionWithSuccess()

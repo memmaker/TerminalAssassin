@@ -244,7 +244,15 @@ func (m *Model) ApplyStimulusToTile(atLocation geometry.Point, source core.Effec
 	animator := m.engine.GetAnimator()
 
 	switch stim.Type() {
-	case stimuli.StimulusFire:
+	case stimuli.StimulusLethal, stimuli.StimulusEmetic, stimuli.StimulusSleep:
+		if currentMap.IsStimulusOnTile(atLocation, stimuli.StimulusFire) {
+			// THIS IS OVERKILL: TODO, replace with just simple one tile explosion stim
+			m.ApplyDelayed(atLocation, source, stimuli.EffectExplosion(30, 1, 1), 0.017)
+		} else {
+			currentMap.AddStimulusToTile(atLocation, stim)
+		}
+	case stimuli.StimulusFire, stimuli.StimulusExplosionDamage:
+		m.igniteGasIfPresent(atLocation, source)
 		m.ApplyFireToTile(atLocation, source, stim)
 	case stimuli.StimulusBurnable:
 		m.ApplyBurnableToTile(atLocation, source, stim)
@@ -269,6 +277,23 @@ func (m *Model) ApplyStimulusToTile(atLocation geometry.Point, source core.Effec
 	}
 	return
 }
+
+var gasStimTypes = []stimuli.StimulusType{stimuli.StimulusSmoke, stimuli.StimulusSleep, stimuli.StimulusLethal}
+
+func (m *Model) igniteGasIfPresent(atLocation geometry.Point, source core.EffectSource) {
+	currentMap := m.GetMap()
+	hasGas := false
+	for _, gasType := range gasStimTypes {
+		if currentMap.IsStimulusOnTile(atLocation, gasType) {
+			currentMap.RemoveStimulusFromTile(atLocation, gasType)
+			hasGas = true
+		}
+	}
+	if hasGas {
+		m.ApplyDelayed(atLocation, source, stimuli.EffectExplosion(30, 3, 3), 0.017)
+	}
+}
+
 func (m *Model) SoundEventAt(soundLocation geometry.Point, kindOfSound core.Observation, maxDistance int) {
 	currentMap := m.GetMap()
 	animator := m.engine.GetAnimator()
@@ -362,7 +387,8 @@ func (m *Model) ApplyFireToTile(atLocation geometry.Point, source core.EffectSou
 	gridMap := m.GetMap()
 	// also emit a delayed fire stim to all burnable neighbors
 	if gridMap.IsStimulusOnTile(atLocation, stimuli.StimulusBurnable) {
-		stim = stim.WithForce(80) // spark to flames..
+		gridMap.RemoveStimulusFromTile(atLocation, stimuli.StimulusBurnable)
+		stim = stim.WithForce(60) // spark to flames..
 		gridMap.AddStimulusToTile(atLocation, stim)
 		for _, n := range gridMap.GetFilteredCardinalNeighbors(atLocation, func(p geometry.Point) bool {
 			return gridMap.IsStimulusOnTile(p, stimuli.StimulusBurnable) && !gridMap.IsStimulusOnTile(p, stimuli.StimulusFire)
@@ -459,7 +485,7 @@ func (m *Model) TakePiercingDamage(a *core.Actor, source core.EffectSource, forc
 		m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusPiercingDamage, source))
 		return
 	}
-	damageInPoints := int(3.0 * (float64(force) / 100.0))
+	damageInPoints := int(3.0*(float64(force)/100.0)) + 1
 	if a.DiesFromDamage(damageInPoints) {
 		m.Kill(a, core.NewCauseOfDeathFromStim(stimuli.StimulusPiercingDamage, source))
 		return
@@ -607,6 +633,7 @@ func (m *Model) TryPushActorInDirection(person *core.Actor, targetDirection geom
 		return
 	}
 	if person.IsActive() && !currentMap.IsActorAt(locationBehindTarget) {
+		person.Path = nil
 		m.MoveActor(person, locationBehindTarget)
 	} else if !person.IsActive() && !currentMap.IsDownedActorAt(locationBehindTarget) {
 		m.MoveActor(person, locationBehindTarget)
@@ -879,6 +906,15 @@ func (m *Model) IsWindowAt(p geometry.Point) bool {
 		return isWindow
 	}
 	return false
+}
+
+func (m *Model) BreakWindowAt(p geometry.Point) {
+	currentMap := m.GetMap()
+	if obj, ok := currentMap.TryGetObjectAt(p); ok {
+		if w, isWindow := obj.(*objects.Window); isWindow {
+			w.State = objects.WindowStateBroken
+		}
+	}
 }
 
 func (m *Model) PickUpItem(person *core.Actor) {

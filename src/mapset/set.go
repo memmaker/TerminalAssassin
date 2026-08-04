@@ -12,6 +12,7 @@ type Set[K comparable] interface {
 	ToSlice() []K
 	Cardinality() int
 	Remove(v K)
+	Iter(func(K))
 }
 
 func NewSet[K comparable]() *MapSet[K] {

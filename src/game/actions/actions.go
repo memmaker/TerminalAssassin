@@ -156,8 +156,11 @@ func (g *ActionProvider) spreadShot(attacker *core.Actor, weapon *core.Item, tar
 }
 
 func (g *ActionProvider) fireBullet(source *core.Actor, weapon *core.Item, target geometry.Point) {
-	currentMap := g.engine.GetGame().GetMap()
-	los := currentMap.LineOfSight(source.Pos(), target)
+	game := g.engine.GetGame()
+	currentMap := game.GetMap()
+	los := geometry.LineOfSight(source.Pos(), target, func(p geometry.Point) bool {
+		return p == source.Pos() || p == target || currentMap.IsPassableForProjectile(p) || game.IsWindowAt(p)
+	})
 	if len(los) <= 1 { // no path or only path to self -> misfire
 		return
 	}

@@ -55,6 +55,7 @@ type MapObjectWithProperties[ActorType interface {
 	IsWalkable(person ActorType) bool
 	IsTransparent() bool
 	IsPassableForProjectile() bool
+	Description() string
 }
 type LightSource struct {
 	Pos          geometry.Point
@@ -298,6 +299,7 @@ type GridMap[ActorType interface {
 
 	NamedLocations   map[string]geometry.Point
 	AmbienceSoundCue string
+	FireTiles        mapset.Set[geometry.Point]
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) AddZone(zone *ZoneInfo) {
@@ -1081,12 +1083,19 @@ func (m *GridMap[ActorType, ItemType, ObjectType]) IterAllLights(f func(p geomet
 func (m *GridMap[ActorType, ItemType, ObjectType]) onStimAdded(p geometry.Point, s stimuli.Stimulus) {
 	if s.Type() == stimuli.StimulusFire {
 		m.AddDynamicLightSource(p, &LightSource{Pos: p, Color: common.RGBAColor{R: 2.0, G: 0.4, B: 0.0, A: 1.0}, Radius: 3, MaxIntensity: 4})
+		if m.FireTiles == nil {
+			m.FireTiles = mapset.NewSet[geometry.Point]()
+		}
+		m.FireTiles.Add(p)
 	}
 }
 
 func (m *GridMap[ActorType, ItemType, ObjectType]) onStimRemoved(p geometry.Point, s stimuli.StimulusType) {
 	if s == stimuli.StimulusFire {
 		m.RemoveDynamicLightAt(p)
+		if m.FireTiles != nil {
+			m.FireTiles.Remove(p)
+		}
 	}
 }
 

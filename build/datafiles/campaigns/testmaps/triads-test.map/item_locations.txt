@@ -163,6 +163,9 @@ Name: Shovel
 ItemAt: (72,41)
 Name: Dart Gun (frenzy)
 
+ItemAt: (72,43)
+Name: Katana
+
 ItemAt: (72,48)
 Name: Flashlight
 

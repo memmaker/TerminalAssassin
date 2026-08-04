@@ -272,6 +272,7 @@ icon: Ő
 type: proximity_mine
 projectile_range: 5
 trigger_effects: ProximityMineTrigger(50, 4, 40)
+reaction_effects: ProximityMineReaction(50, 4, 40)
 loot_value: 400
 
 name: Grenade (sleep poison)
@@ -303,6 +304,7 @@ icon: Ő
 type: sleep_poison_mine
 projectile_range: 5
 trigger_effects: SleepPoisonTripMineTrigger(3, 10)
+reaction_effects: SleepPoisonMineReaction(3, 10)
 loot_value: 350
 
 name: Trip Mine (lethal poison)
@@ -310,6 +312,7 @@ icon: Ő
 type: lethal_poison_mine
 projectile_range: 5
 trigger_effects: LethalPoisonTripMineTrigger(3, 10)
+reaction_effects: LethalPoisonMineReaction(3, 10)
 loot_value: 400
 
 name: Camera

@@ -7,3 +7,16 @@ Signature: CanOfGasolineReaction
 fire: 30, ExplosionAreaStims(30, 3, 10)
 piercing_damage: 0, OilSpillAreaStims
 explosion_damage:  30, ExplosionAreaStims(30, 3, 10)
+
+Signature: ProximityMineReaction($POWER, $DISTANCE, $PRESSURE)
+fire: 1, ExplosionAreaStims($POWER, $DISTANCE, $PRESSURE)
+explosion_damage: 1, ExplosionAreaStims($POWER, $DISTANCE, $PRESSURE)
+
+Signature: SleepPoisonMineReaction($RADIUS, $DURATION)
+fire: 1, SleepPoisonAreaStims($RADIUS, $DURATION)
+explosion_damage: 1, SleepPoisonAreaStims($RADIUS, $DURATION)
+
+Signature: LethalPoisonMineReaction($RADIUS, $DURATION)
+fire: 1, LethalPoisonAreaStims($RADIUS, $DURATION)
+explosion_damage: 1, LethalPoisonAreaStims($RADIUS, $DURATION)
+
